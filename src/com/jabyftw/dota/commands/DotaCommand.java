@@ -31,8 +31,15 @@ public class DotaCommand implements CommandExecutor {
                     sender.sendMessage(ChatColor.GOLD + "/spectate" + ChatColor.RED + ": spectate game");
                 }
                 return true;
+            } else if(args[0].equalsIgnoreCase("forceStart")) {
+                if(sender.hasPermission("dotamine.forcestart")) {
+                    pl.startGame(); // TODO: if game already started, also no delay creep spawn for debug
+                } else {
+                    sender.sendMessage(ChatColor.DARK_RED + "You dont have permission!");
+                    return true;
+                }
             }
-            return true; //TODO: any aditional command?
+            return true; //TODO: ranking, match scoreboard
         } else {
             sender.sendMessage(ChatColor.DARK_RED + "You dont have permission!");
             return true;

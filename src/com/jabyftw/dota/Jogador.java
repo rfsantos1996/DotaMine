@@ -10,11 +10,10 @@ public class Jogador {
 
     private final DotaMine pl;
     private int LH, kills, killstreak, deaths, team;
-    private double money; // TODO: economy to BossShop work
     private boolean fixed;
     private final Player p;
 
-    public Jogador(DotaMine pl, Player p, int LH, int kills, int killstreak, int deaths, int money, int team) {
+    public Jogador(DotaMine pl, Player p, int LH, int kills, int killstreak, int deaths, int team) {
         this.pl = pl;
         this.p = p;
         this.LH = LH;
@@ -28,13 +27,19 @@ public class Jogador {
         return p;
     }
 
+    public int getTeam() {
+        return team;
+    }
+
     public int getLH() {
         return LH;
     }
 
     public void addLH() {
         LH = LH + 1;
-        money = money + pl.getLHMoney();
+        if (pl.useVault) {
+            pl.econ.depositPlayer(p.getName(), pl.getLHMoney());
+        }
     }
 
     public int getKills() {
@@ -44,7 +49,9 @@ public class Jogador {
     public void addKill(int deadsKillstreak) {
         kills = kills + 1;
         killstreak = killstreak + 1;
-        money = money + pl.getKillMoney(deadsKillstreak);
+        if (pl.useVault) {
+            pl.econ.depositPlayer(p.getName(), pl.getKillMoney(deadsKillstreak));
+        }
         // TODO: anunciar ganho e killstreak
     }
 
@@ -58,22 +65,17 @@ public class Jogador {
 
     public void addDeath() {
         deaths = deaths + 1;
-        killstreak = 0;
-        money = money - pl.getDeathMoney(killstreak);
-        if(money < 0) {
-            money = 0;
+        if (pl.useVault) {
+            pl.econ.withdrawPlayer(p.getName(), pl.getDeathMoney(killstreak));
         }
+        killstreak = 0;
         // TODO: anunciar perda
-    }
-
-    public int getTeam() {
-        return team;
     }
 
     public void setFixed(boolean fixed) {
         this.fixed = fixed;
     }
-    
+
     public boolean isFixed() {
         return fixed;
     }

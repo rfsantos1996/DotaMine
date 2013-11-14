@@ -62,14 +62,18 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        pl.removePlayer(p, true);
-        pl.clearPlayer(p, false);
+        if (pl.players.containsKey(p)) {
+            pl.removePlayer(p, true);
+            pl.clearPlayer(p, false);
+        }
     }
-    
+
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
-        if(pl.players.get(e.getPlayer()).isFixed()) {
-            e.setCancelled(true);
+        if (pl.players.containsKey(e.getPlayer())) {
+            if (pl.players.get(e.getPlayer()).isFixed()) {
+                e.setCancelled(true);
+            }
         }
     }
 
@@ -97,10 +101,12 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
-        e.setKeepLevel(true);
-        pl.playerDeathItems.put(p, p.getInventory().getContents());
-        pl.playerDeathArmor.put(p, p.getInventory().getArmorContents());
-        e.getDrops().clear();
+        if (pl.players.containsKey(p)) {
+            e.setKeepLevel(true);
+            pl.playerDeathItems.put(p, p.getInventory().getContents());
+            pl.playerDeathArmor.put(p, p.getInventory().getArmorContents());
+            e.getDrops().clear();
+        }
     }
 
     @EventHandler
@@ -123,11 +129,11 @@ public class PlayerListener implements Listener {
             e.setCancelled(true);
         }
     }
-    
+
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent e) {
         Player p = e.getPlayer();
-        if(pl.players.containsKey(p)) {
+        if (pl.players.containsKey(p)) {
             e.setCancelled(true);
         }
     }

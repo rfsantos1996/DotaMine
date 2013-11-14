@@ -7,6 +7,8 @@ import com.jabyftw.dota.commands.SpectateCommand;
 import com.jabyftw.dota.listeners.BlockListener;
 import com.jabyftw.dota.listeners.EntityListener;
 import com.jabyftw.dota.listeners.PlayerListener;
+import com.jabyftw.dota.runnable.CreepSpawnRunnable;
+import com.jabyftw.dota.runnable.UnfreezeRunnable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,17 +35,19 @@ public class DotaMine extends JavaPlugin {
     private SQL sql;
     private String username, password, url;
     public String tableName, worldName;
+    public boolean useVault;
     public boolean gameStarted = false;
+    public boolean bigCreeps = false;
     public Economy econ = null;
     public List<Player> spectators = new ArrayList();
+    public List<Location> mobSpawn = new ArrayList();
     public Map<Location, Tower> towers = new HashMap();
     public Map<Player, Jogador> players = new HashMap();
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
     public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
-    public Location BlueSpawn, RedSpawn;
     public Location RedAncient, BlueAncient, BlueMid, RedMid;
-    public Location BlueTop1, BlueTop2, RedTop1, RedTop2;
-    public Location BlueBot1, BlueBot2, RedBot1, RedBot2;
+    public Location BlueTop1, BlueTop2, RedTop1, RedTop2, BlueBot1, BlueBot2, RedBot1, RedBot2;
+    public Location BlueTopSpawn, BlueMidSpawn, BlueBotSpawn, RedTopSpawn, RedMidSpawn, RedBotSpawn, BlueSpawn, RedSpawn;
     public int redTeam, blueTeam;
 
     @Override
@@ -51,7 +55,9 @@ public class DotaMine extends JavaPlugin {
         redTeam = 0;
         blueTeam = 0;
         generateConfig();
-        setupEconomy();
+        if (useVault) {
+            setupEconomy();
+        }
         setupWorld(getServer().getWorld(worldName));
         BlueSpawn.getChunk().load();
         RedSpawn.getChunk().load();
@@ -86,10 +92,11 @@ public class DotaMine extends JavaPlugin {
         }
         return (econ != null);
     }
-    
+
     private void setupWorld(World w) {
         w.setPVP(true);
         w.setAutoSave(false);
+        towers.clear();
         towers.put(BlueAncient, new Tower(this, BlueAncient, "Anciente Azul"));
         towers.put(RedAncient, new Tower(this, RedAncient, "Anciente Vermelho"));
         towers.put(BlueMid, new Tower(this, BlueMid, "Torre Central Azul"));
@@ -102,6 +109,13 @@ public class DotaMine extends JavaPlugin {
         towers.put(BlueBot2, new Tower(this, BlueBot2, "Torre Top Longe Azul"));
         towers.put(RedBot1, new Tower(this, RedBot1, "Torre Bot Proxima Vermelha"));
         towers.put(RedBot2, new Tower(this, RedBot2, "Torre Bot Longe Vermelha"));
+        mobSpawn.clear();
+        mobSpawn.add(BlueTopSpawn);
+        mobSpawn.add(BlueMidSpawn);
+        mobSpawn.add(BlueBotSpawn);
+        mobSpawn.add(RedTopSpawn);
+        mobSpawn.add(RedMidSpawn);
+        mobSpawn.add(RedBotSpawn);
     }
 
     private void generateConfig() {
@@ -112,6 +126,7 @@ public class DotaMine extends JavaPlugin {
         config.addDefault("MySQL.url.host", "localhost");
         config.addDefault("MySQL.url.port", 3306);
         config.addDefault("MySQL.url.database", "minecraft");
+        config.addDefault("config.useVault", false);
         config.addDefault("config.locations.worldName", "World");
         config.addDefault("config.locations.bluespawn.x", -945);
         config.addDefault("config.locations.bluespawn.y", 49);
@@ -126,8 +141,9 @@ public class DotaMine extends JavaPlugin {
         username = config.getString("MySQL.username");
         password = config.getString("MySQL.password");
         tableName = config.getString("MySQL.table");
-        worldName = config.getString("config.locations.spawn.worldName");
-        
+        worldName = config.getString("config.locations.worldName");
+        useVault = config.getBoolean("config.useVault");
+
         World w = getServer().getWorld(worldName);
         BlueSpawn = new Location(w, config.getDouble("config.locations.bluespawn.x"), config.getDouble("config.locations.bluespawn.y"), config.getDouble("config.locations.bluespawn.z"));
         RedSpawn = new Location(w, config.getDouble("config.locations.bluespawn.x"), config.getDouble("config.locations.bluespawn.y"), config.getDouble("config.locations.bluespawn.z"));
@@ -143,6 +159,14 @@ public class DotaMine extends JavaPlugin {
         BlueBot2 = new Location(w, -940, 53, 375);
         RedBot1 = new Location(w, -1091, 53, 455);
         RedBot2 = new Location(w, -1003, 53, 455);
+        //TODO: other locations
+        // BlueTopSpawn, BlueMidSpawn, BlueBotSpawn, RedTopSpawn, RedMidSpawn, RedBotSpawn
+        BlueTopSpawn = new Location(w, -1254, 67, 125);
+        BlueMidSpawn = new Location(w, -1254, 67, 125);
+        BlueBotSpawn = new Location(w, -1254, 67, 125);
+        RedTopSpawn = new Location(w, -1254, 67, 125);
+        RedMidSpawn = new Location(w, -1254, 67, 125);
+        RedBotSpawn = new Location(w, -1254, 67, 125);
     }
 
     public void showPlayer(Player showing) {
@@ -212,7 +236,7 @@ public class DotaMine extends JavaPlugin {
     }
 
     public void addPlayer(Player p, int team) {
-        players.put(p, new Jogador(this, p, 0, 0, 0, 0, 0, team));
+        players.put(p, new Jogador(this, p, 0, 0, 0, 0, team));
         if (spectators.contains(p)) {
             spectators.remove(p);
         }
@@ -223,19 +247,21 @@ public class DotaMine extends JavaPlugin {
             p.teleport(BlueSpawn);
             p.setBedSpawnLocation(BlueSpawn);
             blueTeam++;
+            p.sendMessage("You are team BLUE");
         } else {
             p.setCustomName(ChatColor.RED + p.getName());
             p.teleport(RedSpawn);
             p.setBedSpawnLocation(RedSpawn);
             redTeam++;
+            p.sendMessage("You are team RED");
         }
         p.setCustomNameVisible(true);
 
         if (players.size() >= 6) {
-            //TODO: start game
-            return;
+            startGame();
         } else {
             broadcastMsg(ChatColor.GOLD + "[Dota] " + ChatColor.RED + "Jogadores esperando: " + players.size() + " de 6 minimo. Para entrar use " + ChatColor.YELLOW + "/join");
+            //TODO: fix fixed (?)
             players.get(p).setFixed(true);
         }
     }
@@ -305,5 +331,12 @@ public class DotaMine extends JavaPlugin {
         } else {
             return 1;
         }
+    }
+
+    public void startGame() {
+        gameStarted = true;
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new UnfreezeRunnable(this), 20 * 60);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), (20 * 60) + 30, 20 * 60); // 1:30 and repeat every minute
+        broadcastMsg(ChatColor.GOLD + "[Dota] " + ChatColor.RED + "The game has started!");
     }
 }

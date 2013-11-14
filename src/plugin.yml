@@ -3,7 +3,8 @@ version: 0.1
 author: rfsantos1996
 main: com.jabyftw.dota.DotaMine
 description: Dota on Minecraft!
-depend: [ControllableMobsAPI,Vault]
+depend: [ControllableMobsAPI]
+softdepend: [Vault]
 commands:
    dota:
      description: Main command
@@ -17,6 +18,10 @@ commands:
      description: Recall command
      permission: dotamine.play
      usage: Use /recall
+   spectate:
+     description: Spectate command
+     permission: dotamine.spectate
+     usage: Use /spectate
 permissions:
    dotamine.dota:
      description: Gives access to dota command
@@ -31,5 +36,8 @@ permissions:
      description: Allows you to place blocks
      default: op
    dotamine.breakblock:
+     description: Allows you to break blocks
+     default: op
+   dotamine.forcestart:
      description: Allows you to break blocks
      default: op
