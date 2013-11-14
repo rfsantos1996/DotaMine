@@ -1,5 +1,6 @@
 package com.jabyftw.dota;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 /**
@@ -46,13 +47,20 @@ public class Jogador {
         return kills;
     }
 
-    public void addKill(int deadsKillstreak) {
+    public void addKill(Jogador dead) {
         kills = kills + 1;
         killstreak = killstreak + 1;
+        int deadKillstreak = dead.getKillstreak();
+        double gain = pl.getKillMoney(deadKillstreak);
         if (pl.useVault) {
-            pl.econ.depositPlayer(p.getName(), pl.getKillMoney(deadsKillstreak));
+            pl.econ.depositPlayer(p.getName(), gain);
         }
-        // TODO: anunciar ganho e killstreak
+        String message = p.getDisplayName() + " won " + ChatColor.YELLOW + gain + " gold";
+        if (team == 1) {
+            pl.broadcastMsg(ChatColor.AQUA + message + ChatColor.AQUA + " for killing " + dead.getPlayer().getDisplayName() + " (Killstreak: " + deadKillstreak + ").");
+        } else {
+            pl.broadcastMsg(ChatColor.RED + message + ChatColor.RED + " for killing " + dead.getPlayer().getDisplayName() + ". (Killstreak: " + deadKillstreak + ")");
+        }
     }
 
     public int getKillstreak() {
@@ -69,7 +77,6 @@ public class Jogador {
             pl.econ.withdrawPlayer(p.getName(), pl.getDeathMoney(killstreak));
         }
         killstreak = 0;
-        // TODO: anunciar perda
     }
 
     public void setFixed(boolean fixed) {

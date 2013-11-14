@@ -6,6 +6,7 @@
 package com.jabyftw.dota.listeners;
 
 import com.jabyftw.dota.DotaMine;
+import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -70,11 +71,18 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
-        if (pl.players.containsKey(e.getPlayer())) {
-            if (pl.players.get(e.getPlayer()).isFixed()) {
-                e.setCancelled(true);
+        /*if (pl.players.containsKey(e.getPlayer())) {
+         if (pl.players.get(e.getPlayer()).isFixed()) {
+         e.setCancelled(true);
+         } else {*/
+        for (ControllableMob cm : pl.controllablemobs) {
+            if (e.getTo().distance(cm.getEntity().getLocation()) > 20) {
+                cm.getActions().follow(e.getPlayer(), true, 20, 1);
+                cm.getActions().target(e.getPlayer(), true);
             }
         }
+        // }
+        // }
     }
 
     @EventHandler

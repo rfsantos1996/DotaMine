@@ -9,6 +9,7 @@ import com.jabyftw.dota.listeners.EntityListener;
 import com.jabyftw.dota.listeners.PlayerListener;
 import com.jabyftw.dota.runnable.CreepSpawnRunnable;
 import com.jabyftw.dota.runnable.UnfreezeRunnable;
+import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ public class DotaMine extends JavaPlugin {
     public Economy econ = null;
     public List<Player> spectators = new ArrayList();
     public List<Location> mobSpawn = new ArrayList();
+    public List<ControllableMob> controllablemobs = new ArrayList();
     public Map<Location, Tower> towers = new HashMap();
     public Map<Player, Jogador> players = new HashMap();
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
@@ -258,7 +260,7 @@ public class DotaMine extends JavaPlugin {
         p.setCustomNameVisible(true);
 
         if (players.size() >= 6) {
-            startGame();
+            startGame(false);
         } else {
             broadcastMsg(ChatColor.GOLD + "[Dota] " + ChatColor.RED + "Jogadores esperando: " + players.size() + " de 6 minimo. Para entrar use " + ChatColor.YELLOW + "/join");
             //TODO: fix fixed (?)
@@ -333,10 +335,17 @@ public class DotaMine extends JavaPlugin {
         }
     }
 
-    public void startGame() {
+    public void startGame(boolean useFast) {
         gameStarted = true;
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new UnfreezeRunnable(this), 20 * 60);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), (20 * 60) + 30, 20 * 60); // 1:30 and repeat every minute
-        broadcastMsg(ChatColor.GOLD + "[Dota] " + ChatColor.RED + "The game has started!");
+        int timeToStart;
+        if (useFast) {
+            timeToStart = 5;
+        } else {
+            timeToStart = 30;
+        }
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new UnfreezeRunnable(this), 20 * timeToStart);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), (20 * timeToStart) * 3, (20 * timeToStart) * 2); // 1:30 and repeat every minute
+
+        broadcastMsg(ChatColor.GOLD + "[Dota] " + ChatColor.RED + "The game will start in " + ChatColor.YELLOW + timeToStart + ChatColor.RED + " seconds!");
     }
 }

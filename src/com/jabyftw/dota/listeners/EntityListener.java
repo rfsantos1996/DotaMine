@@ -1,15 +1,19 @@
 package com.jabyftw.dota.listeners;
 
 import com.jabyftw.dota.DotaMine;
+import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -24,7 +28,7 @@ public class EntityListener implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamage(EntityDamageByEntityEvent e) {
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
         if ((e.getDamager() instanceof Player) && (e.getEntity() instanceof Player)) {
             Player damager = (Player) e.getDamager();
             Player damaged = (Player) e.getEntity();
@@ -36,8 +40,16 @@ public class EntityListener implements Listener {
             } else {
                 e.setCancelled(true);
             }
-        } else if(e.getCause().equals(DamageCause.FIRE)) {
-            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player) {
+            return;
+        }
+        if (e.getCause() == DamageCause.FIRE || e.getCause() == DamageCause.FIRE_TICK) {
+            //e.setCancelled(true);
         }
     }
 
@@ -48,7 +60,7 @@ public class EntityListener implements Listener {
                 Player dead = (Player) e.getEntity();
                 Player killer = e.getEntity().getKiller();
 
-                pl.players.get(killer).addKill(pl.players.get(dead).getKillstreak());
+                pl.players.get(killer).addKill(pl.players.get(dead));
                 pl.players.get(dead).addDeath();
             }
         } else {
@@ -57,10 +69,20 @@ public class EntityListener implements Listener {
             eq.setChestplate(null);
             eq.setLeggings(null);
             eq.setBoots(null);
-            if(e.getEntity().getKiller() instanceof Player) {
+            if (e.getEntity().getKiller() instanceof Player) {
                 Player killer = e.getEntity().getKiller();
                 pl.players.get(killer).addLH();
             }
+            if (pl.controllablemobs.contains(e.getEntity())) {
+                e.getDrops().clear();
+                return;
+            }
+            if (e.getEntity() instanceof Skeleton) {
+                e.getDrops().clear();
+                Location loc = e.getEntity().getLocation();
+                pl.getServer().getWorld(pl.worldName).dropItem(loc, new ItemStack(Material.ARROW, 1));
+            }
+
         }
     }
 }

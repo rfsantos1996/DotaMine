@@ -24,11 +24,16 @@ public class SpectateCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player p = (Player) sender;
             if (p.hasPermission("dotamine.spectate")) {
-                if (pl.players.containsKey(p)) {
-                    p.sendMessage(ChatColor.RED + "Already playing.");
-                    return true;
+                if (pl.gameStarted) {
+                    if (pl.players.containsKey(p)) {
+                        p.sendMessage(ChatColor.RED + "Already playing.");
+                        return true;
+                    } else {
+                        pl.addSpectator(p);
+                        return true;
+                    }
                 } else {
-                    pl.addSpectator(p);
+                    p.sendMessage(ChatColor.DARK_RED + "No game to watch. :/");
                     return true;
                 }
             } else {

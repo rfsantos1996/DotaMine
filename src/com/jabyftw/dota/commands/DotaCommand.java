@@ -16,6 +16,7 @@ public class DotaCommand implements CommandExecutor {
     public DotaCommand(DotaMine pl) {
         this.pl = pl;
     }
+    public boolean useFastMode = false;
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -33,7 +34,19 @@ public class DotaCommand implements CommandExecutor {
                 return true;
             } else if(args[0].equalsIgnoreCase("forceStart")) {
                 if(sender.hasPermission("dotamine.forcestart")) {
-                    pl.startGame(); // TODO: if game already started, also no delay creep spawn for debug
+                    if(args.length > 1) {
+                        if(args[1].equalsIgnoreCase("faster")) {
+                            useFastMode = true;
+                        }
+                    } 
+                    if(pl.gameStarted) {
+                        //TODO: stop game
+                        sender.sendMessage(ChatColor.RED + "The game has already started!");
+                        return true;
+                    } else {
+                        pl.startGame(useFastMode);
+                        return true;
+                    }
                 } else {
                     sender.sendMessage(ChatColor.DARK_RED + "You dont have permission!");
                     return true;
