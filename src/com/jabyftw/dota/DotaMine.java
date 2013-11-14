@@ -1,6 +1,11 @@
 package com.jabyftw.dota;
 
+import com.jabyftw.dota.commands.DotaCommand;
+import com.jabyftw.dota.commands.JoinCommand;
+import com.jabyftw.dota.commands.RecallCommand;
+import com.jabyftw.dota.commands.SpectateCommand;
 import com.jabyftw.dota.listeners.BlockListener;
+import com.jabyftw.dota.listeners.EntityListener;
 import com.jabyftw.dota.listeners.PlayerListener;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,10 +36,14 @@ public class DotaMine extends JavaPlugin {
     public boolean gameStarted = false;
     public Economy econ = null;
     public List<Player> spectators = new ArrayList();
+    public Map<Location, Tower> towers = new HashMap();
     public Map<Player, Jogador> players = new HashMap();
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
     public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
     public Location BlueSpawn, RedSpawn;
+    public Location RedAncient, BlueAncient, BlueMid, RedMid;
+    public Location BlueTop1, BlueTop2, RedTop1, RedTop2;
+    public Location BlueBot1, BlueBot2, RedBot1, RedBot2;
     public int redTeam, blueTeam;
 
     @Override
@@ -49,9 +58,13 @@ public class DotaMine extends JavaPlugin {
         sql = new SQL(this, username, password, url);
         getLogger().log(Level.INFO, "Connected to MySQL!");
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
+        getServer().getPluginManager().registerEvents(new EntityListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getLogger().log(Level.INFO, "Registered listeners!");
-        // TODO: commands
+        getServer().getPluginCommand("join").setExecutor(new JoinCommand(this));
+        getServer().getPluginCommand("recall").setExecutor(new RecallCommand(this));
+        getServer().getPluginCommand("dota").setExecutor(new DotaCommand(this));
+        getServer().getPluginCommand("spectate").setExecutor(new SpectateCommand(this));
         getLogger().log(Level.INFO, "Loaded commands!");
     }
 
@@ -75,7 +88,20 @@ public class DotaMine extends JavaPlugin {
     }
     
     private void setupWorld(World w) {
-        //TODO
+        w.setPVP(true);
+        w.setAutoSave(false);
+        towers.put(BlueAncient, new Tower(this, BlueAncient, "Anciente Azul"));
+        towers.put(RedAncient, new Tower(this, RedAncient, "Anciente Vermelho"));
+        towers.put(BlueMid, new Tower(this, BlueMid, "Torre Central Azul"));
+        towers.put(RedMid, new Tower(this, RedMid, "Torre Central Vermelha"));
+        towers.put(BlueTop1, new Tower(this, BlueTop1, "Torre Top Proxima Azul"));
+        towers.put(BlueTop2, new Tower(this, BlueTop2, "Torre Top Longe Azul"));
+        towers.put(RedTop1, new Tower(this, RedTop1, "Torre Top Proxima Vermelha"));
+        towers.put(RedTop2, new Tower(this, RedTop2, "Torre Top Longe Vermelha"));
+        towers.put(BlueBot1, new Tower(this, BlueBot1, "Torre Top Proxima Azul"));
+        towers.put(BlueBot2, new Tower(this, BlueBot2, "Torre Top Longe Azul"));
+        towers.put(RedBot1, new Tower(this, RedBot1, "Torre Bot Proxima Vermelha"));
+        towers.put(RedBot2, new Tower(this, RedBot2, "Torre Bot Longe Vermelha"));
     }
 
     private void generateConfig() {
@@ -90,9 +116,9 @@ public class DotaMine extends JavaPlugin {
         config.addDefault("config.locations.bluespawn.x", -945);
         config.addDefault("config.locations.bluespawn.y", 49);
         config.addDefault("config.locations.bluespawn.z", 195);
-        config.addDefault("config.locations.redspawn.x", -1188);
-        config.addDefault("config.locations.redspawn.y", 49);
-        config.addDefault("config.locations.redspawn.z", 440);
+        config.addDefault("config.locations.redspawn.x", -1197);
+        config.addDefault("config.locations.redspawn.y", 50);
+        config.addDefault("config.locations.redspawn.z", 454);
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
@@ -101,9 +127,22 @@ public class DotaMine extends JavaPlugin {
         password = config.getString("MySQL.password");
         tableName = config.getString("MySQL.table");
         worldName = config.getString("config.locations.spawn.worldName");
-
-        BlueSpawn = new Location(getServer().getWorld(worldName), config.getDouble("config.locations.bluespawn.x"), config.getDouble("config.locations.bluespawn.y"), config.getDouble("config.locations.bluespawn.z"));
-        RedSpawn = new Location(getServer().getWorld(worldName), config.getDouble("config.locations.bluespawn.x"), config.getDouble("config.locations.bluespawn.y"), config.getDouble("config.locations.bluespawn.z"));
+        
+        World w = getServer().getWorld(worldName);
+        BlueSpawn = new Location(w, config.getDouble("config.locations.bluespawn.x"), config.getDouble("config.locations.bluespawn.y"), config.getDouble("config.locations.bluespawn.z"));
+        RedSpawn = new Location(w, config.getDouble("config.locations.bluespawn.x"), config.getDouble("config.locations.bluespawn.y"), config.getDouble("config.locations.bluespawn.z"));
+        BlueAncient = new Location(w, -975, 55, 224);
+        RedAncient = new Location(w, -1159, 57, 410);
+        BlueMid = new Location(w, -1040, 54, 292);
+        RedMid = new Location(w, -1093, 54, 343);
+        BlueTop1 = new Location(w, -1042, 53, 180);
+        BlueTop2 = new Location(w, -1130, 53, 190);
+        RedTop1 = new Location(w, -1192, 53, 350);
+        RedTop2 = new Location(w, -1193, 53, 260);
+        BlueBot1 = new Location(w, -941, 53, 285);
+        BlueBot2 = new Location(w, -940, 53, 375);
+        RedBot1 = new Location(w, -1091, 53, 455);
+        RedBot2 = new Location(w, -1003, 53, 455);
     }
 
     public void showPlayer(Player showing) {

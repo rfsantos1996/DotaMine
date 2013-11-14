@@ -59,9 +59,4 @@ public class EntityListener implements Listener {
             }
         }
     }
-
-    @EventHandler
-    public void onEntityExplode(EntityExplodeEvent e) {
-        //TODO: tower destroy
-    }
 }
