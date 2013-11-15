@@ -1,7 +1,7 @@
 name: DotaMine
 version: 0.1
 author: rfsantos1996
-main: com.jabyftw.dota.DotaMine
+main: com.jabyftw.dotamine.DotaMine
 description: Dota on Minecraft!
 depend: [ControllableMobsAPI]
 softdepend: [Vault]
@@ -14,10 +14,6 @@ commands:
      description: Join command
      permission: dotamine.play
      usage: Use /join
-   recall:
-     description: Recall command
-     permission: dotamine.play
-     usage: Use /recall
    spectate:
      description: Spectate command
      permission: dotamine.spectate
@@ -32,12 +28,6 @@ permissions:
    dotamine.spectate:
      description: Gives access to spectate the game on join
      default: true
-   dotamine.placeblock:
-     description: Allows you to place blocks
-     default: op
-   dotamine.breakblock:
-     description: Allows you to break blocks
-     default: op
    dotamine.forcestart:
      description: Allows you to break blocks
      default: op
