@@ -8,6 +8,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -47,7 +50,7 @@ public class PlayerListener implements Listener {
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p)) {
-            pl.removePlayer(p);
+            pl.removePlayer(p, pl.ingameList.get(p).getTeam());
         }
         if (pl.spectators.contains(p)) {
             pl.removeSpectator(p);
@@ -62,6 +65,13 @@ public class PlayerListener implements Listener {
     public void onPickUp(PlayerPickupItemEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p) || pl.spectators.contains(p)) {
+            e.setCancelled(true);
+        }
+    }
+    
+    @EventHandler
+    public void onInventory(InventoryMoveItemEvent e) { // maybe will work..
+        if(e.getItem().equals(new ItemStack(Material.WOOL, 1, (short) 11)) || e.getItem().equals(new ItemStack(Material.WOOL, 1, (short) 14))) {
             e.setCancelled(true);
         }
     }

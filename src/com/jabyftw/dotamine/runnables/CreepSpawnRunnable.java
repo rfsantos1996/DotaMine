@@ -38,7 +38,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
                 cz.getAttributes().setMaximumNavigationDistance(1000);
                 cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.8, ModifyOperation.ADD_TO_BASIS_VALUE));
                 cz.getAI().addBehavior(new AIAttackMelee(1, 1.1));
-                cz.getAI().addBehavior(new AITargetNearest(2, 8, false));
+                //cz.getAI().addBehavior(new AITargetNearest(2, 8, false));
                 cz.getAI().addBehavior(new AIFloat(3));
                 cz.getAI().addBehavior(new AILookAtEntity(4, (float) 8));
                 cz.getActions().moveTo(pl.creepSpawn.get(loc), true);
@@ -49,7 +49,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cs.getAttributes().setMaximumNavigationDistance(1000);
             cs.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.2, ModifyOperation.ADD_TO_BASIS_VALUE));
             cs.getAI().addBehavior(new AIAttackRanged(1, 1.2, 20));
-            cs.getAI().addBehavior(new AITargetNearest(2, 20, false));
+            //cs.getAI().addBehavior(new AITargetNearest(2, 20, false));
             cs.getAI().addBehavior(new AIFloat(3));
             cs.getAI().addBehavior(new AILookAtEntity(4, (float) 20));
             cs.getActions().moveTo(pl.creepSpawn.get(loc), true);

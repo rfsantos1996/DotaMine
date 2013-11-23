@@ -11,9 +11,9 @@ public class Jogador {
     private final DotaMine pl;
     private final Player p;
     private int lh, kills, killstreak, deaths;
-    private final int team;
+    private final int team, attackType;
 
-    public Jogador(DotaMine pl, Player p, int LH, int kills, int killstreak, int deaths, int team) {
+    public Jogador(DotaMine pl, Player p, int LH, int kills, int killstreak, int deaths, int team, int attackType) {
         this.pl = pl;
         this.p = p;
         this.lh = LH;
@@ -21,6 +21,7 @@ public class Jogador {
         this.killstreak = killstreak;
         this.deaths = deaths;
         this.team = team;
+        this.attackType = attackType;
     }
 
     public int getKillstreak() {
@@ -46,6 +47,10 @@ public class Jogador {
     public int getTeam() {
         return team;
     }
+    
+    public int getAttackType() {
+        return attackType; // 1 = Meele, 2 = Ranged
+    }
 
     public void addLH() {
         lh = lh + 1;
@@ -63,7 +68,7 @@ public class Jogador {
         if(pl.useVault) {
             pl.econ.depositPlayer(p.getName(), money);
         }
-        //TODO: announce
+        announceKillstreak(p.getCustomName(), dead.getPlayer().getCustomName(), killstreak, money);
     }
 
     public void addDeath() {
@@ -125,6 +130,34 @@ public class Jogador {
             return 875 / 2;
         } else {
             return 1000 + (killstreak * 10) / 2.2;
+        }
+    }
+
+    private void announceKillstreak(String name, String dead, int killstreak, double money) {
+        if(killstreak < 2) {
+            pl.broadcast(pl.getLang("lang.killstreak.one").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 2) {
+            pl.broadcast(pl.getLang("lang.killstreak.two").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 3) {
+            pl.broadcast(pl.getLang("lang.killstreak.tree").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 4) {
+            pl.broadcast(pl.getLang("lang.killstreak.four").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 5) {
+            pl.broadcast(pl.getLang("lang.killstreak.five").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 6) {
+            pl.broadcast(pl.getLang("lang.killstreak.six").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 7) {
+            pl.broadcast(pl.getLang("lang.killstreak.seven").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 8) {
+            pl.broadcast(pl.getLang("lang.killstreak.eight").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak == 9) {
+            pl.broadcast(pl.getLang("lang.killstreak.nine").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+        } else if(killstreak > 9) {
+            if(killstreak >= 50) {
+                pl.broadcast(pl.getLang("lang.killstreak.fiftyAndBeyond").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+            } else {
+                pl.broadcast(pl.getLang("lang.killstreak.tenAndBeyond").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
+            }
         }
     }
 }

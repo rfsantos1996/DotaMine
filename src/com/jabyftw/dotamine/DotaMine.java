@@ -22,6 +22,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -46,11 +47,12 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Tower, Location> towers = new HashMap();
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
     public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
-    public Map<Location, Location> creepSpawn = new HashMap();
+    public Map<Location, Location> creepSpawn = new HashMap(); // (key) Spawn, (value) destiny
     public Map<Location, Location> jungleSpawn = new HashMap();
-    public List<Player> queue = new ArrayList();
+    public Map<Player, Integer> queue = new HashMap();
     public List<Player> spectators = new ArrayList();
-    public Location blueDeploy, redDeploy, specDeploy, normalSpawn;//TODO: towers
+    public Location blueDeploy, redDeploy, specDeploy, normalSpawn, blueAncient, redAncient; // TODO: ancient locations
+    public Location blueBotT, blueMidT, blueTopT, redBotT, redMidT, redTopT; // TODO: tower locations
 
     @Override
     public void onEnable() {
@@ -107,6 +109,20 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("lang.blueTeamWon", "&bBlue Team &6won! Congratulations! &cRestarting in 30 sec!");
         config.addDefault("lang.towerDestroyed", "&4%tower &cwas destroyed");
         config.addDefault("lang.kickMessage", "&4The game is over!&c Restarting...");
+        config.addDefault("lang.usePlayCommand", "&cUsage: &6/play (ranged/meele)");
+        config.addDefault("lang.settedMeele", "&6You will play as a Meele hero.");
+        config.addDefault("lang.settedRanged", "&6You will play as a Ranged hero.");
+        config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
+        config.addDefault("lang.killstreak.two", "%name &6killed %dead &6for &e%money");
+        config.addDefault("lang.killstreak.tree", "%name &6killed %dead &6for &e%money &6- &4KILLING SPREE");
+        config.addDefault("lang.killstreak.four", "%name &6killed %dead &6for &e%money &6- &4DOMINATING");
+        config.addDefault("lang.killstreak.five", "%name &6killed %dead &6for &e%money &6- &4MEGA KILL");
+        config.addDefault("lang.killstreak.six", "%name &6killed %dead &6for &e%money &6- &4UNSTOPPABLE");
+        config.addDefault("lang.killstreak.seven", "%name &6killed %dead &6for &e%money &6- &4WICKED SICK");
+        config.addDefault("lang.killstreak.eight", "%name &6killed %dead &6for &e%money &6- &4MONSTER KILL");
+        config.addDefault("lang.killstreak.nine", "%name &6killed %dead &6for &e%money &6- &4GOD LIKE");
+        config.addDefault("lang.killstreak.tenAndBeyond", "%name &6killed %dead &6for &e%money &6- &4BEYOND GOD LIKE");
+        config.addDefault("lang.killstreak.fiftyAndBeyond", "%name &6killed %dead &6for &e%money &6- &4KILLING DOMINATING MEGA UNSTOPPABLE WICKED MONSTER BEYOND GODLIKE");
         //config.addDefault("lang.", "&");
         config.options().copyDefaults(true);
         saveConfig();
@@ -202,31 +218,31 @@ public class DotaMine extends JavaPlugin implements Listener {
         }
     }
 
-    public void addtoPlayerQueue(Player p) {
+    public void addtoPlayerQueue(Player p, int attackType) {
         cleanPlayer(p, false, false);
         p.setDisplayName(ChatColor.GREEN + p.getName());
         p.sendMessage(getLang("lang.waitingTheGame"));
-        queue.add(p);
+        queue.put(p, attackType);
         if (queue.size() >= 6) {
             startGame();
         }
     }
 
-    public void addPlayer(Player p) {
+    public void addPlayer(Player p, int attackType) {
         if (ingameList.size() < 12) {
             if (spectators.contains(p)) {
                 spectators.remove(p);
             }
             cleanPlayer(p, false, false);
-            int team = getTeam();
+                int team = getTeam();
             if (team == 1) {
                 p.setDisplayName(ChatColor.BLUE + p.getName());
                 p.setCustomName(ChatColor.BLUE + p.getName());
                 p.setCustomNameVisible(true);
                 blueCount = blueCount + 1;
-                p.teleport(blueDeploy); // TODO: on unequip, dont allow remove blue/red wool
+                p.teleport(blueDeploy);
                 p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 11));
-                p.sendMessage(getLang("config.onBlueTeam"));
+                p.sendMessage(getLang("lang.onBlueTeam"));
             } else {
                 p.setDisplayName(ChatColor.RED + p.getName());
                 p.setCustomName(ChatColor.RED + p.getName());
@@ -234,9 +250,19 @@ public class DotaMine extends JavaPlugin implements Listener {
                 redCount = redCount + 1;
                 p.teleport(redDeploy);
                 p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 14));
-                p.sendMessage(getLang("config.onRedTeam"));
+                p.sendMessage(getLang("lang.onRedTeam"));
             }
-            ingameList.put(p, new Jogador(this, p, 0, 0, 0, 0, team));
+            if (attackType == 1) { // Meele
+                ItemStack sword = new ItemStack(Material.WOOD_SWORD, 1);
+                sword.addEnchantment(Enchantment.DURABILITY, 999); // 0.1% chance for losing durability when using
+                p.getInventory().addItem();
+            } else { // Ranged
+                ItemStack bow = new ItemStack(Material.BOW, 1);
+                bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
+                bow.addEnchantment(Enchantment.DURABILITY, 999);
+                p.getInventory().addItem(bow);
+            }
+            ingameList.put(p, new Jogador(this, p, 0, 0, 0, 0, team, attackType));
         } else {
             if (p.hasPermission("dotamine.spectate")) {
                 addSpectator(p);
@@ -246,9 +272,14 @@ public class DotaMine extends JavaPlugin implements Listener {
         }
     }
 
-    public void removePlayer(Player p) {
+    public void removePlayer(Player p, int team) {
         cleanPlayer(p, false, false);
         p.teleport(normalSpawn);
+        if (team == 1) {
+            blueCount = blueCount - 1;
+        } else {
+            redCount = redCount - 1;
+        }
         ingameList.remove(p);
     }
 
@@ -270,14 +301,14 @@ public class DotaMine extends JavaPlugin implements Listener {
     }
 
     public void startGame() {
-        for (Player p : queue) {
-            addPlayer(p);
+        for (Player p : queue.keySet()) {
+            addPlayer(p, queue.get(p));
             p.sendMessage(getLang("lang.startingIn90sec"));
         }
         state = 1;
         getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 90);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20*90, 20*60);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20*60, 20*60);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 60);
     }
 
     @EventHandler
