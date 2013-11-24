@@ -9,6 +9,7 @@ import com.jabyftw.dotamine.listeners.EntityListener;
 import com.jabyftw.dotamine.runnables.CreepSpawnRunnable;
 import com.jabyftw.dotamine.runnables.JungleSpawnRunnable;
 import com.jabyftw.dotamine.runnables.StartGameRunnable;
+import com.jabyftw.dotamine.runnables.TargetEnemyRunnable;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class DotaMine extends JavaPlugin implements Listener {
 
     public String worldName;
-    public int redCount, blueCount, state;
+    public int redCount, blueCount, state, targetRunnable;
     public boolean useVault, gameStarted;
     public Economy econ = null;
     public FileConfiguration config;
@@ -51,6 +52,12 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Location, Location> jungleSpawn = new HashMap();
     public Map<Player, Integer> queue = new HashMap();
     public List<Player> spectators = new ArrayList();
+    public List<ControllableMob> blueCreeps = new ArrayList();
+    public List<ControllableMob> redCreeps = new ArrayList();
+    public List<ControllableMob> blueRangedCreeps = new ArrayList();
+    public List<ControllableMob> redRangedCreeps = new ArrayList();
+    public List<Player> redPlayers = new ArrayList();
+    public List<Player> bluePlayers = new ArrayList();
     public Location blueDeploy, redDeploy, specDeploy, normalSpawn, blueAncient, redAncient; // TODO: ancient locations
     public Location blueBotT, blueMidT, blueTopT, redBotT, redMidT, redTopT; // TODO: tower locations
 
@@ -88,6 +95,7 @@ public class DotaMine extends JavaPlugin implements Listener {
 
     private void generateConfig() {
         config.addDefault("config.useVault", false);
+        config.addDefault("config.targetRunnableDelayInTicks", 30);
         config.addDefault("lang.noPermission", "&cNo permission!");
         config.addDefault("lang.onlyIngame", "&4You are not a player!");
         config.addDefault("lang.gameIsFull", "&cSorry, the game is full!");
@@ -128,6 +136,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         saveConfig();
         reloadConfig();
         useVault = config.getBoolean("config.useVault");
+        targetRunnable = config.getInt("config.targetRunnableDelayInTicks");
     }
 
     private boolean setupEconomy() {
@@ -308,6 +317,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         state = 1;
         getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 90);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new TargetEnemyRunnable(this), 20 * 15, targetRunnable);
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 60);
     }
 
@@ -328,7 +338,6 @@ public class DotaMine extends JavaPlugin implements Listener {
         for (Player p : getServer().getOnlinePlayers()) {
             p.kickPlayer(getLang("lang.kickMessage"));
         }
-        getServer().setWhitelist(false);
         getServer().shutdown();
     }
 }

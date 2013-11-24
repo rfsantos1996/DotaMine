@@ -8,8 +8,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryEvent;
-import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -84,7 +82,11 @@ public class PlayerListener implements Listener {
         } else if (pl.spectators.contains(p)) {
             if (e.getItem().getType().equals(new ItemStack(Material.COMPASS).getType())) {
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-                    //TODO: compass teleport
+                    for(Player tp : pl.ingameList.keySet()) {
+                        p.teleport(tp.getLocation(), TeleportCause.PLUGIN);
+                        return;
+                    }
+                    //TODO: make it better.. probably will tp to ONE only player
                 }
             }
         }

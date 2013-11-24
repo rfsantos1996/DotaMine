@@ -30,7 +30,7 @@ public class BlockListener implements Listener {
             e.setCancelled(true);
             return;
         }
-        if(!p.isOp()) {
+        if (!p.isOp()) {
             e.setCancelled(true);
         }
     }
@@ -42,7 +42,7 @@ public class BlockListener implements Listener {
             e.setCancelled(true);
             return;
         }
-        if(!p.isOp()) {
+        if (!p.isOp()) {
             e.setCancelled(true);
         }
     }
@@ -64,7 +64,7 @@ public class BlockListener implements Listener {
                             pl.broadcast(pl.getLang("lang.blueTeamWon"));
                             pl.state = 3;
                             pl.getServer().setWhitelist(true);
-                            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20*15);
+                            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 15);
                         }
                     }
                 }
@@ -75,20 +75,20 @@ public class BlockListener implements Listener {
     private boolean alreadyBrokenPast(Location loc) { // TODO: locations
         return true;
         /*if (t.getLoc().equals(pl.BlueAncient)) {
-            return pl.towers.get(pl.BlueBot1).isDestroyed() || pl.towers.get(pl.BlueTop1).isDestroyed();
-        } else if (t.getLoc().equals(pl.BlueBot1)) {
-            return pl.towers.get(pl.BlueBot2).isDestroyed();
-        } else if (t.getLoc().equals(pl.BlueTop1)) {
-            return pl.towers.get(pl.BlueTop2).isDestroyed();
+         return pl.towers.get(pl.BlueBot1).isDestroyed() || pl.towers.get(pl.BlueTop1).isDestroyed();
+         } else if (t.getLoc().equals(pl.BlueBot1)) {
+         return pl.towers.get(pl.BlueBot2).isDestroyed();
+         } else if (t.getLoc().equals(pl.BlueTop1)) {
+         return pl.towers.get(pl.BlueTop2).isDestroyed();
 
-        } else if (t.getLoc().equals(pl.RedAncient)) {
-            return pl.towers.get(pl.RedBot1).isDestroyed() || pl.towers.get(pl.RedTop1).isDestroyed();
-        } else if (t.getLoc().equals(pl.RedBot1)) {
-            return pl.towers.get(pl.RedBot2).isDestroyed();
-        } else if (t.getLoc().equals(pl.RedTop1)) {
-            return pl.towers.get(pl.RedTop2).isDestroyed();
-        } else {
-            return false;
-        }*/
+         } else if (t.getLoc().equals(pl.RedAncient)) {
+         return pl.towers.get(pl.RedBot1).isDestroyed() || pl.towers.get(pl.RedTop1).isDestroyed();
+         } else if (t.getLoc().equals(pl.RedBot1)) {
+         return pl.towers.get(pl.RedBot2).isDestroyed();
+         } else if (t.getLoc().equals(pl.RedTop1)) {
+         return pl.towers.get(pl.RedTop2).isDestroyed();
+         } else {
+         return false;
+         }*/
     }
 }

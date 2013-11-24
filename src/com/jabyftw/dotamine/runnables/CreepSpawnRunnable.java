@@ -7,7 +7,6 @@ import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackMelee;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackRanged;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIFloat;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
-import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
 import java.util.UUID;
@@ -30,9 +29,9 @@ public class CreepSpawnRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        for(Location loc : pl.creepSpawn.keySet()) {
+        for (Location loc : pl.creepSpawn.keySet()) {
             int team = getTeam(loc);
-            for(int i = 0; i < 4; i++) {
+            for (int i = 0; i < 4; i++) {
                 Zombie z = pl.getServer().getWorld(pl.worldName).spawn(loc, Zombie.class);
                 ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
                 cz.getAttributes().setMaximumNavigationDistance(1000);
@@ -43,6 +42,11 @@ public class CreepSpawnRunnable extends BukkitRunnable {
                 cz.getAI().addBehavior(new AILookAtEntity(4, (float) 8));
                 cz.getActions().moveTo(pl.creepSpawn.get(loc), true);
                 pl.controlMobs.put(cz, team);
+                if (team == 1) {
+                    pl.blueCreeps.add(cz);
+                } else {
+                    pl.redCreeps.add(cz);
+                }
             }
             Skeleton s = pl.getServer().getWorld(pl.worldName).spawn(loc, Skeleton.class);
             ControllableMob<Skeleton> cs = ControllableMobs.putUnderControl(s, true);
@@ -54,11 +58,16 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cs.getAI().addBehavior(new AILookAtEntity(4, (float) 20));
             cs.getActions().moveTo(pl.creepSpawn.get(loc), true);
             pl.controlMobs.put(cs, team);
+            if (team == 1) {
+                pl.blueRangedCreeps.add(cs);
+            } else {
+                pl.redRangedCreeps.add(cs);
+            }
         }
     }
 
     private int getTeam(Location loc) {
-        //TODO: get all locs, return specific team
+        //TODO: get all locs, return specific team for the nearest spawn point
         return 1;
     }
 }
