@@ -11,6 +11,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -33,6 +34,8 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
+        pl.cleanPlayer(p, false, false);
+        p.teleport(pl.normalSpawn);
         if (p.hasPermission("dotamine.play")) {
             if (pl.state == 0) {
                 p.sendMessage(pl.getLang("lang.youCanPlay"));
@@ -58,11 +61,26 @@ public class PlayerListener implements Listener {
             pl.playerDeathArmor.remove(p);
         }
     }
+    
+    @EventHandler
+    public void onKick(PlayerKickEvent e) {
+        Player p = e.getPlayer();
+        if (pl.ingameList.containsKey(p)) {
+            pl.removePlayer(p, pl.ingameList.get(p).getTeam());
+        }
+        if (pl.spectators.contains(p)) {
+            pl.removeSpectator(p);
+        }
+        if (pl.playerDeathItems.containsKey(p)) {
+            pl.playerDeathItems.remove(p);
+            pl.playerDeathArmor.remove(p);
+        }
+    }
 
     @EventHandler
     public void onPickUp(PlayerPickupItemEvent e) {
         Player p = e.getPlayer();
-        if (pl.ingameList.containsKey(p) || pl.spectators.contains(p)) {
+        if (pl.spectators.contains(p)) {
             e.setCancelled(true);
         }
     }
@@ -77,9 +95,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
-        if (pl.ingameList.containsKey(p)) {
+       /*if (pl.ingameList.containsKey(p)) {
             // TODO: shadow blade
-        } else if (pl.spectators.contains(p)) {
+        } else */if (pl.spectators.contains(p)) {
             if (e.getItem().getType().equals(new ItemStack(Material.COMPASS).getType())) {
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
                     for(Player tp : pl.ingameList.keySet()) {

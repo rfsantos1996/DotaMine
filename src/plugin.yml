@@ -2,7 +2,7 @@ name: DotaMine
 version: 0.1
 author: rfsantos1996
 main: com.jabyftw.dotamine.DotaMine
-description: Dota on Minecraft!
+description: Dota on Minecraft
 depend: [ControllableMobsAPI]
 softdepend: [Vault]
 commands:

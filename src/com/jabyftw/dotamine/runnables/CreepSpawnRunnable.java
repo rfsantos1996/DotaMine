@@ -10,6 +10,7 @@ import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
 import java.util.UUID;
+import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
@@ -27,12 +28,13 @@ public class CreepSpawnRunnable extends BukkitRunnable {
         this.pl = pl;
     }
 
-    @Override
-    public void run() {
-        for (Location loc : pl.creepSpawn.keySet()) {
-            int team = getTeam(loc);
+    @Override //TODO: remove creeps lets make it simple...
+    public void run() { // if this dont work, i have a plan
+        for (Location spawnloc : pl.creepSpawn.keySet()) {
+            spawnloc.getChunk().load();
+            int team = getTeam(spawnloc);
             for (int i = 0; i < 4; i++) {
-                Zombie z = pl.getServer().getWorld(pl.worldName).spawn(loc, Zombie.class);
+                Zombie z = pl.getServer().getWorld(pl.worldName).spawn(spawnloc, Zombie.class);
                 ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
                 cz.getAttributes().setMaximumNavigationDistance(1000);
                 cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.8, ModifyOperation.ADD_TO_BASIS_VALUE));
@@ -40,7 +42,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
                 //cz.getAI().addBehavior(new AITargetNearest(2, 8, false));
                 cz.getAI().addBehavior(new AIFloat(3));
                 cz.getAI().addBehavior(new AILookAtEntity(4, (float) 8));
-                cz.getActions().moveTo(pl.creepSpawn.get(loc), true);
+                cz.getActions().moveTo(pl.creepSpawn.get(spawnloc), true);
                 pl.controlMobs.put(cz, team);
                 if (team == 1) {
                     pl.blueCreeps.add(cz);
@@ -48,7 +50,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
                     pl.redCreeps.add(cz);
                 }
             }
-            Skeleton s = pl.getServer().getWorld(pl.worldName).spawn(loc, Skeleton.class);
+            Skeleton s = pl.getServer().getWorld(pl.worldName).spawn(spawnloc, Skeleton.class);
             ControllableMob<Skeleton> cs = ControllableMobs.putUnderControl(s, true);
             cs.getAttributes().setMaximumNavigationDistance(1000);
             cs.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.2, ModifyOperation.ADD_TO_BASIS_VALUE));
@@ -56,7 +58,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             //cs.getAI().addBehavior(new AITargetNearest(2, 20, false));
             cs.getAI().addBehavior(new AIFloat(3));
             cs.getAI().addBehavior(new AILookAtEntity(4, (float) 20));
-            cs.getActions().moveTo(pl.creepSpawn.get(loc), true);
+            cs.getActions().moveTo(pl.creepSpawn.get(spawnloc), true);
             pl.controlMobs.put(cs, team);
             if (team == 1) {
                 pl.blueRangedCreeps.add(cs);
@@ -67,7 +69,12 @@ public class CreepSpawnRunnable extends BukkitRunnable {
     }
 
     private int getTeam(Location loc) {
-        //TODO: get all locs, return specific team for the nearest spawn point
-        return 1;
+        if(pl.blueMidSpawn.equals(loc) || pl.blueTopSpawn.equals(loc) || pl.blueBotSpawn.equals(loc)) {
+            return 1;
+        } else if(pl.redMidSpawn.equals(loc) || pl.redTopSpawn.equals(loc) || pl.redBotSpawn.equals(loc)) {
+            return 2;
+        }
+        pl.getLogger().log(Level.WARNING, "getTeam returned 0, contact developer"); // maybe use distance?
+        return 0;
     }
 }

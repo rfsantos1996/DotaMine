@@ -1,6 +1,7 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
+import com.jabyftw.dotamine.Jogador;
 import com.jabyftw.dotamine.Tower;
 import com.jabyftw.dotamine.runnables.StopRunnable;
 import org.bukkit.Location;
@@ -10,7 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
@@ -72,11 +72,26 @@ public class BlockListener implements Listener {
                         if (t.getName().equalsIgnoreCase("Blue Ancient")) {
                             pl.broadcast(pl.getLang("lang.redTeamWon"));
                             pl.state = 3;
+                            /*for(Jogador j : pl.ingameList.values()) {
+                                if(j.getTeam() == 1) {
+                                    j.addLose();
+                                } else {
+                                    j.addWin();
+                                }
+                            }*/
                             pl.getServer().setWhitelist(true);
                             pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 15);
                         } else if (t.getName().equalsIgnoreCase("Red Ancient")) {
                             pl.broadcast(pl.getLang("lang.blueTeamWon"));
                             pl.state = 3;
+                            //TODO: MYSQL and Scoreboard support
+                            /*for(Jogador j : pl.ingameList.values()) {
+                                if(j.getTeam() == 1) {
+                                    j.addWin();
+                                } else {
+                                    j.addLose();
+                                }
+                            }*/
                             pl.getServer().setWhitelist(true);
                             pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 15);
                         }
@@ -86,7 +101,7 @@ public class BlockListener implements Listener {
         }
     }
 
-    private boolean alreadyBrokenPast(Location loc) { // TODO: locations
+    private boolean alreadyBrokenPast(Location loc) { // TODO: maybe isnt needed
         return true;
         /*if (t.getLoc().equals(pl.BlueAncient)) {
          return pl.towers.get(pl.BlueBot1).isDestroyed() || pl.towers.get(pl.BlueTop1).isDestroyed();

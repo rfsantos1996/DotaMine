@@ -2,6 +2,7 @@ package com.jabyftw.dotamine.runnables;
 
 import com.jabyftw.dotamine.DotaMine;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
+import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -22,11 +23,6 @@ public class TargetEnemyRunnable extends BukkitRunnable {
     public void run() {
         for (ControllableMob cm : pl.controlMobs.keySet()) {
             Location cmLoc = cm.getEntity().getLocation();
-            /*for(Location loc : pl.creepSpawn.values()) {
-                if(cmLoc.distance(loc) < 10) {
-                    //TODO: put new destination
-                }
-            }*/
             int team = pl.controlMobs.get(cm);
             if (team == 1) {
                 for (ControllableMob enemy : pl.redCreeps) {
@@ -47,6 +43,7 @@ public class TargetEnemyRunnable extends BukkitRunnable {
                         return;
                     }
                 }
+                pl.getLogger().log(Level.OFF, "no targets found");
             } else {
                 for (ControllableMob enemy : pl.blueCreeps) {
                     if (enemy.getEntity().getLocation().distance(cmLoc) < 8) {
@@ -66,7 +63,30 @@ public class TargetEnemyRunnable extends BukkitRunnable {
                         return;
                     }
                 }
+                pl.getLogger().log(Level.OFF, "no targets found");
+            }
+            for(Location destination : pl.creepSpawn.values()) {
+                if(cmLoc.distance(destination) < 8) {
+                    cm.getActions().clearActionQueue();
+                    if(getNewDestination(destination) != null) {
+                        cm.getActions().moveTo(getNewDestination(destination), true);
+                        pl.getLogger().log(Level.OFF, "new destination set"); // TODO: remove debug
+                    }
+                }
             }
         }
+    }
+
+    private Location getNewDestination(Location destination) {
+        if(destination.equals(pl.botBlueDestination)) {
+            return pl.redBotSpawn;
+        } else if(destination.equals(pl.topBlueDestination)) {
+            return pl.redTopSpawn;
+        } else if(destination.equals(pl.botRedDestination)) {
+            return pl.blueBotSpawn;
+        } else if(destination.equals(pl.topRedDestination)) {
+            return pl.blueTopSpawn;
+        }
+        return null; // mid, for example
     }
 }

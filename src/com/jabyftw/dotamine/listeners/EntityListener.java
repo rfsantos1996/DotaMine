@@ -3,6 +3,8 @@ package com.jabyftw.dotamine.listeners;
 import com.jabyftw.dotamine.DotaMine;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
 
 /**
  *
@@ -36,6 +39,20 @@ public class EntityListener implements Listener {
             } else {
                 e.setCancelled(true);
             }
+        } else if(e.getDamager() instanceof Player) {
+            Player damager = (Player) e.getDamager();
+            Entity damaged = e.getEntity();
+            for(ControllableMob cm : pl.controlMobs.keySet()) {
+                if(damaged.equals(cm.getEntity())) {
+                    int team = pl.controlMobs.get(cm);
+                    if(pl.ingameList.get(damager).getTeam() == team) {
+                        e.setCancelled(true);
+                    }
+                }
+            }
+            if(pl.spectators.contains(damager)) {
+                e.setCancelled(true);
+            }
         }
     }
 
@@ -44,7 +61,7 @@ public class EntityListener implements Listener {
         if (e.getEntity() instanceof Player) {
             return;
         }
-        if (e.getCause().equals(DamageCause.FIRE)) {
+        if (e.getCause().equals(DamageCause.FIRE_TICK) || e.getCause().equals(DamageCause.FIRE)) {
             e.setCancelled(true);
         }
     }
@@ -71,14 +88,17 @@ public class EntityListener implements Listener {
                         pl.blueCreeps.remove(cm);
                     } else if (pl.blueRangedCreeps.contains(cm)) {
                         pl.blueRangedCreeps.remove(cm);
+                        pl.getServer().getWorld(pl.worldName).dropItemNaturally(cm.getEntity().getLocation(), new ItemStack(Material.ARROW, 2));
                     } else if (pl.redCreeps.contains(cm)) {
                         pl.redCreeps.remove(cm);
                     } else if (pl.redRangedCreeps.contains(cm)) {
                         pl.redRangedCreeps.remove(cm);
+                        pl.getServer().getWorld(pl.worldName).dropItemNaturally(cm.getEntity().getLocation(), new ItemStack(Material.ARROW, 2));
                     } else if(pl.jungleCreeps.contains(cm)) {
                         pl.jungleCreeps.remove(cm);
                         if(e.getEntity().getKiller() != null) {
                             pl.ingameList.get(e.getEntity().getKiller()).addJungleLH(); // add double ammount for killing jungle
+                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(cm.getEntity().getLocation(), new ItemStack(Material.ARROW, 4));
                         }
                     }
                     ControllableMobs.releaseControl(cm);

@@ -9,11 +9,9 @@ import org.bukkit.Material;
  */
 public class Tower {
     
-    private final DotaMine pl;
     private final Location loc;
     private final String name;
-    public Tower(DotaMine pl, Location loc, String name) {
-        this.pl = pl;
+    public Tower(Location loc, String name) {
         this.loc = loc;
         this.name = name;
     }

@@ -24,6 +24,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -62,6 +63,9 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Location blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient; // TODO: ancient locations
     public Location blueBotT, blueMidT, blueTopT, redBotT, redMidT, redTopT;
     public Location blueJungleBot, blueJungleTop, redJungleBot, redJungleTop;
+    public Location botRedDestination, botBlueDestination, blueBotSpawn, redBotSpawn;
+    public Location midBlueDestination, midRedDestination, blueMidSpawn, redMidSpawn;
+    public Location topRedDestination, topBlueDestination, blueTopSpawn, redTopSpawn;
 
     @Override
     public void onEnable() {
@@ -82,6 +86,8 @@ public class DotaMine extends JavaPlugin implements Listener {
         getServer().getPluginCommand("spectate").setExecutor(new SpectateCommand(this));
         getServer().getPluginCommand("dota").setExecutor(new DotaCommand(this));
         getLogger().log(Level.INFO, "Registered commands.");
+        // getServer().getScheduler().scheduleSyncRepeatingTask(this, null, 20 * 30, 20 * 30); // TODO: announce queue size
+        getLogger().log(Level.INFO, "Registered runnable.");
     }
 
     @Override
@@ -97,6 +103,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     private void generateConfig() {
         //config.addDefault("config.", value);
         config.addDefault("config.useVault", false);
+        config.addDefault("config.worldName", "world");
         config.addDefault("config.targetRunnableDelayInTicks", 30);
         //config.addDefault("lang.", "&");
         config.addDefault("lang.noPermission", "&cNo permission!");
@@ -123,6 +130,8 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("lang.usePlayCommand", "&cUsage: &6/play (ranged/meele)");
         config.addDefault("lang.settedMeele", "&6You will play as a Meele hero.");
         config.addDefault("lang.settedRanged", "&6You will play as a Ranged hero.");
+        config.addDefault("lang.forcingStart", "&cForcing start...");
+        config.addDefault("lang.nobodyOnQueue", "&cQueue is empty! Cant force start...");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.two", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.tree", "%name &6killed %dead &6for &e%money &6- &4KILLING SPREE");
@@ -137,6 +146,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
+        worldName = config.getString("config.worldName");
         useVault = config.getBoolean("config.useVault");
         targetRunnable = config.getInt("config.targetRunnableDelayInTicks");
     }
@@ -153,18 +163,21 @@ public class DotaMine extends JavaPlugin implements Listener {
         w.setPVP(true);
         w.setAutoSave(false);
         w.setSpawnFlags(false, false);
+        for (Entity e : w.getEntities()) {
+            e.remove();
+        }
         blueMidT = new Location(w, 12, 33, -7);
-        towers.put(new Tower(this, blueMidT, "Blue Mid Tower"), blueMidT);
+        towers.put(new Tower(blueMidT, "Blue Mid Tower"), blueMidT);
         blueBotT = new Location(w, -57, 33, -85);
-        towers.put(new Tower(this, blueBotT, "Blue Bot Tower"), blueBotT);
+        towers.put(new Tower(blueBotT, "Blue Bot Tower"), blueBotT);
         blueTopT = new Location(w, 81, 33, 62);
-        towers.put(new Tower(this, blueTopT, "Blue Top Tower"), blueTopT);
+        towers.put(new Tower(blueTopT, "Blue Top Tower"), blueTopT);
         redMidT = new Location(w, -7, 33, 7);
-        towers.put(new Tower(this, redMidT, "Red Mid Tower"), redMidT);
+        towers.put(new Tower(redMidT, "Red Mid Tower"), redMidT);
         redBotT = new Location(w, -82, 33, -65);
-        towers.put(new Tower(this, redBotT, "Red Bot Tower"), redBotT);
+        towers.put(new Tower(redBotT, "Red Bot Tower"), redBotT);
         redTopT = new Location(w, 52, 33, 87);
-        towers.put(new Tower(this, redTopT, "Red Top Tower"), redTopT);
+        towers.put(new Tower(redTopT, "Red Top Tower"), redTopT);
         blueJungleBot = new Location(w, 11, 25, 37);
         jungleSpawn.add(blueJungleBot);
         blueJungleTop = new Location(w, 51, 25, 9);
@@ -173,12 +186,40 @@ public class DotaMine extends JavaPlugin implements Listener {
         jungleSpawn.add(redJungleBot);
         redJungleTop = new Location(w, -2, 25, 58);
         jungleSpawn.add(redJungleTop);
-        
+
+        // Bot
+        blueBotSpawn = new Location(w, 61, 28, -85);
+        redBotSpawn = new Location(w, -79, 28, 64);
+        botBlueDestination = new Location(w, -71, 25, -79);
+        botRedDestination = new Location(w, -75, 25, -75);
+        // Mid
+        blueMidSpawn = new Location(w, 67, 28, -63);
+        redMidSpawn = new Location(w, -65, 28, 68);
+        midRedDestination = new Location(w, 76, 28, -75);
+        midBlueDestination = new Location(w, -70, 28, 76);
+        // Top
+        blueTopSpawn = new Location(w, 83, 28, -59);
+        redTopSpawn = new Location(w, -57, 28, 86);
+        topBlueDestination = new Location(w, 72, 25, 76);
+        topRedDestination = new Location(w, 65, 25, 81);
+        // Spawns and destinations
+        creepSpawn.put(blueBotSpawn, botBlueDestination);
+        creepSpawn.put(blueMidSpawn, midBlueDestination);
+        creepSpawn.put(blueTopSpawn, topBlueDestination);
+        creepSpawn.put(redBotSpawn, botRedDestination);
+        creepSpawn.put(redMidSpawn, midRedDestination);
+        creepSpawn.put(redTopSpawn, topRedDestination);
+
         blueDeploy = new Location(w, 86, 28, -87);
         redDeploy = new Location(w, -80, 28, 87);
         specDeploy = new Location(w, 2, 33, 0);
-        normalSpawn = new Location(w,51, 8, -121);
-        //TODO: creepspawn
+        normalSpawn = new Location(w, 51, 8, -121);
+        
+        for (int a = -11; a <= 9; a++) {
+            for (int b = -10; b <= 10; b++) {
+                w.loadChunk(a, b);
+            }
+        }
     }
 
     public String getLang(String path) {
@@ -229,6 +270,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         p.setCustomNameVisible(false);
         p.getInventory().clear();
         p.getInventory().setArmorContents(null);
+        p.setAllowFlight(flying);
         p.setFlying(flying);
         p.saveData();
         if (hide) {
@@ -254,8 +296,8 @@ public class DotaMine extends JavaPlugin implements Listener {
         p.setDisplayName(ChatColor.GREEN + p.getName());
         p.sendMessage(getLang("lang.waitingTheGame"));
         queue.put(p, attackType);
-        if (queue.size() >= 6) {
-            startGame();
+        if (queue.size() > 5) { // >= 6
+            startGame(false);
         }
     }
 
@@ -265,7 +307,7 @@ public class DotaMine extends JavaPlugin implements Listener {
                 spectators.remove(p);
             }
             cleanPlayer(p, false, false);
-                int team = getTeam();
+            int team = getTeam();
             if (team == 1) {
                 p.setDisplayName(ChatColor.BLUE + p.getName());
                 p.setCustomName(ChatColor.BLUE + p.getName());
@@ -285,13 +327,18 @@ public class DotaMine extends JavaPlugin implements Listener {
             }
             if (attackType == 1) { // Meele
                 ItemStack sword = new ItemStack(Material.WOOD_SWORD, 1);
-                sword.addEnchantment(Enchantment.DURABILITY, 999); // 0.1% chance for losing durability when using
-                p.getInventory().addItem();
+                sword.addUnsafeEnchantment(Enchantment.DURABILITY, 999); // 0.1% chance for losing durability when using
+                ItemStack bow = new ItemStack(Material.BOW, 1);
+                bow.addEnchantment(Enchantment.ARROW_FIRE, 1);
+                bow.addEnchantment(Enchantment.DURABILITY, 2);
+                p.getInventory().addItem(sword);
+                p.getInventory().addItem(bow);
             } else { // Ranged
                 ItemStack bow = new ItemStack(Material.BOW, 1);
                 bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
-                bow.addEnchantment(Enchantment.DURABILITY, 999);
+                bow.addUnsafeEnchantment(Enchantment.DURABILITY, 999);
                 p.getInventory().addItem(bow);
+                p.getInventory().addItem(new ItemStack(Material.ARROW, 1));
             }
             ingameList.put(p, new Jogador(this, p, 0, 0, 0, 0, team, attackType));
         } else {
@@ -331,16 +378,23 @@ public class DotaMine extends JavaPlugin implements Listener {
         spectators.remove(p);
     }
 
-    public void startGame() {
+    public void startGame(boolean forced) {
         for (Player p : queue.keySet()) {
             addPlayer(p, queue.get(p));
             p.sendMessage(getLang("lang.startingIn90sec"));
         }
         state = 1;
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 90);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new TargetEnemyRunnable(this), 20 * 15, targetRunnable);
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 60);
+        if (forced) {
+            getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 20);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 20, 20 * 20);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new TargetEnemyRunnable(this), 20 * 15, targetRunnable);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 10, 20 * 20);
+        } else {
+            getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 80);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new TargetEnemyRunnable(this), 20 * 15, targetRunnable);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 60);
+        }
     }
 
     @EventHandler

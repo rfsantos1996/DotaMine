@@ -111,16 +111,16 @@ public class Jogador {
         }
     }
 
-    private double getLHMoney() {
-        double x = Math.random();
+    private int getLHMoney() {
+        int x = (int) Math.random() * 100;
         if (x > 21 && x < 30) {
             return x;
         }
         return getLHMoney();
     }
     
-    private double getJungleLHMoney() {
-        double x = Math.random();
+    private int getJungleLHMoney() {
+        int x = (int) Math.random() * 100;
         if (x > 42 && x < 62) {
             return x;
         }
