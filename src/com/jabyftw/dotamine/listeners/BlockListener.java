@@ -4,10 +4,13 @@ import com.jabyftw.dotamine.DotaMine;
 import com.jabyftw.dotamine.Tower;
 import com.jabyftw.dotamine.runnables.StopRunnable;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
@@ -46,6 +49,15 @@ public class BlockListener implements Listener {
             e.setCancelled(true);
         }
     }
+    
+    @EventHandler
+    public void onIgnite(BlockIgniteEvent e) {
+        if(e.getPlayer() == null) {
+            e.setCancelled(true);
+        } else if(!e.getBlock().getType().equals(Material.TNT)) {
+            e.setCancelled(true);
+        }
+    }
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent e) {
@@ -59,7 +71,9 @@ public class BlockListener implements Listener {
                         pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", t.getName()));
                         if (t.getName().equalsIgnoreCase("Blue Ancient")) {
                             pl.broadcast(pl.getLang("lang.redTeamWon"));
-                            pl.endGame();
+                            pl.state = 3;
+                            pl.getServer().setWhitelist(true);
+                            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 15);
                         } else if (t.getName().equalsIgnoreCase("Red Ancient")) {
                             pl.broadcast(pl.getLang("lang.blueTeamWon"));
                             pl.state = 3;

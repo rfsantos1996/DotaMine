@@ -49,17 +49,19 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
     public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
     public Map<Location, Location> creepSpawn = new HashMap(); // (key) Spawn, (value) destiny
-    public Map<Location, Location> jungleSpawn = new HashMap();
+    public List<Location> jungleSpawn = new ArrayList();
     public Map<Player, Integer> queue = new HashMap();
     public List<Player> spectators = new ArrayList();
+    public List<ControllableMob> jungleCreeps = new ArrayList();
     public List<ControllableMob> blueCreeps = new ArrayList();
     public List<ControllableMob> redCreeps = new ArrayList();
     public List<ControllableMob> blueRangedCreeps = new ArrayList();
     public List<ControllableMob> redRangedCreeps = new ArrayList();
     public List<Player> redPlayers = new ArrayList();
     public List<Player> bluePlayers = new ArrayList();
-    public Location blueDeploy, redDeploy, specDeploy, normalSpawn, blueAncient, redAncient; // TODO: ancient locations
-    public Location blueBotT, blueMidT, blueTopT, redBotT, redMidT, redTopT; // TODO: tower locations
+    public Location blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient; // TODO: ancient locations
+    public Location blueBotT, blueMidT, blueTopT, redBotT, redMidT, redTopT;
+    public Location blueJungleBot, blueJungleTop, redJungleBot, redJungleTop;
 
     @Override
     public void onEnable() {
@@ -84,9 +86,8 @@ public class DotaMine extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        //TODO: right chunks for map
-        for (int a = -55; a <= -79; a++) {
-            for (int b = 7; b <= 31; b++) {
+        for (int a = -11; a <= 9; a++) {
+            for (int b = -10; b <= 10; b++) {
                 getServer().getWorld(worldName).unloadChunk(a, b, false, false);
             }
         }
@@ -94,8 +95,10 @@ public class DotaMine extends JavaPlugin implements Listener {
     }
 
     private void generateConfig() {
+        //config.addDefault("config.", value);
         config.addDefault("config.useVault", false);
         config.addDefault("config.targetRunnableDelayInTicks", 30);
+        //config.addDefault("lang.", "&");
         config.addDefault("lang.noPermission", "&cNo permission!");
         config.addDefault("lang.onlyIngame", "&4You are not a player!");
         config.addDefault("lang.gameIsFull", "&cSorry, the game is full!");
@@ -131,7 +134,6 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("lang.killstreak.nine", "%name &6killed %dead &6for &e%money &6- &4GOD LIKE");
         config.addDefault("lang.killstreak.tenAndBeyond", "%name &6killed %dead &6for &e%money &6- &4BEYOND GOD LIKE");
         config.addDefault("lang.killstreak.fiftyAndBeyond", "%name &6killed %dead &6for &e%money &6- &4KILLING DOMINATING MEGA UNSTOPPABLE WICKED MONSTER BEYOND GODLIKE");
-        //config.addDefault("lang.", "&");
         config.options().copyDefaults(true);
         saveConfig();
         reloadConfig();
@@ -151,12 +153,32 @@ public class DotaMine extends JavaPlugin implements Listener {
         w.setPVP(true);
         w.setAutoSave(false);
         w.setSpawnFlags(false, false);
-        blueDeploy = new Location(w, 3, 64, 5);
-        redDeploy = new Location(w, 3, 64, 5);
-        specDeploy = new Location(w, 5, 64, 3);
-        normalSpawn = new Location(w, 5, 64, 3);
-        //TODO: towers (list) and towers (locations)
-        //TODO: creepspawn, junglespawn
+        blueMidT = new Location(w, 12, 33, -7);
+        towers.put(new Tower(this, blueMidT, "Blue Mid Tower"), blueMidT);
+        blueBotT = new Location(w, -57, 33, -85);
+        towers.put(new Tower(this, blueBotT, "Blue Bot Tower"), blueBotT);
+        blueTopT = new Location(w, 81, 33, 62);
+        towers.put(new Tower(this, blueTopT, "Blue Top Tower"), blueTopT);
+        redMidT = new Location(w, -7, 33, 7);
+        towers.put(new Tower(this, redMidT, "Red Mid Tower"), redMidT);
+        redBotT = new Location(w, -82, 33, -65);
+        towers.put(new Tower(this, redBotT, "Red Bot Tower"), redBotT);
+        redTopT = new Location(w, 52, 33, 87);
+        towers.put(new Tower(this, redTopT, "Red Top Tower"), redTopT);
+        blueJungleBot = new Location(w, 11, 25, 37);
+        jungleSpawn.add(blueJungleBot);
+        blueJungleTop = new Location(w, 51, 25, 9);
+        jungleSpawn.add(blueJungleTop);
+        redJungleBot = new Location(w, -45, 25, -11);
+        jungleSpawn.add(redJungleBot);
+        redJungleTop = new Location(w, -2, 25, 58);
+        jungleSpawn.add(redJungleTop);
+        
+        blueDeploy = new Location(w, 86, 28, -87);
+        redDeploy = new Location(w, -80, 28, 87);
+        specDeploy = new Location(w, 2, 33, 0);
+        normalSpawn = new Location(w,51, 8, -121);
+        //TODO: creepspawn
     }
 
     public String getLang(String path) {

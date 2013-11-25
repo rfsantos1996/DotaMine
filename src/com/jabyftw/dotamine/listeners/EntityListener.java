@@ -67,7 +67,6 @@ public class EntityListener implements Listener {
             }
             for (ControllableMob cm : pl.controlMobs.keySet()) {
                 if (cm.getEntity().equals(e.getEntity())) {
-                    ControllableMobs.releaseControl(cm);
                     if (pl.blueCreeps.contains(cm)) {
                         pl.blueCreeps.remove(cm);
                     } else if (pl.blueRangedCreeps.contains(cm)) {
@@ -76,7 +75,13 @@ public class EntityListener implements Listener {
                         pl.redCreeps.remove(cm);
                     } else if (pl.redRangedCreeps.contains(cm)) {
                         pl.redRangedCreeps.remove(cm);
+                    } else if(pl.jungleCreeps.contains(cm)) {
+                        pl.jungleCreeps.remove(cm);
+                        if(e.getEntity().getKiller() != null) {
+                            pl.ingameList.get(e.getEntity().getKiller()).addJungleLH(); // add double ammount for killing jungle
+                        }
                     }
+                    ControllableMobs.releaseControl(cm);
                     pl.controlMobs.remove(cm);
                     return;
                 }
