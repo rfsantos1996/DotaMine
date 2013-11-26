@@ -11,7 +11,6 @@ import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
 import java.util.UUID;
-import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -36,16 +35,21 @@ public class CreepSpawnRunnable extends BukkitRunnable {
     public void run() {
         for (Location spawnloc : pl.creepSpawn) {
             spawnloc.getChunk().load();
-            boolean spawn = true;
             for (Player p : pl.ingameList.keySet()) {
                 if (p.getLocation().distance(spawnloc) < 28) {
                     if (pl.laneCreeps.size() > 0) {
+                        boolean spawn1 = true;
+                        boolean spawn2 = true;
                         for (ControllableMob cm : pl.laneCreeps) {
                             if (cm.getEntity().getLocation().distance(spawnloc) < 18) {
-                                spawn = false;
+                                if(!spawn1) {
+                                spawn2 = false;
+                                } else {
+                                    spawn1 = false;
+                                }
                             }
                         }
-                        if (spawn) {
+                        if (spawn1 || spawn2) {
                             spawnLaneCreeps(spawnloc);
                         }
                     } else {
