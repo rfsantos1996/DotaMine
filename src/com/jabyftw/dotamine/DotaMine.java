@@ -420,22 +420,12 @@ public class DotaMine extends JavaPlugin implements Listener {
         }
         state = 1;
         gameStarted = true;
-        if (forced) {//TODO: for release, remove force start low time
-            getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 20);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 20, 20 * 20);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 10, 20 * 20);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), scoreRunnable / 2, scoreRunnable / 2);
-            if (nerfRanged) {
-                getServer().getScheduler().scheduleSyncRepeatingTask(this, new CheckNightRunnable(this), 20, 20 * 3);
-            }
-        } else {
-            getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 80);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 80, 20 * 60);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), 1, scoreRunnable);
-            if (nerfRanged) {
-                getServer().getScheduler().scheduleSyncRepeatingTask(this, new CheckNightRunnable(this), 20, 20 * 3);
-            }
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 80);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 80, 20 * 60);
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), 1, scoreRunnable);
+        if (nerfRanged) {
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new CheckNightRunnable(this), 20, 20 * 3);
         }
         getServer().getWorld(worldName).setTime(0); // start as day
     }
