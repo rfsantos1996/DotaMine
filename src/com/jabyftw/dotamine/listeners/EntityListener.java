@@ -36,21 +36,17 @@ public class EntityListener implements Listener {
                 if (pl.ingameList.get(damaged).getTeam() == pl.ingameList.get(damager).getTeam()) {
                     e.setCancelled(true);
                 }
+                if (e.getCause().equals(DamageCause.PROJECTILE) && pl.ingameList.get(damager).getAttackType() == 1) {
+                    e.setCancelled(true);
+                }
             } else {
                 e.setCancelled(true);
             }
-        } else if(e.getDamager() instanceof Player) {
-            Player damager = (Player) e.getDamager();
-            Entity damaged = e.getEntity();
-            for(ControllableMob cm : pl.controlMobs.keySet()) {
-                if(damaged.equals(cm.getEntity())) {
-                    int team = pl.controlMobs.get(cm);
-                    if(pl.ingameList.get(damager).getTeam() == team) {
-                        e.setCancelled(true);
-                    }
-                }
+        } else if (e.getDamager() instanceof Player) {
+            if (pl.spectators.contains((Player) e.getDamager())) {
+                e.setCancelled(true);
             }
-            if(pl.spectators.contains(damager)) {
+            if (e.getCause().equals(DamageCause.PROJECTILE) && pl.ingameList.get((Player) e.getDamager()).getAttackType() == 1) {
                 e.setCancelled(true);
             }
         }
@@ -69,36 +65,29 @@ public class EntityListener implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         if (e.getEntity() instanceof Player) {
+            Player dead = (Player) e.getEntity();
             if (e.getEntity().getKiller() instanceof Player) {
-                Player dead = (Player) e.getEntity();
                 Player killer = dead.getKiller();
-
                 pl.ingameList.get(killer).addKill(pl.ingameList.get(dead));
                 pl.ingameList.get(dead).addDeath();
+            } else {
+                pl.ingameList.get(dead).addNeutralDeath();
             }
         } else {
             e.getEntity().getEquipment().setArmorContents(null);
             e.getDrops().clear();
-            if (e.getEntity().getKiller() instanceof Player) {
-                pl.ingameList.get(e.getEntity().getKiller()).addLH();
-            }
-            for (ControllableMob cm : pl.controlMobs.keySet()) {
+            for (ControllableMob cm : pl.controlMobs) {
                 if (cm.getEntity().equals(e.getEntity())) {
-                    if (pl.blueCreeps.contains(cm)) {
-                        pl.blueCreeps.remove(cm);
-                    } else if (pl.blueRangedCreeps.contains(cm)) {
-                        pl.blueRangedCreeps.remove(cm);
-                        pl.getServer().getWorld(pl.worldName).dropItemNaturally(cm.getEntity().getLocation(), new ItemStack(Material.ARROW, 2));
-                    } else if (pl.redCreeps.contains(cm)) {
-                        pl.redCreeps.remove(cm);
-                    } else if (pl.redRangedCreeps.contains(cm)) {
-                        pl.redRangedCreeps.remove(cm);
-                        pl.getServer().getWorld(pl.worldName).dropItemNaturally(cm.getEntity().getLocation(), new ItemStack(Material.ARROW, 2));
-                    } else if(pl.jungleCreeps.contains(cm)) {
+                    if (pl.laneCreeps.contains(cm)) {
+                        pl.laneCreeps.remove(cm);
+                        if (e.getEntity().getKiller() != null) {
+                            pl.ingameList.get(e.getEntity().getKiller()).addLH();
+                        }
+                    } else if (pl.jungleCreeps.contains(cm)) {
                         pl.jungleCreeps.remove(cm);
-                        if(e.getEntity().getKiller() != null) {
-                            pl.ingameList.get(e.getEntity().getKiller()).addJungleLH(); // add double ammount for killing jungle
-                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(cm.getEntity().getLocation(), new ItemStack(Material.ARROW, 4));
+                        if (e.getEntity().getKiller() != null) {
+                            pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
+                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, 4));
                         }
                     }
                     ControllableMobs.releaseControl(cm);

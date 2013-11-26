@@ -61,7 +61,7 @@ public class PlayerListener implements Listener {
             pl.playerDeathArmor.remove(p);
         }
     }
-    
+
     @EventHandler
     public void onKick(PlayerKickEvent e) {
         Player p = e.getPlayer();
@@ -84,10 +84,10 @@ public class PlayerListener implements Listener {
             e.setCancelled(true);
         }
     }
-    
+
     @EventHandler
     public void onInventory(InventoryMoveItemEvent e) { // maybe will work..
-        if(e.getItem().equals(new ItemStack(Material.WOOL, 1, (short) 11)) || e.getItem().equals(new ItemStack(Material.WOOL, 1, (short) 14))) {
+        if (e.getItem().getType().equals(Material.WOOL)) {
             e.setCancelled(true);
         }
     }
@@ -95,12 +95,13 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
-       /*if (pl.ingameList.containsKey(p)) {
-            // TODO: shadow blade
-        } else */if (pl.spectators.contains(p)) {
+        /*if (pl.ingameList.containsKey(p)) {
+         // TODO: shadow blade
+         } else */
+        if (pl.spectators.contains(p)) {
             if (e.getItem().getType().equals(new ItemStack(Material.COMPASS).getType())) {
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-                    for(Player tp : pl.ingameList.keySet()) {
+                    for (Player tp : pl.ingameList.keySet()) {
                         p.teleport(tp.getLocation(), TeleportCause.PLUGIN);
                         return;
                     }
@@ -139,19 +140,26 @@ public class PlayerListener implements Listener {
             pl.playerDeathArmor.put(p, p.getInventory().getArmorContents());
             e.getDrops().clear();
         }
+        e.setDeathMessage("");
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
         Player p = e.getPlayer();
         if (pl.playerDeathItems.containsKey(p)) {
-            int i = 0;
             for (ItemStack is : pl.playerDeathItems.get(p)) {
-                p.getInventory().setItem(i, is);
+                p.getInventory().addItem(is);
             }
-            p.getInventory().setArmorContents(pl.playerDeathArmor.get(p));
             pl.playerDeathItems.remove(p);
+            p.getInventory().setArmorContents(pl.playerDeathArmor.get(p)); // helmet wont work being wool
             pl.playerDeathArmor.remove(p);
+            if (pl.ingameList.get(p).getTeam() == 1) {
+                p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 11));
+                p.teleport(pl.blueDeploy);
+            } else {
+                p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 14));
+                p.teleport(pl.redDeploy);
+            }
         }
     }
 }

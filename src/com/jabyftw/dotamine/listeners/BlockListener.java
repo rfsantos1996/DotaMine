@@ -1,7 +1,6 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
-import com.jabyftw.dotamine.Jogador;
 import com.jabyftw.dotamine.Tower;
 import com.jabyftw.dotamine.runnables.StopRunnable;
 import org.bukkit.Location;
@@ -66,17 +65,16 @@ public class BlockListener implements Listener {
             e.setCancelled(true);
             for (Tower t : pl.towers.keySet()) {
                 if (expl.distance(t.getLoc()) < 5) {
-                    if (alreadyBrokenPast(t.getLoc()) && !t.isDestroyed()) {
-                        t.setDestroyed(true);
+                    if (alreadyBrokenPast(t.getLoc())) {
                         pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", t.getName()));
                         if (t.getName().equalsIgnoreCase("Blue Ancient")) {
                             pl.broadcast(pl.getLang("lang.redTeamWon"));
                             pl.state = 3;
                             /*for(Jogador j : pl.ingameList.values()) {
                                 if(j.getTeam() == 1) {
-                                    j.addLose();
+                                    j.addLose(j.getPlayer().getName());
                                 } else {
-                                    j.addWin();
+                                    j.addWin(j.getPlayer().getName());
                                 }
                             }*/
                             pl.getServer().setWhitelist(true);
@@ -87,9 +85,9 @@ public class BlockListener implements Listener {
                             //TODO: MYSQL and Scoreboard support
                             /*for(Jogador j : pl.ingameList.values()) {
                                 if(j.getTeam() == 1) {
-                                    j.addWin();
+                                    j.addWin(j.getPlayer().getName());
                                 } else {
-                                    j.addLose();
+                                    j.addLose(j.getPlayer().getName());
                                 }
                             }*/
                             pl.getServer().setWhitelist(true);

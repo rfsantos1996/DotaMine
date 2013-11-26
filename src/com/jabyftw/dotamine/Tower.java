@@ -26,14 +26,5 @@ public class Tower {
     
     public boolean isDestroyed() {
         return loc.getBlock().getType().equals(Material.AIR);
-    }
-    
-    public void setDestroyed(boolean destroyed) {
-        if(destroyed) {
-            loc.getBlock().setType(Material.AIR);
-        } else {
-            loc.getBlock().setType(Material.TNT);
-        }
-    }
-    
+    }    
 }

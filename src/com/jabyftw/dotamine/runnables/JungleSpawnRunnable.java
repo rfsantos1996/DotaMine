@@ -5,11 +5,13 @@ import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackMelee;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
+import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetHurtBy;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
 import java.util.UUID;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -20,47 +22,48 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class JungleSpawnRunnable extends BukkitRunnable {
 
     private final DotaMine pl;
-    private boolean firstSpawned = false;
 
     public JungleSpawnRunnable(DotaMine pl) {
         this.pl = pl;
     }
 
     @Override
-    public void run() { // TODO: remake jungle spawn
+    public void run() {
         for (Location loc : pl.jungleSpawn) {
-            if (firstSpawned) {
-                for (ControllableMob cm : pl.jungleCreeps) {
-                    if (cm.getEntity().getLocation().distance(loc) > 10) {
-                        for (int i = 0; i < 4; i++) {
-                            Zombie z = pl.getServer().getWorld(pl.worldName).spawn(loc, Zombie.class);
-                            ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
-                            cz.getAttributes().setMaximumNavigationDistance(8);
-                            cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 1.0, ModifyOperation.ADD_TO_BASIS_VALUE));
-                            cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 8.0, ModifyOperation.ADD_TO_BASIS_VALUE));
-                            cz.getAI().addBehavior(new AIAttackMelee(1, 1.3));
-                            cz.getAI().addBehavior(new AITargetNearest(2, 4, false));
-                            cz.getAI().addBehavior(new AILookAtEntity(3, (float) 6));
-                            pl.jungleCreeps.add(cz);
-                            pl.controlMobs.put(cz, 0);
+            loc.getChunk().load();
+            for (Player p : pl.ingameList.keySet()) {
+                if (p.getLocation().distance(loc) < 15) {
+                    if (pl.jungleCreeps.size() > 0) {
+                        boolean spawn = true;
+                        for (ControllableMob cm : pl.jungleCreeps) {
+                            if (cm.getEntity().getLocation().distance(loc) < 15) {
+                                spawn = false;
+                            }
                         }
+                        if(spawn) {
+                            spawnJungle(loc);
+                        }
+                    } else {
+                        spawnJungle(loc);
                     }
                 }
-            } else {
-                for (int i = 0; i < 4; i++) {
-                    Zombie z = pl.getServer().getWorld(pl.worldName).spawn(loc, Zombie.class);
-                    ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
-                    cz.getAttributes().setMaximumNavigationDistance(8);
-                    cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 1.0, ModifyOperation.ADD_TO_BASIS_VALUE));
-                    cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 8.0, ModifyOperation.ADD_TO_BASIS_VALUE));
-                    cz.getAI().addBehavior(new AIAttackMelee(1, 1.3));
-                    cz.getAI().addBehavior(new AITargetNearest(2, 4, false));
-                    cz.getAI().addBehavior(new AILookAtEntity(3, (float) 6));
-                    pl.jungleCreeps.add(cz);
-                    pl.controlMobs.put(cz, 0);
-                }
-                firstSpawned = true;
             }
+        }
+    }
+
+    private void spawnJungle(Location loc) {
+        for (int i = 0; i < 3; i++) {
+            Zombie z = pl.getServer().getWorld(pl.worldName).spawn(loc, Zombie.class);
+            z.setRemoveWhenFarAway(true);
+            ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
+            cz.getAttributes().setMaximumNavigationDistance(8);
+            cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.7, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 6.0, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAI().addBehavior(new AIAttackMelee(1, 1.2));
+            cz.getAI().addBehavior(new AITargetNearest(2, 5, true));
+            cz.getAI().addBehavior(new AILookAtEntity(3, (float) 12));
+            pl.jungleCreeps.add(cz);
+            pl.controlMobs.add(cz);
         }
     }
 }

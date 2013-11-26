@@ -54,16 +54,16 @@ public class Jogador {
 
     public void addLH() {
         lh = lh + 1;
-        int money = (int) getLHMoney();
         if (pl.useVault) {
+            int money = (int) getLHMoney();
             pl.econ.depositPlayer(p.getName(), money);
         }
     }
 
     public void addJungleLH() {
         lh = lh + 1;
-        int money = (int) getJungleLHMoney();
         if (pl.useVault) {
+            int money = (int) getJungleLHMoney();
             pl.econ.depositPlayer(p.getName(), money);
         }
     }
@@ -71,22 +71,26 @@ public class Jogador {
     public void addKill(Jogador dead) {
         kills = kills + 1;
         killstreak = killstreak + 1;
-        int money = (int) getKillMoney(dead.getKillstreak());
-        pl.broadcast(pl.getLang("lang.playerWonXMoneyforKilling").replaceAll("%player", p.getCustomName()).replaceAll("%money", Integer.toString(money)).replaceAll("%dead", dead.getPlayer().getCustomName()));
         if (pl.useVault) {
+            int money = (int) getKillMoney(dead.getKillstreak());
             pl.econ.depositPlayer(p.getName(), money);
+            announceKillstreak(p.getCustomName(), dead.getPlayer().getCustomName(), killstreak, money);
         }
-        announceKillstreak(p.getCustomName(), dead.getPlayer().getCustomName(), killstreak, money);
     }
 
     public void addDeath() {
         deaths = deaths + 1;
-        int deathcost = (int) getDeathMoney();
-        p.sendMessage(pl.getLang("lang.youLoseXMoney").replaceAll("%money", Integer.toString(deathcost)));
         if (pl.useVault) {
+            int deathcost = (int) getDeathMoney();
+            p.sendMessage(pl.getLang("lang.youLoseXMoney").replaceAll("%money", Integer.toString(deathcost)));
             pl.econ.withdrawPlayer(p.getName(), deathcost);
         }
         killstreak = 0;
+    }
+
+    public void addNeutralDeath() {
+        addDeath();
+        pl.broadcast(pl.getLang("lang.diedForNeutral").replaceAll("%name", p.getCustomName()));
     }
 
     private double getKillMoney(int deadsKillstreak) {
@@ -112,19 +116,11 @@ public class Jogador {
     }
 
     private int getLHMoney() {
-        int x = (int) Math.random() * 100;
-        if (x > 21 && x < 30) {
-            return x;
-        }
-        return getLHMoney();
+        return 23;
     }
-    
+
     private int getJungleLHMoney() {
-        int x = (int) Math.random() * 100;
-        if (x > 42 && x < 62) {
-            return x;
-        }
-        return getJungleLHMoney();
+        return 48;
     }
 
     private double getDeathMoney() {
