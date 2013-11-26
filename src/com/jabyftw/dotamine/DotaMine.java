@@ -9,6 +9,7 @@ import com.jabyftw.dotamine.listeners.EntityListener;
 import com.jabyftw.dotamine.runnables.AnnounceQueueRunnable;
 import com.jabyftw.dotamine.runnables.CreepSpawnRunnable;
 import com.jabyftw.dotamine.runnables.JungleSpawnRunnable;
+import com.jabyftw.dotamine.runnables.ScoreboardRunnable;
 import com.jabyftw.dotamine.runnables.StartGameRunnable;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class DotaMine extends JavaPlugin implements Listener {
 
     public String worldName;
-    public int redCount, blueCount, state, targetRunnable, MIN_PLAYERS, MAX_PLAYERS;
+    public int redCount, blueCount, state, targetRunnable, scoreRunnable, MIN_PLAYERS, MAX_PLAYERS;
     public boolean useVault, gameStarted;
     public Economy econ = null;
     public FileConfiguration config;
@@ -97,6 +98,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("config.useVault", false);
         config.addDefault("config.worldName", "world");
         config.addDefault("config.targetRunnableDelayInTicks", 30);
+        config.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
         config.addDefault("config.MAX_PLAYERS", 12);
         config.addDefault("config.MIN_PLAYERS", 6);
         //config.addDefault("lang.", "&");
@@ -110,6 +112,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("lang.startingIn90sec", "&6Game starting in &c90 seconds&6!");
         config.addDefault("lang.youLoseXMoney", "&cYou lose &4%money&c for dying.");
         config.addDefault("lang.theGamehasStarted", "&6Good Luck and Have fun! &4The Dota&c has started!");
+        config.addDefault("lang.creepsWillSpawn", "&6Creeps will spawn in 10 seconds.");
         config.addDefault("lang.joinedSpectator", "&6You are now a spectator!");
         config.addDefault("lang.leftSpectator", "&cYou left spectator mode!");
         config.addDefault("lang.waitingTheGame", "&6You are on queue! Waiting players...");
@@ -127,6 +130,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("lang.nobodyOnQueue", "&cQueue is empty! Cant force start...");
         config.addDefault("lang.diedForNeutral", "%name &cdied for a &4creep or neutral&c.");
         config.addDefault("lang.queueSizeIs", "&6People in queue: &e%size&6! &cWe need %needed player(s).");
+        config.addDefault("lang.onePlayerLeft", "&cThere's only 1 player left. &4Restarting server...");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.two", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.tree", "%name &6killed %dead &6for &e%money &6- &4KILLING SPREE");
@@ -144,6 +148,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         worldName = config.getString("config.worldName");
         useVault = config.getBoolean("config.useVault");
         targetRunnable = config.getInt("config.targetRunnableDelayInTicks");
+        scoreRunnable = config.getInt("config.scoreRunnableDelayInTicks");
         MIN_PLAYERS = config.getInt("config.MIN_PLAYERS");
         MAX_PLAYERS = config.getInt("config.MAX_PLAYERS");
     }
@@ -183,14 +188,12 @@ public class DotaMine extends JavaPlugin implements Listener {
         jungleSpawn.add(redJungleBot);
         redJungleTop = new Location(w, -2, 25, 58);
         jungleSpawn.add(redJungleTop);
-        
-        
-        
+
         blueDeploy = new Location(w, 86, 28, -87);
         redDeploy = new Location(w, -80, 28, 87);
         specDeploy = new Location(w, 2, 33, 0);
         normalSpawn = new Location(w, 51, 8, -121);
-        
+
         for (int a = -11; a <= 9; a++) {
             for (int b = -10; b <= 10; b++) {
                 w.loadChunk(a, b);
@@ -365,10 +368,12 @@ public class DotaMine extends JavaPlugin implements Listener {
             getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 20);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 20, 20 * 20);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 10, 20 * 20);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), scoreRunnable / 2, scoreRunnable / 2);
         } else {
             getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 80);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 60);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 80, 20 * 60);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), 1, scoreRunnable);
         }
     }
 

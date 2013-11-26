@@ -35,8 +35,7 @@ public class EntityListener implements Listener {
             if (pl.ingameList.containsKey(damager) && pl.ingameList.containsKey(damaged)) {
                 if (pl.ingameList.get(damaged).getTeam() == pl.ingameList.get(damager).getTeam()) {
                     e.setCancelled(true);
-                }
-                if (e.getCause().equals(DamageCause.PROJECTILE) && pl.ingameList.get(damager).getAttackType() == 1) {
+                } else if (e.getCause().equals(DamageCause.PROJECTILE) && pl.ingameList.get(damager).getAttackType() == 1) {
                     e.setCancelled(true);
                 }
             } else {
@@ -45,8 +44,7 @@ public class EntityListener implements Listener {
         } else if (e.getDamager() instanceof Player) {
             if (pl.spectators.contains((Player) e.getDamager())) {
                 e.setCancelled(true);
-            }
-            if (e.getCause().equals(DamageCause.PROJECTILE) && pl.ingameList.get((Player) e.getDamager()).getAttackType() == 1) {
+            } else if (e.getCause().equals(DamageCause.PROJECTILE) && pl.ingameList.get((Player) e.getDamager()).getAttackType() == 1) {
                 e.setCancelled(true);
             }
         }
@@ -87,7 +85,7 @@ public class EntityListener implements Listener {
                         pl.jungleCreeps.remove(cm);
                         if (e.getEntity().getKiller() != null) {
                             pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
-                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, 4));
+                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, 1));
                         }
                     }
                     ControllableMobs.releaseControl(cm);

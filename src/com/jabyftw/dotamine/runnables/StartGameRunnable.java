@@ -17,8 +17,9 @@ public class StartGameRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        pl.state = 3;
+        pl.state = 2;
         pl.broadcast(pl.getLang("lang.theGamehasStarted"));
+        pl.broadcast(pl.getLang("lang.creepsWillSpawn"));
     }
 
 }

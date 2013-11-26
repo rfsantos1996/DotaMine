@@ -1,6 +1,7 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
+import com.jabyftw.dotamine.runnables.StopRunnable;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -59,6 +60,12 @@ public class PlayerListener implements Listener {
         if (pl.playerDeathItems.containsKey(p)) {
             pl.playerDeathItems.remove(p);
             pl.playerDeathArmor.remove(p);
+        }
+        if (pl.ingameList.size() < 2 && pl.gameStarted) { // 1 player left
+            pl.broadcast(pl.getLang("lang.onePlayerLeft"));
+            pl.state = 3;
+            pl.getServer().setWhitelist(true);
+            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 10);
         }
     }
 
