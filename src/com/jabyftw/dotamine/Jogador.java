@@ -74,7 +74,7 @@ public class Jogador {
         if (pl.useVault) {
             int money = (int) getKillMoney(dead.getKillstreak());
             pl.econ.depositPlayer(p.getName(), money);
-            announceKillstreak(p.getCustomName(), dead.getPlayer().getCustomName(), killstreak, money);
+            announceKillstreak(p.getDisplayName(), dead.getPlayer().getDisplayName(), killstreak, money);
         }
     }
 
@@ -90,7 +90,7 @@ public class Jogador {
 
     public void addNeutralDeath() {
         addDeath();
-        pl.broadcast(pl.getLang("lang.diedForNeutral").replaceAll("%name", p.getCustomName()));
+        pl.broadcast(pl.getLang("lang.diedForNeutral").replaceAll("%name", p.getDisplayName()));
     }
 
     private double getKillMoney(int deadsKillstreak) {

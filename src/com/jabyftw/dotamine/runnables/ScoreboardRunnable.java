@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 
@@ -22,9 +21,6 @@ public class ScoreboardRunnable extends BukkitRunnable {
 
     private final DotaMine pl;
     private boolean firstUse = true;
-    private final Map<Player, Integer> lastLH = new HashMap();
-    private final Map<Player, Integer> lastKills = new HashMap();
-    private final Map<Player, Integer> lastMoney = new HashMap();
     private final Map<Player, Objective> objectives = new HashMap();
 
     public ScoreboardRunnable(DotaMine pl) {

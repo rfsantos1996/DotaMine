@@ -109,7 +109,7 @@ public class PlayerListener implements Listener {
             if (e.getItem().getType().equals(new ItemStack(Material.COMPASS).getType())) {
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
                     for (Player tp : pl.ingameList.keySet()) {
-                        p.teleport(tp.getLocation(), TeleportCause.PLUGIN);
+                        p.teleport(tp.getLocation(), TeleportCause.COMMAND);
                         return;
                     }
                     //TODO: make it better.. probably will tp to ONE only player
@@ -155,17 +155,19 @@ public class PlayerListener implements Listener {
         Player p = e.getPlayer();
         if (pl.playerDeathItems.containsKey(p)) {
             for (ItemStack is : pl.playerDeathItems.get(p)) {
-                p.getInventory().addItem(is);
+                if (is != null) {
+                    p.getInventory().addItem(is);
+                }
             }
             pl.playerDeathItems.remove(p);
             p.getInventory().setArmorContents(pl.playerDeathArmor.get(p)); // helmet wont work being wool
             pl.playerDeathArmor.remove(p);
             if (pl.ingameList.get(p).getTeam() == 1) {
                 p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 11));
-                p.teleport(pl.blueDeploy);
+                e.setRespawnLocation(pl.blueDeploy);
             } else {
                 p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 14));
-                p.teleport(pl.redDeploy);
+                e.setRespawnLocation(pl.redDeploy);
             }
         }
     }

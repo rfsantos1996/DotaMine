@@ -8,14 +8,24 @@ import com.jabyftw.dotamine.listeners.BlockListener;
 import com.jabyftw.dotamine.listeners.EntityListener;
 import com.jabyftw.dotamine.runnables.AnnounceQueueRunnable;
 import com.jabyftw.dotamine.runnables.CreepSpawnRunnable;
+import com.jabyftw.dotamine.runnables.CheckNightRunnable;
 import com.jabyftw.dotamine.runnables.JungleSpawnRunnable;
 import com.jabyftw.dotamine.runnables.ScoreboardRunnable;
 import com.jabyftw.dotamine.runnables.StartGameRunnable;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
+import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
+import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackMelee;
+import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackRanged;
+import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIFloat;
+import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
+import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest;
+import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
+import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
@@ -27,6 +37,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -42,23 +54,29 @@ public class DotaMine extends JavaPlugin implements Listener {
 
     public String worldName;
     public int redCount, blueCount, state, targetRunnable, scoreRunnable, MIN_PLAYERS, MAX_PLAYERS;
-    public boolean useVault, gameStarted;
+    public boolean useVault, gameStarted, nerfRanged;
     public Economy econ = null;
     public FileConfiguration config;
     public Map<Player, Jogador> ingameList = new HashMap();
-    public Map<Tower, Location> towers = new HashMap();
+    public Map<Location, Tower> towers = new HashMap();
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
     public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
-    public List<Location> creepSpawn = new ArrayList();
+    public List<Location> botCreepSpawn = new ArrayList();
+    public List<Location> midCreepSpawn = new ArrayList();
+    public List<Location> topCreepSpawn = new ArrayList();
     public List<Location> jungleSpawn = new ArrayList();
     public Map<Player, Integer> queue = new HashMap();
     public List<Player> spectators = new ArrayList();
     public List<ControllableMob> controlMobs = new ArrayList();
     public List<ControllableMob> jungleCreeps = new ArrayList();
     public List<ControllableMob> laneCreeps = new ArrayList();
-    public Location blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient; // TODO: ancient locations
-    public Location blueBotT, blueMidT, blueTopT, redBotT, redMidT, redTopT;
+    public Location blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient;
+    public Location blueFBotT, blueFMidT, blueFTopT, redFBotT, redFMidT, redFTopT;
+    public Location blueSBotT, blueSMidT, blueSTopT, redSBotT, redSMidT, redSTopT;
     public Location blueJungleBot, blueJungleTop, redJungleBot, redJungleTop;
+    public Location botSpawnPre, botSpawnPosR, botSpawnPosB;
+    public Location midSpawnPre, midSpawnPosR, midSpawnPosB;
+    public Location topSpawnPre, topSpawnPosR, topSpawnPosB;
 
     @Override
     public void onEnable() {
@@ -81,6 +99,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         getLogger().log(Level.INFO, "Registered commands.");
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new AnnounceQueueRunnable(this), 20 * 15, 20 * 30);
         getLogger().log(Level.INFO, "Registered runnable.");
+        getLogger().log(Level.WARNING, "Plugin configured to rfsantos1996's Dota Map Rev 1.");
     }
 
     @Override
@@ -101,6 +120,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
         config.addDefault("config.MAX_PLAYERS", 12);
         config.addDefault("config.MIN_PLAYERS", 6);
+        config.addDefault("config.nerfRangedAtNight", false);
         //config.addDefault("lang.", "&");
         config.addDefault("lang.noPermission", "&cNo permission!");
         config.addDefault("lang.onlyIngame", "&4You are not a player!");
@@ -131,6 +151,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         config.addDefault("lang.diedForNeutral", "%name &cdied for a &4creep or neutral&c.");
         config.addDefault("lang.queueSizeIs", "&6People in queue: &e%size&6! &cWe need %needed player(s).");
         config.addDefault("lang.onePlayerLeft", "&cThere's only 1 player left. &4Restarting server...");
+        config.addDefault("lang.lowRangedNightVision", "&cRanged players have low night vision. &4ATENTION AT NIGHT!");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.two", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.tree", "%name &6killed %dead &6for &e%money &6- &4KILLING SPREE");
@@ -151,6 +172,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         scoreRunnable = config.getInt("config.scoreRunnableDelayInTicks");
         MIN_PLAYERS = config.getInt("config.MIN_PLAYERS");
         MAX_PLAYERS = config.getInt("config.MAX_PLAYERS");
+        nerfRanged = config.getBoolean("config.nerfRangedAtNight");
     }
 
     private boolean setupEconomy() {
@@ -168,18 +190,52 @@ public class DotaMine extends JavaPlugin implements Listener {
         for (Entity e : w.getEntities()) {
             e.remove();
         }
-        blueMidT = new Location(w, 12, 33, -7);
-        towers.put(new Tower(blueMidT, "Blue Mid Tower"), blueMidT);
-        blueBotT = new Location(w, -57, 33, -85);
-        towers.put(new Tower(blueBotT, "Blue Bot Tower"), blueBotT);
-        blueTopT = new Location(w, 81, 33, 62);
-        towers.put(new Tower(blueTopT, "Blue Top Tower"), blueTopT);
-        redMidT = new Location(w, -7, 33, 7);
-        towers.put(new Tower(redMidT, "Red Mid Tower"), redMidT);
-        redBotT = new Location(w, -82, 33, -65);
-        towers.put(new Tower(redBotT, "Red Bot Tower"), redBotT);
-        redTopT = new Location(w, 52, 33, 87);
-        towers.put(new Tower(redTopT, "Red Top Tower"), redTopT);
+        blueFMidT = new Location(w, 12, 33, -7);
+        towers.put(blueFMidT, new Tower(blueFMidT, "Blue Mid First Tower"));
+        blueFBotT = new Location(w, -57, 33, -85);
+        towers.put(blueFBotT, new Tower(blueFBotT, "Blue Bot First Tower"));
+        blueFTopT = new Location(w, 81, 33, 62);
+        towers.put(blueFTopT, new Tower(blueFTopT, "Blue Top First Tower"));
+        redFMidT = new Location(w, -7, 33, 7);
+        towers.put(redFMidT, new Tower(redFMidT, "Red Mid First Tower"));
+        redFBotT = new Location(w, -82, 33, -65);
+        towers.put(redFBotT, new Tower(redFBotT, "Red Bot First Tower"));
+        redFTopT = new Location(w, 52, 33, 87);
+        towers.put(redFTopT, new Tower(redFTopT, "Red Top Fisrt Tower"));
+
+        blueSMidT = new Location(w, 50, 33, -42);
+        towers.put(blueSMidT, new Tower(blueSMidT, "Blue Mid Second Tower"));
+        blueSBotT = new Location(w, 30, 33, -83);
+        towers.put(blueSBotT, new Tower(blueSBotT, "Blue Bot Second Tower"));
+        blueSTopT = new Location(w, 82, 33, -17);
+        towers.put(blueSTopT, new Tower(blueSTopT, "Blue Top Second Tower"));
+        redSMidT = new Location(w, -49, 33, 51);
+        towers.put(redSMidT, new Tower(redSMidT, "Red Mid Second Tower"));
+        redSBotT = new Location(w, -79, 33, -1);
+        towers.put(redSBotT, new Tower(redSBotT, "Red Bot Second Tower"));
+        redSTopT = new Location(w, -10, 33, 87);
+        towers.put(redSTopT, new Tower(redSTopT, "Red Top Second Tower"));
+
+        blueAncient = new Location(w, 79, 36, -77);
+        towers.put(blueAncient, new Tower(blueAncient, "Blue Ancient"));
+        redAncient = new Location(w, -72, 36, 79);
+        towers.put(redAncient, new Tower(redAncient, "Red Ancient"));
+
+        botSpawnPre = new Location(w, -75, 25, -81);
+        botSpawnPosR = new Location(w, -79, 25, -25);
+        botSpawnPosB = new Location(w, 6, 25, -83);
+        botCreepSpawn.add(botSpawnPre);
+
+        midSpawnPre = new Location(w, 4, 25, 0);
+        midSpawnPosR = new Location(w, -35, 25, 37);
+        midSpawnPosB = new Location(w, 36, 25, -27);
+        midCreepSpawn.add(midSpawnPre);
+
+        topSpawnPre = new Location(w, 74, 25, 80);
+        topSpawnPosR = new Location(w, 11, 25, 87);
+        topSpawnPosB = new Location(w, 81, 25, 2);
+        topCreepSpawn.add(topSpawnPre);
+
         blueJungleBot = new Location(w, 11, 25, -37);
         jungleSpawn.add(blueJungleBot);
         blueJungleTop = new Location(w, 51, 25, 9);
@@ -364,17 +420,24 @@ public class DotaMine extends JavaPlugin implements Listener {
         }
         state = 1;
         gameStarted = true;
-        if (forced) {
+        if (forced) {//TODO: for release, remove force start low time
             getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 20);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 20, 20 * 20);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 10, 20 * 20);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), scoreRunnable / 2, scoreRunnable / 2);
+            if (nerfRanged) {
+                getServer().getScheduler().scheduleSyncRepeatingTask(this, new CheckNightRunnable(this), 20, 20 * 3);
+            }
         } else {
             getServer().getScheduler().scheduleSyncDelayedTask(this, new StartGameRunnable(this), 20 * 80);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 90, 20 * 60);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 80, 20 * 60);
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), 1, scoreRunnable);
+            if (nerfRanged) {
+                getServer().getScheduler().scheduleSyncRepeatingTask(this, new CheckNightRunnable(this), 20, 20 * 3);
+            }
         }
+        getServer().getWorld(worldName).setTime(0); // start as day
     }
 
     @EventHandler
@@ -395,5 +458,55 @@ public class DotaMine extends JavaPlugin implements Listener {
             p.kickPlayer(getLang("lang.kickMessage"));
         }
         getServer().shutdown();
+    }
+
+    public void spawnLaneCreeps(Location spawnloc) {
+        for (int i = 0; i < 5; i++) {
+            Zombie z = getServer().getWorld(worldName).spawn(spawnloc, Zombie.class);
+            z.setRemoveWhenFarAway(false);
+            ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
+            cz.getAttributes().setMaximumNavigationDistance(300);
+            cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.4, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", 4, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAI().addBehavior(new AIAttackMelee(1, 1.1));
+            cz.getAI().addBehavior(new AITargetNearest(2, 8, false));
+            cz.getAI().addBehavior(new AIFloat(3));
+            cz.getAI().addBehavior(new AILookAtEntity(4, (float) 8));
+            laneCreeps.add(cz);
+            controlMobs.add(cz);
+        }
+        for (int i = 0; i < 2; i++) {
+            Skeleton s = getServer().getWorld(worldName).spawn(spawnloc, Skeleton.class);
+            s.getEquipment().setItemInHand(new ItemStack(Material.BOW));
+            s.getEquipment().setItemInHandDropChance(0);
+            s.setRemoveWhenFarAway(false);
+            ControllableMob<Skeleton> cs = ControllableMobs.putUnderControl(s, true);
+            cs.getAttributes().setMaximumNavigationDistance(1000);
+            cs.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.2, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cs.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", 2, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cs.getAI().addBehavior(new AIAttackRanged(1, 1.2, 20));
+            cs.getAI().addBehavior(new AITargetNearest(2, 22, false));
+            cs.getAI().addBehavior(new AIFloat(3));
+            cs.getAI().addBehavior(new AILookAtEntity(4, (float) 24));
+            laneCreeps.add(cs);
+            controlMobs.add(cs);
+        }
+    }
+
+    public void spawnJungle(Location loc) {
+        for (int i = 0; i < 2; i++) {
+            Zombie z = getServer().getWorld(worldName).spawn(loc, Zombie.class);
+            z.setRemoveWhenFarAway(true);
+            ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
+            cz.getAttributes().setMaximumNavigationDistance(8);
+            cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.7, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAttributes().getAttackDamageAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "attack dmg", 3.0, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 10.0, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAI().addBehavior(new AIAttackMelee(1, 1.2));
+            cz.getAI().addBehavior(new AITargetNearest(2, 5, true));
+            cz.getAI().addBehavior(new AILookAtEntity(3, (float) 12));
+            jungleCreeps.add(cz);
+            controlMobs.add(cz);
+        }
     }
 }
