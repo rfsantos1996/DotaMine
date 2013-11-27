@@ -1,0 +1,37 @@
+0.1:
+ - Initial release
+
+0.2:
+ * GAMEPLAY:
+ - Added Shadow blade (blaze rod) - 15 sec duration | 45 sec cooldown // Entities wont TARGET you while invisible (if you are targeted, they will still attack you)
+ - When attack while shadow bladed, you won't deal damage and will become visible
+ - Ranged will receive "dotamine.ranged" permission when game start
+ - Meele will receive "dotamine.meele" permission when game start
+ - Better /join (ranged/meele/leave)
+ - Added /dota ranking (ranking list update will make async MySQL calls every 60 sec)
+ - Easier to spawn Jungle and lane creeps, also faster.
+ - Creeps have now more health and more damage, jungle have less
+ - Every diamond sword in the game will drop now. (Divine Rapier)
+ - Less nerf to Ranged @ night
+ - Now Meeles cant deal damage with bows
+ * PLUGIN:
+ - Added MySQL support for ranking (win/los && kill/deaths)
+ - Added PERMISSION Vault support
+ - Added methods to make people invisible for one team (Shadow blade)
+ - Added EntityTargetEvent (for Shadow Blade)
+ - Added SMOKE Effect when shadow blading (on and off)
+ - Added aadnk's PacketWrapper for more possible effects when needed (;
+ - Added lang for needed messages, and for join/quit/kick messages
+ - When someone disconnects, them will be now removed from queue too.
+ - Changed how lane and jungle spawn work
+ - Fixed game not starting with MIN_PLAYERS on queue.
+ - Fixed Tower not getting destroyed - ULTRA FAIL
+ - Fixed death not costing anything when you don't have enough money.
+ - Fixed players being able to change attack type
+ - Fixed mobs' adicional health didnt applying
+ - Fixed teleport(s) locations (added +1 to y)
+ - Fixed NPE when random clicking everywhere (PlayerListener, e.getItemInHand was null)
+
+0.3:
+ * PLUGIN:
+ - Players can join before creep spawn

@@ -1,0 +1,74 @@
+config:
+  useVault: false
+  useProtocolLib: false
+  nerfRangedAtNight: false
+  worldName: world
+  targetRunnableDelayInTicks: 30
+  scoreRunnableDelayInTicks: 60
+  MAX_PLAYERS: 12
+  MIN_PLAYERS: 6
+mysql:
+  enabled: false
+  username: root
+  password: root
+  database: minecraft
+  host: localhost
+  port: 3306
+lang:
+  noPermission: '&cSem permissao!'
+  joinMessage: '&7+ %name'
+  quitMessage: '&7- %name'
+  onlyIngame: '&4Voce nao e um jogador!'
+  gameIsFull: '&cSinto muito, partida lotada!'
+  onBlueTeam: '&6Voce esta no &bTime azul&6!'
+  onRedTeam: '&6Voce esta no &4Time vermelho&6!'
+  alreadyStarted: '&4O jogo ja comecou!'
+  alreadyPlaying: '&4Ja esta jogando!'
+  leftQueue: '&4Voce deixou a fila. &6Use &c/join (meele/ranged) &6para reentrar.'
+  gameNotStarted: '&cNao ha jogo para assistir!'
+  startingIn90sec: '&6Partida comecando em &c60 segundos&6! Use &c/bs&6 para comprar itens.'
+  youLoseXMoney: '&cVoce perdeu &4%money&c por morrer.'
+  theGamehasStarted: '&6Boa sorte e divirta-se! &4O Dota&c comecou!'
+  creepsWillSpawn: '&6Creeps irao nascer em 10 segundos.'
+  joinedSpectator: '&6Voce entrou no modo espectador!'
+  leftSpectator: '&cVoce deixou o modo espectador!'
+  waitingTheGame: '&6Voce esta na fila! Aguardando mais jogadores...'
+  youCanPlay: '&6Voce pode jogar Dota usando &c/join'
+  youCanJoin: '&6Voce pode entrar no Dota usando &c/join&6 antes que comece'
+  youCanSpectate: '&6Voce pode assistir a partida usando &c/spectate&6!'
+  redTeamWon: '&cTime vermelho &6ganhou! &eParabens! &cReiniciando em 30 segundos!'
+  blueTeamWon: '&bTime azul &6ganhou! &eParabens! &cReiniciando em 30 segundos!'
+  towerDestroyed: '&4%tower &cfoi destruida'
+  kickMessage: '&4O jogo acabou!&c Reiniciando...'
+  usePlayCommand: '&cUso: &6/join (ranged/meele)'
+  settedMeele: '&6Voce ira jogar como um meele.'
+  settedRanged: '&6Voce ira jogar como um ranged.'
+  forcingStart: '&cForcando o jogo para comecar...'
+  nobodyOnQueue: '&cFila esta fazia, nao ha como comecar...'
+  diedForNeutral: '%name &cmorreu para um &4creep ou neutro&c.'
+  queueSizeIs: '&6Pessoas na fila: &e%size&6! &cPrecisamos de mais %needed jogador(es).'
+  onePlayerLeft: '&cSo ha um jogador. &4Reiniciando server...'
+  lowRangedNightVision: '&cAnoite, ranged tem pior visao. &4ATENCAO DURANTE A NOITE!'
+  alreadyInQueueUpdatedAttack: '&cJa esta na fila. &6Novo tipo de ataque: %attack'
+  noRankingFound: '&cNao ha ranking disponivel.'
+  shadowCDMessage: '&4Shadow Blade &cesta em cooldown.'
+  shadowOverCDMessage: '&eShadow Blade &6ja pode ser usada.'
+  shadowOverMessage: '&cVoce esta visivel agora.'
+  shadowUseMessage: '&6Voce usou &eShadow Blade&6. Agora so podera ser usada em 45 seg.'
+  rankingTitle: '&eName &6|&e Wins &6|&e Loses &6|&e Kills &6|&e Deaths'
+  rankingEntry: '&e%name &6|&e %wins &6|&e %loses &6|&e %kills &6|&e %deaths'
+  killstreak:
+    one: '%name &6matou %dead &6por &e%money'
+    two: '%name &6matou %dead &6por &e%money'
+    tree: '%name &6matou %dead &6por &e%money &6- &4KILLING SPREE'
+    four: '%name &6matou %dead &6por &e%money &6- &4DOMINATING'
+    five: '%name &6matou %dead &6por &e%money &6- &4MEGA KILL'
+    six: '%name &6matou %dead &6por &e%money &6- &4UNSTOPPABLE'
+    seven: '%name &6matou %dead &6por &e%money &6- &4WICKED SICK'
+    eight: '%name &6matou %dead &6por &e%money &6- &4MONSTER KILL'
+    nine: '%name &6matou %dead &6por &e%money &6- &4GOD LIKE'
+    tenAndBeyond: '%name &6matou %dead &6por &e%money &6- &4BEYOND GOD LIKE'
+    fiftyAndBeyond: '%name &6matou %dead &6por &e%money &6- &4KILLING DOMINATING
+      MEGA UNSTOPPABLE WICKED MONSTER BEYOND GODLIKE'
+DoNotChangeThis:
+  ConfigVersion: 1
