@@ -3,8 +3,7 @@ version: 0.3
 author: rfsantos1996
 main: com.jabyftw.dotamine.DotaMine
 description: Dota on Minecraft
-depend: [ControllableMobsAPI]
-softdepend: [Vault,ProtocolLib]
+softdepend: [Vault,ControllableMobsAPI]
 commands:
    dota:
      description: Main command

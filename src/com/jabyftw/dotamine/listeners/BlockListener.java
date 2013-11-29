@@ -4,12 +4,10 @@ import com.jabyftw.dotamine.DotaMine;
 import com.jabyftw.dotamine.Jogador;
 import com.jabyftw.dotamine.Tower;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
@@ -69,11 +67,11 @@ public class BlockListener implements Listener {
                         if (t.getName().equalsIgnoreCase("Blue Ancient")) {
                             pl.broadcast(pl.getLang("lang.redTeamWon"));
                             t.setDestroyed(true);
-                            pl.endGame(2);
+                            pl.endGame(false, 2);
                         } else if (t.getName().equalsIgnoreCase("Red Ancient")) {
                             pl.broadcast(pl.getLang("lang.blueTeamWon"));
                             t.setDestroyed(true);
-                            pl.endGame(1);
+                            pl.endGame(false, 1);
                         } else {
                             pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", t.getName()));
                             t.setDestroyed(true);

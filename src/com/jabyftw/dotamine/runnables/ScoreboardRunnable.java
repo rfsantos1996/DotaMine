@@ -36,9 +36,9 @@ public class ScoreboardRunnable extends BukkitRunnable {
                 Objective o = s.registerNewObjective("test", "dummy");
                 o.setDisplaySlot(DisplaySlot.SIDEBAR);
                 o.setDisplayName("§4[DOTA]");
-                o.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Last hits:")).setScore(j.getLH());
                 o.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Deaths:")).setScore(j.getDeaths());
                 o.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Kills:")).setScore(j.getKills());
+                o.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Last hits:")).setScore(j.getLH());
                 o.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Killstreak:")).setScore(j.getKillstreak());
                 if (pl.useVault) {
                     o.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + "Money:")).setScore((int) pl.econ.getBalance(j.getPlayer().getName()));
@@ -47,9 +47,9 @@ public class ScoreboardRunnable extends BukkitRunnable {
                 objectives.put(j.getPlayer(), o);
             } else {
                 Objective o = objectives.get(j.getPlayer());
-                o.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Last hits:")).setScore(j.getLH());
                 o.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Deaths:")).setScore(j.getDeaths());
                 o.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Kills:")).setScore(j.getKills());
+                o.getScore(Bukkit.getOfflinePlayer(ChatColor.GREEN + "Last hits:")).setScore(j.getLH());
                 o.getScore(Bukkit.getOfflinePlayer(ChatColor.RED + "Killstreak:")).setScore(j.getKillstreak());
                 if (pl.useVault) {
                     o.getScore(Bukkit.getOfflinePlayer(ChatColor.GOLD + "Money:")).setScore((int) pl.econ.getBalance(j.getPlayer().getName()));

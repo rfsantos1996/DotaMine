@@ -57,6 +57,7 @@
  - Added time before starting game (2 minutes) - that screwed my head
  - Added more effects (player damaged, entity damaged, Force Staff, respawn)
  - Added support for Java 1.6 - sorry lol
+ - ControllableMobs is now optional - but recommended
  - Changed yaw and pitch on deploy and normal spawn, you're now looking at signs (;
  - Better /spectate command
  - Players can join before creep spawn
@@ -66,3 +67,4 @@
  - Fixed a TOTAL RANDOM NullPointerException that happens when someone crash
  - Fixed forced games (/dota forcestart) didnt destroying towers
  - Removed ProtocolLib support... Don't needed at all
+ - Cleaned up

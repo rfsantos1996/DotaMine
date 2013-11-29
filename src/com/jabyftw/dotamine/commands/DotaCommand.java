@@ -4,11 +4,9 @@ import com.jabyftw.dotamine.DotaMine;
 import com.jabyftw.dotamine.Ranking;
 import com.jabyftw.dotamine.runnables.StartGameRunnable;
 import com.jabyftw.dotamine.runnables.item.ItemCDRunnable;
-import com.jabyftw.dotamine.runnables.item.TeleportEffectRunnable;
-import com.jabyftw.dotamine.runnables.item.TeleportRemoveJRunnable;
-import com.jabyftw.dotamine.runnables.item.TeleportRunnable;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -230,11 +228,32 @@ public class DotaCommand implements CommandExecutor {
 
     private void ftp(Player p, Location destination) {
         p.sendMessage(pl.getLang("lang.tpDontMove"));
-        int TPEffectTask = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new TeleportEffectRunnable(pl, p, destination), 2, 2);
-        pl.teleportingE.put(p, TPEffectTask);
-        int TPTask = pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRunnable(pl, p, destination), 20 * 3);
-        pl.teleportingT.put(p, TPTask);
-        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRemoveJRunnable(pl, p), 30);
-        pl.teleportingJ.add(p);
+        int TPTask = pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRunnable(p, destination), 20 * 3);
+        pl.teleporting.put(p, TPTask);
+    }
+
+    private class TeleportRunnable implements Runnable {
+
+        private final Player p;
+        private final Location destination;
+        private int i = 1;
+
+        public TeleportRunnable(Player p, Location destination) {
+            this.p = p;
+            this.destination = destination;
+        }
+
+        @Override
+        public void run() {
+            pl.breakEffect(destination, 2, 11);
+            pl.breakEffect(p.getLocation(), 2, 55);
+            i++;
+            if (i >= 20 * 3) {
+                p.teleport(destination);
+                destination.getWorld().playSound(destination, Sound.PORTAL_TRIGGER, 1, 0);
+                pl.teleporting.remove(p);
+                pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
+            }
+        }
     }
 }

@@ -1,14 +1,8 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
-import com.jabyftw.dotamine.Spectator;
-import com.jabyftw.dotamine.runnables.item.ShadowShowRunnable;
-import com.jabyftw.dotamine.runnables.StopRunnable;
-import com.jabyftw.dotamine.runnables.item.ForceEffectRunnable;
-import com.jabyftw.dotamine.runnables.item.ForceRunnable;
-import com.jabyftw.dotamine.runnables.item.ForceStopRunnable;
 import com.jabyftw.dotamine.runnables.item.ItemCDRunnable;
-import java.util.ArrayList;
+import com.jabyftw.dotamine.runnables.item.ShowRunnable;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -32,8 +26,9 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 /**
  *
@@ -86,9 +81,7 @@ public class PlayerListener implements Listener {
         checkIngameThings(p);
         if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING)) { // 1 player left
             pl.broadcast(pl.getLang("lang.onePlayerLeft"));
-            pl.state = pl.RESTARTING;
-            pl.getServer().setWhitelist(true);
-            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 10);
+            pl.endGame(true, 0);
         }
     }
 
@@ -149,8 +142,8 @@ public class PlayerListener implements Listener {
                         p.sendMessage(pl.getLang("lang.itemUseMessage").replaceAll("%item", "Shadow Blade").replaceAll("%cd", "45"));
                         bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.SHADOW_BLADE), 20 * 45);
                         pl.shadowCD.add(p);
-                        BukkitTask bt = bs.runTaskLater(pl, new ShadowShowRunnable(pl, p), 20 * 15);
-                        pl.invisibleSB.put(p, bt);
+                        int run = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, p, 1), 20 * 15);
+                        pl.invisibleSB.put(p, run);
                         pl.smokeEffect(p.getLocation(), 10);
                         pl.hidePlayerFromTeam(p, pl.getOtherTeam(p));
                     }
@@ -163,12 +156,7 @@ public class PlayerListener implements Listener {
                         p.sendMessage(pl.getLang("lang.itemUseMessage").replaceAll("%item", "Force Staff").replaceAll("%cd", "60"));
                         bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.FORCE_STAFF), 20 * 60);
                         pl.forceCD.add(p);
-                        bs.runTask(pl, new ForceRunnable(p));
-                        if (pl.useEffects) {
-                            int run = bs.scheduleSyncRepeatingTask(pl, new ForceEffectRunnable(pl, p), 2, 1);
-                            pl.forcingStaff.put(p, run);
-                            bs.scheduleSyncDelayedTask(pl, new ForceStopRunnable(pl, p), 15);
-                        }
+                        bs.scheduleSyncRepeatingTask(pl, new ForceStaffRunnable(p), 1, 1);
                     }
                 }
             } else if (e.getItem() != null && e.getItem().getType().equals(Material.FERMENTED_SPIDER_EYE)) { // Tarrasque
@@ -187,10 +175,9 @@ public class PlayerListener implements Listener {
                                 if (pl.ingameList.containsKey(pla)) {
                                     if (pl.ingameList.get(pla).getTeam() == pl.ingameList.get(p).getTeam()) {
                                         pl.hidePlayerFromTeam(pla, pl.getOtherTeam(pla));
-                                        BukkitTask bt = bs.runTaskLater(pl, new ShadowShowRunnable(pl, pla), 20 * 40);
-                                        bs.scheduleSyncRepeatingTask(pl, new EffectRunnable(pla), 2, 2);
-                                        bs.scheduleSyncDelayedTask(pl, new EffectStopRunnable(pla), 20 * 40);
-                                        pl.invisibleSB.put(pla, bt);
+                                        int run = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, pla, 2), 20 * 40);
+                                        bs.scheduleSyncRepeatingTask(pl, new SmokeOfDeceitRunnable(pla), 2, 2);
+                                        pl.invisibleW.put(pla, run);
                                         pla.sendMessage(pl.getLang("lang.itemUseMessageDontCD").replaceAll("%item", "Smoke of Deceit"));
                                     }
                                 }
@@ -262,7 +249,7 @@ public class PlayerListener implements Listener {
             p.getInventory().setArmorContents(pl.playerDeathArmor.get(p)); // helmet wont work being wool
             pl.playerDeathArmor.remove(p);
             int run = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new RespawnRunnable(p), 2, 2);
-            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new RespawnStopRunnable(run), 8);
+            pl.respawning.put(p, run);
             if (pl.ingameList.get(p).getTeam() == 1) {
                 p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 11));
                 e.setRespawnLocation(pl.blueDeploy);
@@ -287,60 +274,62 @@ public class PlayerListener implements Listener {
             pl.playerDeathItems.remove(p);
             pl.playerDeathArmor.remove(p);
         }
-        if (pl.teleportingT.containsKey(p)) {
-            pl.teleportingT.remove(p);
-            pl.teleportingE.remove(p);
-        }
-        if (pl.teleportingJ.contains(p)) {
-            pl.teleportingJ.remove(p);
+        if (pl.teleporting.containsKey(p)) {
+            pl.teleporting.remove(p);
         }
     }
 
-    private class EffectStopRunnable implements Runnable {
+    private class ForceStaffRunnable extends BukkitRunnable {
 
         private final Player p;
+        private int i = 1;
 
-        public EffectStopRunnable(Player pla) {
-            this.p = pla;
+        public ForceStaffRunnable(Player p) {
+            this.p = p;
         }
 
         @Override
         public void run() {
-            pl.getServer().getScheduler().cancelTask(pl.invisibleSB.get(p).getTaskId());
+            if (i == 1) {
+                Vector vec = p.getLocation().getDirection();
+                vec.setY(0);
+                vec.multiply(2.5 / vec.length());
+                vec.setY(0.3);
+                p.setVelocity(vec);
+            }
+            i++;
+            pl.smokeEffect(p.getLocation(), 10);
+            if (i > 15) {
+                pl.getServer().getScheduler().cancelTask(pl.forcingStaff.get(p));
+                pl.forcingStaff.remove(p);
+            }
         }
     }
 
-    private class EffectRunnable implements Runnable {
+    private class SmokeOfDeceitRunnable implements Runnable {
 
         private final Player p;
+        private int i = 0;
 
-        public EffectRunnable(Player p) {
+        public SmokeOfDeceitRunnable(Player p) {
             this.p = p;
         }
 
         @Override
         public void run() {
             pl.smokeEffect(p.getLocation(), pl.getRandom(1, 9));
-        }
-    }
-
-    private class RespawnStopRunnable implements Runnable {
-
-        private final int run;
-
-        public RespawnStopRunnable(int run) {
-            this.run = run;
-        }
-
-        @Override
-        public void run() {
-            pl.getServer().getScheduler().cancelTask(run);
+            i++;
+            if (i > (20 * 40) * 2) {
+                pl.getServer().getScheduler().cancelTask(pl.invisibleW.get(p));
+                pl.invisibleW.remove(p);
+            }
         }
     }
 
     private class RespawnRunnable implements Runnable {
 
         private final Player p;
+        private int i = 0;
 
         public RespawnRunnable(Player p) {
             this.p = p;
@@ -349,6 +338,11 @@ public class PlayerListener implements Listener {
         @Override
         public void run() {
             pl.breakEffect(p.getLocation(), 2, 18);
+            i++;
+            if (i > 7) {
+                pl.getServer().getScheduler().cancelTask(pl.respawning.get(p));
+                pl.respawning.remove(p);
+            }
         }
     }
 }

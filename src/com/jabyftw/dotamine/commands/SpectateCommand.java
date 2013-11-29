@@ -50,5 +50,4 @@ public class SpectateCommand implements CommandExecutor {
             return true;
         }
     }
-
 }

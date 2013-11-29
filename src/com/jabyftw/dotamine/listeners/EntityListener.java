@@ -1,10 +1,11 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
-import com.jabyftw.dotamine.runnables.item.ShadowShowRunnable;
+import com.jabyftw.dotamine.runnables.item.ShowRunnable;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -22,13 +23,13 @@ import org.bukkit.inventory.ItemStack;
  * @author Rafael
  */
 public class EntityListener implements Listener {
-    
+
     private final DotaMine pl;
-    
+
     public EntityListener(DotaMine pl) {
         this.pl = pl;
     }
-    
+
     @EventHandler
     public void onEntityDamageEntity(EntityDamageByEntityEvent e) {
         if (e.getDamager() instanceof Projectile) {
@@ -39,8 +40,8 @@ public class EntityListener implements Listener {
                     e.setCancelled(true);
                     return;
                 }
-                if (pl.teleportingT.containsKey(shooter)) {
-                    pl.cancelTp(shooter);
+                if (pl.teleporting.containsKey(shooter)) {
+                    cancelTp(shooter);
                     return;
                 }
                 if (checkForShadowBlade(shooter)) {
@@ -67,12 +68,12 @@ public class EntityListener implements Listener {
             if (e.getDamage() > 0) {
                 pl.breakEffect(e.getEntity().getLocation(), 2, 55);
             }
-            
+
         }
         if (e.getDamager() instanceof Player) {
             Player damager = (Player) e.getDamager();
-            if (pl.teleportingT.containsKey(damager)) {
-                pl.cancelTp(damager);
+            if (pl.teleporting.containsKey(damager)) {
+                cancelTp(damager);
                 return;
             }
             if (pl.spectators.containsKey(damager)) {
@@ -116,15 +117,15 @@ public class EntityListener implements Listener {
             if (pl.hasTarrasque.contains(p)) {
                 pl.removeTarrasque(p);
             }
-            if (pl.teleportingT.containsKey(p)) {
-                pl.cancelTp(p);
+            if (pl.teleporting.containsKey(p)) {
+                cancelTp(p);
             }
             if (e.getDamage() > 0) {
                 pl.breakEffect(p.getLocation(), 3, 11);
             }
         }
     }
-    
+
     @EventHandler
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getCause().equals(DamageCause.FIRE_TICK) || e.getCause().equals(DamageCause.FIRE)) {
@@ -137,7 +138,7 @@ public class EntityListener implements Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onEntityTarged(EntityTargetEvent e) {
         if (e.getEntityType().equals(EntityType.PLAYER)) {
@@ -150,7 +151,7 @@ public class EntityListener implements Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         if (e.getEntity() instanceof Player) {
@@ -165,35 +166,63 @@ public class EntityListener implements Listener {
         } else {
             e.getEntity().getEquipment().setArmorContents(null);
             e.getDrops().clear();
-            for (ControllableMob cm : pl.controlMobs) {
-                if (cm.getEntity().equals(e.getEntity())) {
-                    if (pl.laneCreeps.contains(cm)) {
-                        pl.laneCreeps.remove(cm);
-                        if (e.getEntity().getKiller() != null) {
-                            pl.ingameList.get(e.getEntity().getKiller()).addLH();
+            if (pl.useControllableMobs) {
+                for (ControllableMob cm : pl.controlMobs) {
+                    if (cm.getEntity().equals(e.getEntity())) {
+                        if (pl.laneCreeps.contains(cm)) {
+                            pl.laneCreeps.remove(cm);
+                            if (e.getEntity().getKiller() != null) {
+                                pl.ingameList.get(e.getEntity().getKiller()).addLH();
+                            }
+                        } else if (pl.jungleCreeps.contains(cm)) {
+                            pl.jungleCreeps.remove(cm);
+                            if (e.getEntity().getKiller() != null) {
+                                pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
+                                pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
+                                e.setDroppedExp(pl.getRandom(6, 8)); // normal = 5
+                            }
                         }
-                    } else if (pl.jungleCreeps.contains(cm)) {
-                        pl.jungleCreeps.remove(cm);
-                        if (e.getEntity().getKiller() != null) {
-                            pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
-                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
-                            e.setDroppedExp(pl.getRandom(6, 8)); // normal = 5
-                        }
+                        ControllableMobs.releaseControl(cm);
+                        pl.controlMobs.remove(cm);
+                        return;
                     }
-                    ControllableMobs.releaseControl(cm);
-                    pl.controlMobs.remove(cm);
-                    return;
+                }
+            } else {
+                for (Entity en : pl.spawnedMobs) {
+                    if (en.equals(e.getEntity())) {
+                        if (pl.laneEntityCreeps.contains(en)) {
+                            pl.laneEntityCreeps.remove(en);
+                            if (e.getEntity().getKiller() != null) {
+                                pl.ingameList.get(e.getEntity().getKiller()).addLH();
+                            }
+                        } else if (pl.jungleEntityCreeps.contains(en)) {
+                            pl.jungleEntityCreeps.remove(en);
+                            if (e.getEntity().getKiller() != null) {
+                                pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
+                                pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
+                                e.setDroppedExp(pl.getRandom(6, 8)); // normal = 5
+                            }
+                        }
+                        pl.spawnedMobs.remove(en);
+                        return;
+                    }
                 }
             }
         }
     }
-    
+
     private boolean checkForShadowBlade(Player p) {
         if (pl.invisibleSB.containsKey(p) && pl.ingameList.size() > 0) {
-            pl.getServer().getScheduler().cancelTask(pl.invisibleSB.get(p).getTaskId());
-            pl.getServer().getScheduler().runTask(pl, new ShadowShowRunnable(pl, p));
+            pl.getServer().getScheduler().cancelTask(pl.invisibleSB.get(p));
+            pl.getServer().getScheduler().runTask(pl, new ShowRunnable(pl, p, 1));
             return true;
         }
         return false;
+    }
+
+    private void cancelTp(Player p) {
+        pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
+        pl.teleporting.remove(p);
+        p.sendMessage(pl.getLang("lang.tpCancelled"));
     }
 }
