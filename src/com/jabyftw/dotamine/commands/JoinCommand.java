@@ -24,19 +24,28 @@ public class JoinCommand implements CommandExecutor {
             if (sender instanceof Player) {
                 Player p = (Player) sender;
                 if (args.length > 0) {
-                    int attackType;
-                    if(args[0].startsWith("r")) { // Ranged = 2
-                        attackType = 2;
-                        p.sendMessage(pl.getLang("lang.settedRanged"));
-                    } else {
-                        attackType = 1; // Meele = 1
-                        p.sendMessage(pl.getLang("lang.settedMeele"));
-                    }
-                    if (pl.gameStarted) {
-                        pl.addPlayer(p, attackType);
+                    if (!pl.queue.containsKey(p)) {
+                        int attackType;
+                        if (args[0].startsWith("r")) { // Ranged = 2
+                            attackType = 2;
+                            p.sendMessage(pl.getLang("lang.settedRanged"));
+                        } else {
+                            attackType = 1; // Meele = 1
+                            p.sendMessage(pl.getLang("lang.settedMeele"));
+                        }
+                        pl.addPlayerToGame(p, attackType);
                         return true;
                     } else {
-                        pl.addtoPlayerQueue(p, attackType);
+                        if (args[0].startsWith("r")) {
+                            sender.sendMessage(pl.getLang("lang.alreadyInQueueUpdatedAttack").replaceAll("%attack", getAttackType(2)));
+                            pl.queue.put(p, 2);
+                        } else if (args[0].startsWith("m")) {
+                            sender.sendMessage(pl.getLang("lang.alreadyInQueueUpdatedAttack").replaceAll("%attack", getAttackType(1)));
+                            pl.queue.put(p, 1);
+                        } else {
+                            sender.sendMessage(pl.getLang("lang.leftQueue"));
+                            pl.removePlayerFromQueue(p);
+                        }
                         return true;
                     }
                 } else {
@@ -50,6 +59,14 @@ public class JoinCommand implements CommandExecutor {
         } else {
             sender.sendMessage(pl.getLang("lang.noPermission"));
             return true;
+        }
+    }
+
+    private String getAttackType(int i) {
+        if (i == 1) {
+            return "meele";
+        } else {
+            return "ranged";
         }
     }
 

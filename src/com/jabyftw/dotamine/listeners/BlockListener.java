@@ -1,8 +1,8 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
+import com.jabyftw.dotamine.Jogador;
 import com.jabyftw.dotamine.Tower;
-import com.jabyftw.dotamine.runnables.StopRunnable;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -28,7 +28,7 @@ public class BlockListener implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
-        if (pl.ingameList.containsKey(p) || pl.spectators.contains(p)) {
+        if (pl.ingameList.containsKey(p) || pl.spectators.containsKey(p)) {
             e.setCancelled(true);
             return;
         }
@@ -40,7 +40,7 @@ public class BlockListener implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
         Player p = e.getPlayer();
-        if (pl.ingameList.containsKey(p) || pl.spectators.contains(p)) {
+        if (pl.ingameList.containsKey(p) || pl.spectators.containsKey(p)) {
             e.setCancelled(true);
             return;
         }
@@ -49,53 +49,36 @@ public class BlockListener implements Listener {
         }
     }
 
-    @EventHandler
+    /*@EventHandler
     public void onIgnite(BlockIgniteEvent e) {
         if (e.getPlayer() == null) {
             e.setCancelled(true);
         } else if (!e.getBlock().getType().equals(Material.TNT)) {
             e.setCancelled(true);
         }
-    }
+    }*/
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent e) {
-        if (pl.gameStarted && e.getLocation().getWorld().equals(pl.getServer().getWorld(pl.worldName))) {
+        e.setCancelled(true);
+        if (pl.state == pl.PLAYING && e.getLocation().getWorld().equals(pl.getServer().getWorld(pl.worldName))) {
             Location expl = e.getLocation();
-            e.setCancelled(true);
             for (Tower t : pl.towers.values()) {
-                if (expl.distance(t.getLoc()) < 5) {
+                if (expl.distance(t.getLoc()) < 10) {
                     if (alreadyBrokenPast(t.getLoc())) {
                         if (t.getName().equalsIgnoreCase("Blue Ancient")) {
                             pl.broadcast(pl.getLang("lang.redTeamWon"));
-                            pl.state = 3;
                             t.setDestroyed(true);
-                            /*for(Jogador j : pl.ingameList.values()) {
-                             if(j.getTeam() == 1) {
-                             j.addLose(j.getPlayer().getName());
-                             } else {
-                             j.addWin(j.getPlayer().getName());
-                             }
-                             }*/
-                            pl.getServer().setWhitelist(true);
-                            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 15);
+                            pl.endGame(2);
                         } else if (t.getName().equalsIgnoreCase("Red Ancient")) {
                             pl.broadcast(pl.getLang("lang.blueTeamWon"));
-                            pl.state = 3;
                             t.setDestroyed(true);
-                            //TODO: MYSQL and Scoreboard support
-                            /*for(Jogador j : pl.ingameList.values()) {
-                             if(j.getTeam() == 1) {
-                             j.addWin(j.getPlayer().getName());
-                             } else {
-                             j.addLose(j.getPlayer().getName());
-                             }
-                             }*/
-                            pl.getServer().setWhitelist(true);
-                            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopRunnable(pl), 20 * 15);
+                            pl.endGame(1);
                         } else {
                             pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", t.getName()));
                             t.setDestroyed(true);
+                            checkForMegacreeps();
+                            addTowerMoney(pl.getOtherTeam(t.getTeam()));
                         }
                     } else {
                         t.setDestroyed(false);
@@ -161,7 +144,23 @@ public class BlockListener implements Listener {
                 return false;
             }
         } else {
-            return false;
+            return true;
+        }
+    }
+
+    private void addTowerMoney(int team) {
+        for (Jogador j : pl.ingameList.values()) {
+            if (j.getTeam() == team) {
+                j.addTowerKillMoney();
+            }
+        }
+    }
+
+    private void checkForMegacreeps() {
+        if (pl.towers.get(pl.blueFBotT).isDestroyed() && pl.towers.get(pl.blueFMidT).isDestroyed() && pl.towers.get(pl.blueFTopT).isDestroyed()) {
+            pl.megaCreeps = true;
+        } else if (pl.towers.get(pl.redFBotT).isDestroyed() && pl.towers.get(pl.redFMidT).isDestroyed() && pl.towers.get(pl.redFTopT).isDestroyed()) {
+            pl.megaCreeps = true;
         }
     }
 }

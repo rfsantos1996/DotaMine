@@ -1,33 +1,32 @@
 name: DotaMine
-version: 0.1
+version: 0.3
 author: rfsantos1996
 main: com.jabyftw.dotamine.DotaMine
 description: Dota on Minecraft
 depend: [ControllableMobsAPI]
-softdepend: [Vault]
+softdepend: [Vault,ProtocolLib]
 commands:
    dota:
      description: Main command
-     permission: dotamine.dota
-     usage: Use /dota help
+     usage: Use /dota (forcestart/ranking/tp)
    join:
      description: Join command
      permission: dotamine.play
-     usage: Use /join
+     usage: Use /join (meele/ranged/leave)
    spectate:
      description: Spectate command
      permission: dotamine.spectate
-     usage: Use /spectate
+     usage: Use /spectate [leave]
 permissions:
-   dotamine.dota:
-     description: Gives access to dota command
-     default: true
    dotamine.play:
      description: Gives access to join command
      default: true
    dotamine.spectate:
      description: Gives access to spectate the game on join
      default: true
+   dotamine.ranking:
+     description: Gives access to /dota ranking command
+     default: true
    dotamine.forcestart:
-     description: Allows you to break blocks
+     description: Allows you force start the game
      default: op

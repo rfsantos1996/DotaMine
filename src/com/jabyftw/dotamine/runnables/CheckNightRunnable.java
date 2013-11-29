@@ -13,7 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class CheckNightRunnable extends BukkitRunnable {
 
     private final DotaMine pl;
-    private boolean executed = false;
+    private boolean told = false;
 
     public CheckNightRunnable(DotaMine pl) {
         this.pl = pl;
@@ -22,14 +22,20 @@ public class CheckNightRunnable extends BukkitRunnable {
     @Override
     public void run() {
         if (pl.getServer().getWorld(pl.worldName).getTime() > 13000) {
-            if (!executed) {
-                for (Jogador j : pl.ingameList.values()) {
-                    if (j.getAttackType() == 2) { // Ranged
-                        j.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 1, false), true);
+            for (Jogador j : pl.ingameList.values()) {
+                if (j.getAttackType() == 2) { // Ranged
+                    j.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 0, false), true);
+                    if (!told) {
                         j.getPlayer().sendMessage(pl.getLang("lang.lowRangedNightVision"));
                     }
                 }
-                executed = true;
+            }
+            told = true;
+        } else {
+            for (Jogador j : pl.ingameList.values()) {
+                if (j.getAttackType() == 2) { // Ranged
+                    j.getPlayer().removePotionEffect(PotionEffectType.BLINDNESS);
+                }
             }
         }
     }

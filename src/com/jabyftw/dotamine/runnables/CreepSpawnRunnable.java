@@ -32,24 +32,23 @@ public class CreepSpawnRunnable extends BukkitRunnable {
     }
 
     private void spawn(Location spawnloc) {
+        spawnloc.getChunk().load();
+        boolean playernear = false;
+        int spawn = 0;
         for (Player p : pl.ingameList.keySet()) {
-            if (p.getLocation().distance(spawnloc) < 24) {
-                if (pl.laneCreeps.size() > 0) {
-                    int spawn = 0;
-                    for (ControllableMob cm : pl.laneCreeps) {
-                        if (cm.getEntity().getLocation().distance(spawnloc) < 18) {
-                            spawn++;
-                        }
-                    }
-                    if (spawn < 2) {
-                        spawnloc.getChunk().load();
-                        pl.spawnLaneCreeps(spawnloc);
-                    }
-                } else {
-                    spawnloc.getChunk().load();
-                    pl.spawnLaneCreeps(spawnloc);
+            if (p.getLocation().distance(spawnloc) < 32) {
+                playernear = true;
+            }
+        }
+        if (pl.laneCreeps.size() > 0 && playernear) {
+            for (ControllableMob cm : pl.laneCreeps) {
+                if (cm.getEntity().getLocation().distance(spawnloc) < 22) {
+                    spawn++;
                 }
             }
+        }
+        if (spawn < 3 && playernear) {
+            pl.spawnLaneCreeps(spawnloc);
         }
     }
 }

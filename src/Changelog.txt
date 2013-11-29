@@ -33,5 +33,36 @@
  - Fixed NPE when random clicking everywhere (PlayerListener, e.getItemInHand was null)
 
 0.3:
+ * GAMEPLAY:
+ - Added /dota tp (bot/top/mid/base) - this will require a PAPER on player's HAND / Cooldown: 90 sec / Canceled on damage
+ - Added Force Staff: left clicking Diamond Hoe - Thank you, https://github.com/Eniripsa96/EnchantmentPack/blob/master/EnchantActivePack/src/com/sucy/active/enchants/Dash.java#L52
+ - Added Heart of Tarrasque: left click on inventory to use - it will regen your health until you receive damage
+ - Added Smoke of Deceit: make allies near you invisible for 40 seconds - single use - smoke is still shown, use to run away // Item "30" - WEB
+ - Better spectator mode (right click = forward on Players' list | left click = backward on Players' list)
+ - Better /spectate command
+ - Last hit money: creeps -> from 42 to 52 | jungle -> from 83 to 94 (random value between and including that)
+ - If a ranged attacks with iron/gold/diamond sword, won't deal any damage
+ - People now receive money for destroying towers (from 130 to 180)
+ - Jungle now spawn more easily
+ - Jungle now drops between 0 and 3 arrows
+ - Jungle now drops between 6 and 8 EXP (default is 5)
+ - Jungle now have 10 MORE HP and respawns EVERY 40 seconds (before was 6 and 30)
+ - If enemies are 5 distance from the enemy base, they will lose health
+ - If allies are 5 distance from their base, they will auto-regen
+ - Creeps won't pickup items now
+ - Meele creeps have higher target distance detection and ranged have lower.
+ - MegaCreeps will spawn once one team have all first towers destroyed - and will drop less money and have new weapons
+ - Removed Ranged knockback on Players, BUT ranged will ignore armor (sadly)
  * PLUGIN:
+ - Added time before starting game (2 minutes) - that screwed my head
+ - Added more effects (player damaged, entity damaged, Force Staff, respawn)
+ - Added support for Java 1.6 - sorry lol
+ - Changed yaw and pitch on deploy and normal spawn, you're now looking at signs (;
+ - Better /spectate command
  - Players can join before creep spawn
+ - Players now have potion effects removed when joining
+ - Ping MOTD are now changeable, %min = Players to start, %max = max players ingame, %ingame = players ingame, %spectator = spectators, %queue = players in queue
+ - Changed EntityDamageByEntityEvent priorities, to make it more efficient
+ - Fixed a TOTAL RANDOM NullPointerException that happens when someone crash
+ - Fixed forced games (/dota forcestart) didnt destroying towers
+ - Removed ProtocolLib support... Don't needed at all

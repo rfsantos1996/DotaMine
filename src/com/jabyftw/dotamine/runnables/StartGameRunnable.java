@@ -10,16 +10,22 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class StartGameRunnable extends BukkitRunnable {
 
     private final DotaMine pl;
+    private final boolean forced;
 
-    public StartGameRunnable(DotaMine pl) {
+    public StartGameRunnable(DotaMine pl, boolean forced) {
         this.pl = pl;
+        this.forced = forced;
     }
 
     @Override
     public void run() {
-        pl.state = 2;
-        pl.broadcast(pl.getLang("lang.theGamehasStarted"));
-        pl.broadcast(pl.getLang("lang.creepsWillSpawn"));
+        if (pl.queue.size() < pl.MIN_PLAYERS) {
+            pl.getServer().getScheduler().cancelTask(pl.announceQueue);
+            pl.state = pl.PLAYING;
+            pl.startGame(forced);
+        } else {
+            pl.broadcast(pl.getLang("lang.couldntStartGame"));
+        }
     }
 
 }

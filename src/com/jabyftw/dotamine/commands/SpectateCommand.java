@@ -22,10 +22,21 @@ public class SpectateCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             Player p = (Player) sender;
-            if(p.hasPermission("dotamine.spectate")) {
-                if(pl.gameStarted) {
-                    pl.addSpectator(p);
-                    return true;
+            if (p.hasPermission("dotamine.spectate")) {
+                if (pl.state == pl.PLAYING || pl.state == pl.SPAWNING) {
+                    if (pl.spectators.containsKey(p)) {
+                        if (args.length > 0) {
+                            sender.sendMessage(pl.getLang("lang.leftSpectator"));
+                            pl.removeSpectator(p);
+                            return true;
+                        } else {
+                            sender.sendMessage(pl.getLang("lang.alreadySpectating"));
+                            return true;
+                        }
+                    } else {
+                        pl.addSpectator(p);
+                        return true;
+                    }
                 } else {
                     p.sendMessage(pl.getLang("lang.gameNotStarted"));
                     return true;

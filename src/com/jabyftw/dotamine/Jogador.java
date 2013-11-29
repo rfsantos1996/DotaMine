@@ -1,5 +1,9 @@
 package com.jabyftw.dotamine;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
 import org.bukkit.entity.Player;
 
 /**
@@ -52,10 +56,93 @@ public class Jogador {
         return attackType; // 1 = Meele, 2 = Ranged
     }
 
+    public int getMySQLKills() {
+        int mysqlkills = 0;
+        try {
+            Statement s = pl.sql.getConn().createStatement();
+            ResultSet rs = s.executeQuery("SELECT `kills` FROM dotamine WHERE `name`='" + p.getName() + "' LIMIT 1;");
+            while (rs.next()) {
+                mysqlkills = rs.getInt("kills");
+            }
+        } catch (SQLException ex) {
+            pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+        }
+        return mysqlkills;
+    }
+
+    public int getMySQLDeaths() {
+        int mysqldeaths = 0;
+        try {
+            Statement s = pl.sql.getConn().createStatement();
+            ResultSet rs = s.executeQuery("SELECT `deaths` FROM dotamine WHERE `name`='" + p.getName() + "' LIMIT 1;");
+            while (rs.next()) {
+                mysqldeaths = rs.getInt("deaths");
+            }
+        } catch (SQLException ex) {
+            pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+        }
+        return mysqldeaths;
+    }
+
+    public int getWins() {
+        int wins = 0;
+        try {
+            Statement s = pl.sql.getConn().createStatement();
+            ResultSet rs = s.executeQuery("SELECT `wins` FROM dotamine WHERE `name`='" + p.getName() + "' LIMIT 1;");
+            while (rs.next()) {
+                wins = rs.getInt("wins");
+            }
+        } catch (SQLException ex) {
+            pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+        }
+        return wins;
+    }
+
+    public int getLoses() {
+        int loses = 0;
+        try {
+            Statement s = pl.sql.getConn().createStatement();
+            ResultSet rs = s.executeQuery("SELECT `loses` FROM dotamine WHERE `name`='" + p.getName() + "' LIMIT 1;");
+            while (rs.next()) {
+                loses = rs.getInt("loses");
+            }
+        } catch (SQLException ex) {
+            pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+        }
+        return loses;
+    }
+
+    public void addWin() {
+        if (pl.mysqlEnabled) {
+            try {
+                Statement s = pl.sql.getConn().createStatement();
+                s.executeUpdate("UPDATE `dotamine` SET `wins`=" + (getWins() + 1) + " WHERE `name`='" + p.getName() + "';");
+            } catch (SQLException ex) {
+                pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+            }
+        }
+    }
+
+    public void addLose() {
+        if (pl.mysqlEnabled) {
+            try {
+                Statement s = pl.sql.getConn().createStatement();
+                s.executeUpdate("UPDATE `dotamine` SET `loses`=" + (getLoses() + 1) + " WHERE `name`='" + p.getName() + "';");
+            } catch (SQLException ex) {
+                pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+            }
+        }
+    }
+
     public void addLH() {
         lh = lh + 1;
         if (pl.useVault) {
-            int money = (int) getLHMoney();
+            int money;
+            if (pl.megaCreeps) {
+                money = (int) pl.getRandom(32, 42);
+            } else {
+                money = (int) pl.getRandom(42, 52);
+            }
             pl.econ.depositPlayer(p.getName(), money);
         }
     }
@@ -63,7 +150,12 @@ public class Jogador {
     public void addJungleLH() {
         lh = lh + 1;
         if (pl.useVault) {
-            int money = (int) getJungleLHMoney();
+            int money;
+            if (pl.megaCreeps) {
+                money = (int) pl.getRandom(63, 74);
+            } else {
+                money = (int) pl.getRandom(83, 94);
+            }
             pl.econ.depositPlayer(p.getName(), money);
         }
     }
@@ -76,16 +168,39 @@ public class Jogador {
             pl.econ.depositPlayer(p.getName(), money);
             announceKillstreak(p.getDisplayName(), dead.getPlayer().getDisplayName(), killstreak, money);
         }
+        if (pl.mysqlEnabled) {
+            try {
+                Statement s = pl.sql.getConn().createStatement();
+                s.executeUpdate("UPDATE `dotamine` SET `kills`=" + (getMySQLKills() + 1) + " WHERE `name`='" + p.getName() + "';");
+            } catch (SQLException ex) {
+                pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+            }
+        }
     }
 
     public void addDeath() {
         deaths = deaths + 1;
         if (pl.useVault) {
             int deathcost = (int) getDeathMoney();
+            double balance = pl.econ.getBalance(p.getName());
+            if (deathcost > balance) {
+                if (balance != 0) {
+                    pl.econ.withdrawPlayer(p.getName(), balance);
+                } // else dont have anything...
+            } else {
+                pl.econ.withdrawPlayer(p.getName(), deathcost);
+            }
             p.sendMessage(pl.getLang("lang.youLoseXMoney").replaceAll("%money", Integer.toString(deathcost)));
-            pl.econ.withdrawPlayer(p.getName(), deathcost);
         }
         killstreak = 0;
+        if (pl.mysqlEnabled) {
+            try {
+                Statement s = pl.sql.getConn().createStatement();
+                s.executeUpdate("UPDATE `dotamine` SET `deaths`=" + (getMySQLDeaths() + 1) + " WHERE `name`='" + p.getName() + "';");
+            } catch (SQLException ex) {
+                pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+            }
+        }
     }
 
     public void addNeutralDeath() {
@@ -113,14 +228,6 @@ public class Jogador {
         } else {
             return 1000 + (deadsKillstreak * 10);
         }
-    }
-
-    private int getLHMoney() {
-        return 23;
-    }
-
-    private int getJungleLHMoney() {
-        return 48;
     }
 
     private double getDeathMoney() {
@@ -170,6 +277,14 @@ public class Jogador {
             } else {
                 pl.broadcast(pl.getLang("lang.killstreak.tenAndBeyond").replaceAll("%name", name).replaceAll("%dead", dead).replaceAll("%money", Double.toString(money)));
             }
+        }
+    }
+
+    public void addTowerKillMoney() {
+        if (pl.useVault) {
+            int money = (int) pl.getRandom(130, 180);
+            pl.econ.depositPlayer(p.getName(), money);
+            p.sendMessage(pl.getLang("lang.announceTowerKill").replaceAll("%money", Integer.toString(money)));
         }
     }
 }

@@ -17,6 +17,6 @@ public class StopRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        pl.endGame();
+        pl.shutdownServer();
     }
 }
