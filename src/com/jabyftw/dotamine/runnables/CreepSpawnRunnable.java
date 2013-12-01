@@ -19,6 +19,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -88,11 +89,16 @@ public class CreepSpawnRunnable extends BukkitRunnable {
         }
         for (int i = 0; i < 4; i++) {
             Zombie z = pl.getServer().getWorld(pl.worldName).spawn(spawnloc, Zombie.class);
-            if (pl.megaCreeps) {// TODO: add armor
+            if (pl.megaCreeps) {
+                EntityEquipment eq = z.getEquipment();
                 ItemStack sword = new ItemStack(Material.STONE_SWORD);
                 sword.addEnchantment(Enchantment.DAMAGE_ALL, 4);
-                z.getEquipment().setItemInHand(sword);
-                z.getEquipment().setItemInHandDropChance(0);
+                eq.setItemInHandDropChance(0);
+                eq.setItemInHand(sword);
+                eq.setChestplateDropChance(0);
+                eq.setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
+                eq.setLeggingsDropChance(0);
+                eq.setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
             }
             z.setRemoveWhenFarAway(false);
             z.setCanPickupItems(false);
@@ -114,8 +120,13 @@ public class CreepSpawnRunnable extends BukkitRunnable {
         for (int i = 0; i < 2; i++) {
             Skeleton s = pl.getServer().getWorld(pl.worldName).spawn(spawnloc, Skeleton.class);
             ItemStack bow = new ItemStack(Material.BOW);
-            if (pl.megaCreeps) {// TODO: add armor
+            if (pl.megaCreeps) {
+                EntityEquipment eq = s.getEquipment();
                 bow.addEnchantment(Enchantment.ARROW_DAMAGE, 2);
+                eq.setChestplateDropChance(0);
+                eq.setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
+                eq.setLeggingsDropChance(0);
+                eq.setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
             }
             s.getEquipment().setItemInHand(bow);
             s.getEquipment().setItemInHandDropChance(0);

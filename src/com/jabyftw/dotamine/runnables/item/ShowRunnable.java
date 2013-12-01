@@ -13,20 +13,25 @@ public class ShowRunnable extends BukkitRunnable {
     private final DotaMine pl;
     private final Player p;
 
-    public ShowRunnable(DotaMine pl, Player p, int from) {
+    public ShowRunnable(DotaMine pl, Player p) {
         this.pl = pl;
         this.p = p;
-        if (from == 1) { // shadow
-            pl.invisibleSB.remove(p);
-        } else { // web
-            pl.invisibleW.remove(p);
-        }
     }
 
     @Override
     public void run() {
-        pl.showPlayerFromTeam(p, pl.getOtherTeam(p));
-        pl.smokeEffect(p.getLocation(), 10);
-        p.sendMessage(pl.getLang("lang.inviOverMessage"));
+        if (pl.invisible.containsKey(p)) {
+            pl.showPlayerFromTeam(p, pl.getOtherTeam(p));
+            pl.smokeEffect(p.getLocation(), 10);
+            if (pl.invisible.get(p) == 1) {    
+                pl.invisibleSB.remove(p);
+            } else {
+                pl.getServer().getScheduler().cancelTask(pl.invisibleEffectW.get(p));
+                pl.invisibleEffectW.remove(p);
+                pl.invisibleW.remove(p);
+            }
+            pl.invisible.remove(p);
+            p.sendMessage(pl.getLang("lang.inviOverMessage"));
+        }
     }
 }

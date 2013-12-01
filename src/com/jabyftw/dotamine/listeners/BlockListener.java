@@ -3,6 +3,7 @@ package com.jabyftw.dotamine.listeners;
 import com.jabyftw.dotamine.DotaMine;
 import com.jabyftw.dotamine.Jogador;
 import com.jabyftw.dotamine.Tower;
+import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -47,23 +48,14 @@ public class BlockListener implements Listener {
         }
     }
 
-    /*@EventHandler
-    public void onIgnite(BlockIgniteEvent e) {
-        if (e.getPlayer() == null) {
-            e.setCancelled(true);
-        } else if (!e.getBlock().getType().equals(Material.TNT)) {
-            e.setCancelled(true);
-        }
-    }*/
-
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent e) {
         e.setCancelled(true);
-        if (pl.state == pl.PLAYING && e.getLocation().getWorld().equals(pl.getServer().getWorld(pl.worldName))) {
+        if (e.getLocation().getWorld() == pl.getServer().getWorld(pl.worldName)) {
             Location expl = e.getLocation();
             for (Tower t : pl.towers.values()) {
                 if (expl.distance(t.getLoc()) < 10) {
-                    if (alreadyBrokenPast(t.getLoc())) {
+                    if (alreadyBrokenPast(t.getLoc()) && pl.state == pl.PLAYING) {
                         if (t.getName().equalsIgnoreCase("Blue Ancient")) {
                             pl.broadcast(pl.getLang("lang.redTeamWon"));
                             t.setDestroyed(true);
@@ -84,6 +76,7 @@ public class BlockListener implements Listener {
                 }
             }
         }
+
     }
 
     private boolean alreadyBrokenPast(Location loc) {

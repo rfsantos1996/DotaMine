@@ -1,19 +1,24 @@
 package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
+import com.jabyftw.dotamine.Jogador;
 import com.jabyftw.dotamine.runnables.item.ItemCDRunnable;
 import com.jabyftw.dotamine.runnables.item.ShowRunnable;
+import com.jabyftw.dotamine.runnables.item.SmokeDeceitEffectRunnable;
 import java.util.List;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -50,6 +55,7 @@ public class PlayerListener implements Listener {
             return;
         }
         pl.cleanPlayer(p, false, false);
+        p.setDisplayName(ChatColor.GREEN + p.getName());
         e.setJoinMessage(pl.getLang("lang.joinMessage").replaceAll("%name", p.getName()));
         p.teleport(pl.normalSpawn);
         if (pl.useVault) {
@@ -79,10 +85,11 @@ public class PlayerListener implements Listener {
         Player p = e.getPlayer();
         e.setQuitMessage(pl.getLang("lang.quitMessage").replaceAll("%name", p.getName()));
         checkIngameThings(p);
-        if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING)) { // 1 player left
+        if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING) && pl.ingameList.containsKey(p)) { // 1 player left
             pl.broadcast(pl.getLang("lang.onePlayerLeft"));
             pl.endGame(true, 0);
         }
+
     }
 
     @EventHandler
@@ -90,6 +97,10 @@ public class PlayerListener implements Listener {
         Player p = e.getPlayer();
         e.setLeaveMessage(pl.getLang("lang.quitMessage").replaceAll("%name", p.getName()));
         checkIngameThings(p);
+        if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING) && pl.ingameList.containsKey(p)) { // 1 player left
+            pl.broadcast(pl.getLang("lang.onePlayerLeft"));
+            pl.endGame(true, 0);
+        }
     }
 
     @EventHandler
@@ -136,16 +147,21 @@ public class PlayerListener implements Listener {
             BukkitScheduler bs = pl.getServer().getScheduler();
             if (e.getItem() != null && e.getItem().getType().equals(Material.BLAZE_ROD)) { // Shadow Blade
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-                    if (pl.shadowCD.contains(p)) {
-                        p.sendMessage(pl.getLang("lang.itemCDMessage").replaceAll("%item", "Shadow Blade"));
+                    if (!pl.invisible.containsKey(p)) {
+                        if (pl.shadowCD.contains(p)) {
+                            p.sendMessage(pl.getLang("lang.itemCDMessage").replaceAll("%item", "Shadow Blade"));
+                        } else {
+                            p.sendMessage(pl.getLang("lang.itemUseMessage").replaceAll("%item", "Shadow Blade").replaceAll("%cd", "45"));
+                            bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.SHADOW_BLADE), 20 * 45);
+                            pl.shadowCD.add(p);
+                            int show = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, p), 20 * 40);
+                            pl.invisible.put(p, 1);
+                            pl.invisibleSB.put(p, show);
+                            pl.smokeEffect(p.getLocation(), 10);
+                            pl.hidePlayerFromTeam(p, pl.getOtherTeam(p));
+                        }
                     } else {
-                        p.sendMessage(pl.getLang("lang.itemUseMessage").replaceAll("%item", "Shadow Blade").replaceAll("%cd", "45"));
-                        bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.SHADOW_BLADE), 20 * 45);
-                        pl.shadowCD.add(p);
-                        int run = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, p, 1), 20 * 15);
-                        pl.invisibleSB.put(p, run);
-                        pl.smokeEffect(p.getLocation(), 10);
-                        pl.hidePlayerFromTeam(p, pl.getOtherTeam(p));
+                        p.sendMessage(pl.getLang("lang.alreadyInvisible"));
                     }
                 }
             } else if (e.getItem() != null && e.getItem().getType().equals(Material.DIAMOND_HOE)) { // Force Staff
@@ -156,32 +172,47 @@ public class PlayerListener implements Listener {
                         p.sendMessage(pl.getLang("lang.itemUseMessage").replaceAll("%item", "Force Staff").replaceAll("%cd", "60"));
                         bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.FORCE_STAFF), 20 * 60);
                         pl.forceCD.add(p);
-                        bs.scheduleSyncRepeatingTask(pl, new ForceStaffRunnable(p), 1, 1);
+                        bs.scheduleSyncDelayedTask(pl, new ForceStaffRunnable(p));
+                        int run = bs.scheduleSyncRepeatingTask(pl, new ForceEffectRunnable(p), 2, 2);
+                        bs.scheduleSyncDelayedTask(pl, new ForceStopRunnable(p), 16);
+                        pl.forcingStaff.put(p, run);
                     }
                 }
             } else if (e.getItem() != null && e.getItem().getType().equals(Material.FERMENTED_SPIDER_EYE)) { // Tarrasque
                 if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     pl.checkForTarrasque(p);
                 }
-            } else if (e.getItem() != null && e.getItem().getType().equals(Material.WEB)) {
+            } else if (e.getItem() != null && e.getItem().getType().equals(Material.WEB)) { // Smoke
                 if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     if (p.getItemInHand().getType().equals(Material.WEB)) {
-                        p.getInventory().remove(p.getItemInHand());
-                        List<Entity> list = p.getNearbyEntities(15 / 2, 13 / 2, 15 / 2);
-                        list.add((Entity) p);
-                        for (Entity en : list) {
-                            if (en instanceof Player) {
-                                Player pla = (Player) en;
-                                if (pl.ingameList.containsKey(pla)) {
-                                    if (pl.ingameList.get(pla).getTeam() == pl.ingameList.get(p).getTeam()) {
-                                        pl.hidePlayerFromTeam(pla, pl.getOtherTeam(pla));
-                                        int run = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, pla, 2), 20 * 40);
-                                        bs.scheduleSyncRepeatingTask(pl, new SmokeOfDeceitRunnable(pla), 2, 2);
-                                        pl.invisibleW.put(pla, run);
-                                        pla.sendMessage(pl.getLang("lang.itemUseMessageDontCD").replaceAll("%item", "Smoke of Deceit"));
+                        if (pl.smokeCD.contains(p)) {
+                            p.sendMessage(pl.getLang("lang.itemCDMessage").replaceAll("%item", "Smoke of Deceit"));
+                        } else {
+                            p.getInventory().remove(p.getItemInHand());
+                            List<Entity> list = p.getNearbyEntities(15 / 2, 13 / 2, 15 / 2);
+                            list.add(p);
+                            for (Entity en : list) {
+                                if (en instanceof Player) {
+                                    Player pla = (Player) en;
+                                    if (pl.ingameList.containsKey(pla)) {
+                                        if (pl.ingameList.get(pla).getTeam() == pl.ingameList.get(p).getTeam()) {
+                                            if (!pl.invisible.containsKey(pla)) {
+                                                pl.hidePlayerFromTeam(pla, pl.getOtherTeam(pla));
+                                                int show = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, pla), 20 * 40);
+                                                int show2 = bs.scheduleSyncRepeatingTask(pl, new SmokeDeceitEffectRunnable(pl, pla), 4, 4);
+                                                pl.invisible.put(pla, 2);
+                                                pl.invisibleW.put(pla, show);
+                                                pl.invisibleEffectW.put(pla, show2);
+                                            } else {
+                                                pla.sendMessage(pl.getLang("lang.alreadyInvisible"));
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            p.sendMessage(pl.getLang("lang.itemUseMessageDontCD").replaceAll("%item", "Smoke of Deceit"));
+                            pl.smokeCD.add(p);
+                            bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.SMOKE), 20 * 90);
                         }
                     }
                 }
@@ -189,9 +220,22 @@ public class PlayerListener implements Listener {
         } else if (pl.spectators.containsKey(p)) {
             if (e.getItem() != null && e.getItem().getType().equals(Material.COMPASS)) {
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-                    p.teleport(pl.spectators.get(p).addN().getLocation().add(0, 2, 0));
+                    if (!pl.spectatorsCD.contains(p)) {
+                        p.teleport(pl.spectators.get(p).addN().getLocation().add(0, 2, 0));
+                        pl.spectatorsCD.add(p);
+                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new SpecCDRunnable(p), 20 * 3);
+                    } else {
+                        p.sendMessage(pl.getLang("lang.cantTeleportEverytime"));
+                    }
+
                 } else if ((e.getAction() == Action.LEFT_CLICK_AIR) || (e.getAction() == Action.LEFT_CLICK_BLOCK)) {
-                    p.teleport(pl.spectators.get(p).subN().getLocation().add(0, 2, 0));
+                    if (!pl.spectatorsCD.contains(p)) {
+                        p.teleport(pl.spectators.get(p).subN().getLocation().add(0, 2, 0));
+                        pl.spectatorsCD.add(p);
+                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new SpecCDRunnable(p), 20 * 3);
+                    } else {
+                        p.sendMessage(pl.getLang("lang.cantTeleportEverytime"));
+                    }
                 }
             }
         }
@@ -248,8 +292,9 @@ public class PlayerListener implements Listener {
             pl.playerDeathItems.remove(p);
             p.getInventory().setArmorContents(pl.playerDeathArmor.get(p)); // helmet wont work being wool
             pl.playerDeathArmor.remove(p);
-            int run = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new RespawnRunnable(p), 2, 2);
+            int run = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new RespawnEffectRunnable(p), 2, 2);
             pl.respawning.put(p, run);
+            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new RespawnStopRunnable(p), 5);
             if (pl.ingameList.get(p).getTeam() == 1) {
                 p.getInventory().setHelmet(new ItemStack(Material.WOOL, 1, (short) 11));
                 e.setRespawnLocation(pl.blueDeploy);
@@ -258,6 +303,14 @@ public class PlayerListener implements Listener {
                 e.setRespawnLocation(pl.redDeploy);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onChat(AsyncPlayerChatEvent e) {
+        Player sender = e.getPlayer();
+        String msg = e.getMessage();
+        e.setCancelled(true);
+        executeChat(sender, msg);
     }
 
     private void checkIngameThings(Player p) {
@@ -277,12 +330,68 @@ public class PlayerListener implements Listener {
         if (pl.teleporting.containsKey(p)) {
             pl.teleporting.remove(p);
         }
+        if (pl.invisible.containsKey(p)) {
+            if (pl.invisible.get(p) == 1) {
+                pl.invisibleSB.remove(p);
+            } else {
+                pl.invisibleW.remove(p);
+                pl.invisibleEffectW.remove(p);
+            }
+        }
+    }
+
+    private void executeChat(Player sender, String msg) {
+        String message = pl.getLang("lang.chat.general").replaceAll("%name", sender.getDisplayName()).replaceAll("%message", msg);
+        if (pl.spectators.containsKey(sender)) {
+            for (Player p : sender.getLocation().getWorld().getPlayers()) {
+                if (!pl.ingameList.containsKey(p)) {
+                    p.sendMessage(pl.getLang("lang.chat.spectating").replaceAll("%name", sender.getDisplayName()).replaceAll("%message", msg).replaceAll("%general", message));
+                }
+            }
+        } else if (pl.ingameList.containsKey(sender)) {
+            int team = pl.ingameList.get(sender).getTeam();
+            for (Jogador j : pl.ingameList.values()) {
+                if (j.getTeam() == team) {
+                    j.getPlayer().sendMessage(pl.getLang("lang.chat.ingame").replaceAll("%name", sender.getDisplayName()).replaceAll("%message", msg).replaceAll("%general", message).replaceAll("%team", getTeamName(pl.ingameList.get(sender).getTeam())));
+                }
+            }
+            for (Player p : pl.spectators.keySet()) {
+                p.sendMessage(pl.getLang("lang.chat.ingame").replaceAll("%name", sender.getDisplayName()).replaceAll("%message", msg).replaceAll("%general", message).replaceAll("%team", getTeamName(pl.ingameList.get(sender).getTeam())));
+            }
+        } else {
+            for (Player p : sender.getLocation().getWorld().getPlayers()) {
+                if (!pl.ingameList.containsKey(p)) {
+                    p.getPlayer().sendMessage(message);
+                }
+            }
+        }
+    }
+
+    private String getTeamName(int team) {
+        if (team == 1) {
+            return pl.getLang("lang.chat.blueTeam");
+        } else {
+            return pl.getLang("lang.chat.redTeam");
+        }
+    }
+
+    private class SpecCDRunnable implements Runnable {
+
+        private final Player p;
+
+        public SpecCDRunnable(Player p) {
+            this.p = p;
+        }
+
+        @Override
+        public void run() {
+            pl.spectatorsCD.remove(p);
+        }
     }
 
     private class ForceStaffRunnable extends BukkitRunnable {
 
         private final Player p;
-        private int i = 1;
 
         public ForceStaffRunnable(Player p) {
             this.p = p;
@@ -290,59 +399,70 @@ public class PlayerListener implements Listener {
 
         @Override
         public void run() {
-            if (i == 1) {
-                Vector vec = p.getLocation().getDirection();
-                vec.setY(0);
-                vec.multiply(2.5 / vec.length());
-                vec.setY(0.3);
-                p.setVelocity(vec);
-            }
-            i++;
-            pl.smokeEffect(p.getLocation(), 10);
-            if (i > 15) {
-                pl.getServer().getScheduler().cancelTask(pl.forcingStaff.get(p));
-                pl.forcingStaff.remove(p);
-            }
+            Vector vec = p.getLocation().getDirection();
+            vec.setY(0);
+            vec.multiply(2.5 / vec.length());
+            vec.setY(0.3);
+            p.setVelocity(vec);
         }
     }
 
-    private class SmokeOfDeceitRunnable implements Runnable {
+    private class ForceEffectRunnable extends BukkitRunnable {
 
         private final Player p;
-        private int i = 0;
 
-        public SmokeOfDeceitRunnable(Player p) {
+        public ForceEffectRunnable(Player p) {
             this.p = p;
         }
 
         @Override
         public void run() {
-            pl.smokeEffect(p.getLocation(), pl.getRandom(1, 9));
-            i++;
-            if (i > (20 * 40) * 2) {
-                pl.getServer().getScheduler().cancelTask(pl.invisibleW.get(p));
-                pl.invisibleW.remove(p);
-            }
+            pl.smokeEffect(p.getLocation(), 10);
         }
     }
 
-    private class RespawnRunnable implements Runnable {
+    private class ForceStopRunnable extends BukkitRunnable {
 
         private final Player p;
-        private int i = 0;
 
-        public RespawnRunnable(Player p) {
+        public ForceStopRunnable(Player p) {
+            this.p = p;
+        }
+
+        @Override
+        public void run() {
+            pl.getServer().getScheduler().cancelTask(pl.forcingStaff.get(p));
+            pl.forcingStaff.remove(p);
+        }
+    }
+
+    private class RespawnEffectRunnable implements Runnable {
+
+        private final Player p;
+
+        public RespawnEffectRunnable(Player p) {
             this.p = p;
         }
 
         @Override
         public void run() {
             pl.breakEffect(p.getLocation(), 2, 18);
-            i++;
-            if (i > 7) {
-                pl.getServer().getScheduler().cancelTask(pl.respawning.get(p));
-                pl.respawning.remove(p);
-            }
+
+        }
+    }
+
+    private class RespawnStopRunnable implements Runnable {
+
+        private final Player p;
+
+        public RespawnStopRunnable(Player p) {
+            this.p = p;
+        }
+
+        @Override
+        public void run() {
+            pl.getServer().getScheduler().cancelTask(pl.respawning.get(p));
+            pl.respawning.remove(p);
         }
     }
 }

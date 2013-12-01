@@ -41,7 +41,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitRunnable; // TODO: better SQL, k/d, avg. LH per game
 
 /**
  *
@@ -70,7 +70,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     /*
      PLUGIN
      */
-    public int redCount, blueCount, state, targetRunnable, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
+    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
     public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs;
     public Economy econ = null;
     public Config config = new Config(this);
@@ -93,33 +93,31 @@ public class DotaMine extends JavaPlugin implements Listener {
     public List<Entity> spawnedMobs = new ArrayList();
     public List<Entity> laneEntityCreeps = new ArrayList();
     public List<Entity> jungleEntityCreeps = new ArrayList();
-    public Location blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient;
-    public Location blueFBotT, blueFMidT, blueFTopT, redFBotT, redFMidT, redFTopT;
-    public Location blueSBotT, blueSMidT, blueSTopT, redSBotT, redSMidT, redSTopT;
-    public Location blueJungleBot, blueJungleTop, redJungleBot, redJungleTop;
-    public Location botSpawnPre, botSpawnPosR, botSpawnPosB;
-    public Location midSpawnPre, midSpawnPosR, midSpawnPosB;
-    public Location topSpawnPre, topSpawnPosR, topSpawnPosB;
+    public Location botSpawnPre, botSpawnPosR, botSpawnPosB, midSpawnPre, midSpawnPosR, midSpawnPosB, topSpawnPre, topSpawnPosR, topSpawnPosB, blueJungleBot, blueJungleTop, redJungleBot, redJungleTop, blueSBotT, blueSMidT, blueSTopT, redSBotT, redSMidT, redSTopT, blueFBotT, blueFMidT, blueFTopT, redFBotT, redFMidT, redFTopT, blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient;
     public Random random = new Random();
     /*
      ITEM
      */
     public List<Player> shadowCD = new ArrayList();
+    public Map<Player, Integer> invisible = new HashMap();
     public Map<Player, Integer> invisibleSB = new HashMap();
     public Map<Player, Integer> invisibleW = new HashMap();
+    public Map<Player, Integer> invisibleEffectW = new HashMap();
     public List<Player> forceCD = new ArrayList();
     public Map<Player, Integer> forcingStaff = new HashMap();
     public List<Player> tpCD = new ArrayList();
+    public List<Player> spectatorsCD = new ArrayList();
     public Map<Player, Integer> teleporting = new HashMap();
     public Map<Player, Integer> respawning = new HashMap();
     public List<Player> hasTarrasque = new ArrayList();
     public List<Player> tarrasqueRecentlyDamaged = new ArrayList();
+    public List<Player> smokeCD = new ArrayList();
 
     @Override
     public void onEnable() {
         state = WAITING;
-        version = 2; // config version
         megaCreeps = false;
+        version = 2; // config version
         config.generateConfig(getConfig());
         config.setLocations(getServer().getWorld(worldName));
         if (useVault) {
@@ -358,6 +356,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         cleanPlayer(p, false, false);
         p.teleport(normalSpawn);
         p.sendMessage(getLang("lang.leftSpectator"));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10, 100));
         spectators.remove(p);
     }
 
@@ -520,9 +519,10 @@ public class DotaMine extends JavaPlugin implements Listener {
 
         @Override
         public void run() {
-            if (hasTarrasque.size() > 0) {
-                for (Player p : hasTarrasque) {
-                    if (!tarrasqueRecentlyDamaged.contains(p) && checkForTarrasque(p)) {
+            for (Player p : ingameList.keySet()) {
+                checkForTarrasque(p);
+                if (hasTarrasque.contains(p)) {
+                    if (!tarrasqueRecentlyDamaged.contains(p)) {
                         p.removePotionEffect(PotionEffectType.REGENERATION);
                         p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 4, 1), true);
                     }
@@ -557,6 +557,7 @@ public class DotaMine extends JavaPlugin implements Listener {
 
         @Override
         public void run() {
+            state = PLAYING;
             broadcast(getLang("lang.theGamehasStarted"));
             broadcast(getLang("lang.creepsWillSpawn"));
         }

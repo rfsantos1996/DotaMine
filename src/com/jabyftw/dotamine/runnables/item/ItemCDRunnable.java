@@ -26,19 +26,23 @@ public class ItemCDRunnable extends BukkitRunnable {
             pl.shadowCD.remove(p);
         } else if (item == pl.FORCE_STAFF) {
             pl.forceCD.remove(p);
-        } else {
+        } else if (item == pl.TP_SCROLL) {
             pl.tpCD.remove(p);
+        } else {
+            pl.smokeCD.remove(p); // SMOKE
         }
         p.sendMessage(pl.getLang("lang.itemOverCDMessage").replaceAll("%item", getItemName()));
     }
-    
+
     private String getItemName() {
-        if(item == pl.SHADOW_BLADE) {
+        if (item == pl.SHADOW_BLADE) {
             return "Shadow Blade";
-        } else if(item == pl.FORCE_STAFF) {
+        } else if (item == pl.FORCE_STAFF) {
             return "Force Staff";
+        } else if (item == pl.TP_SCROLL) {
+            return "TP Scroll";
         } else {
-            return "TP Scroll"; // PAPER
+            return "Smoke of Deceit";
         }
     }
 }

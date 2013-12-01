@@ -21,7 +21,6 @@ public class StartGameRunnable extends BukkitRunnable {
     public void run() {
         if (pl.queue.size() < pl.MIN_PLAYERS) {
             pl.getServer().getScheduler().cancelTask(pl.announceQueue);
-            pl.state = pl.PLAYING;
             pl.startGame(forced);
         } else {
             pl.broadcast(pl.getLang("lang.couldntStartGame"));

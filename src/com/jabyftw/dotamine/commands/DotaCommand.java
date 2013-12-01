@@ -37,7 +37,7 @@ public class DotaCommand implements CommandExecutor {
                 } else {
                     if (pl.queue.size() > 0) {
                         sender.sendMessage(pl.getLang("lang.forcingStart"));
-                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, true), 20 * 121);
+                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, true));
                         return true;
                     } else {
                         sender.sendMessage(pl.getLang("lang.nobodyOnQueue"));
@@ -228,7 +228,8 @@ public class DotaCommand implements CommandExecutor {
 
     private void ftp(Player p, Location destination) {
         p.sendMessage(pl.getLang("lang.tpDontMove"));
-        int TPTask = pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRunnable(p, destination), 20 * 3);
+        int TPTask = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new TeleportEffectRunnable(p, destination), 2, 2);
+        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRunnable(p, destination), 20 * 3);
         pl.teleporting.put(p, TPTask);
     }
 
@@ -236,7 +237,6 @@ public class DotaCommand implements CommandExecutor {
 
         private final Player p;
         private final Location destination;
-        private int i = 1;
 
         public TeleportRunnable(Player p, Location destination) {
             this.p = p;
@@ -245,15 +245,27 @@ public class DotaCommand implements CommandExecutor {
 
         @Override
         public void run() {
+            p.teleport(destination);
+            destination.getWorld().playSound(destination, Sound.PORTAL_TRIGGER, 1, 0);
+            pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
+            pl.teleporting.remove(p);
+        }
+    }
+
+    private class TeleportEffectRunnable implements Runnable {
+
+        private final Player p;
+        private final Location destination;
+
+        public TeleportEffectRunnable(Player p, Location destination) {
+            this.p = p;
+            this.destination = destination;
+        }
+
+        @Override
+        public void run() {
             pl.breakEffect(destination, 2, 11);
             pl.breakEffect(p.getLocation(), 2, 55);
-            i++;
-            if (i >= 20 * 3) {
-                p.teleport(destination);
-                destination.getWorld().playSound(destination, Sound.PORTAL_TRIGGER, 1, 0);
-                pl.teleporting.remove(p);
-                pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
-            }
         }
     }
 }

@@ -186,11 +186,12 @@ public class Jogador {
             if (deathcost > balance) {
                 if (balance != 0) {
                     pl.econ.withdrawPlayer(p.getName(), balance);
+                    p.sendMessage(pl.getLang("lang.youLoseXMoney").replaceAll("%money", "everything"));
                 } // else dont have anything...
             } else {
                 pl.econ.withdrawPlayer(p.getName(), deathcost);
+                p.sendMessage(pl.getLang("lang.youLoseXMoney").replaceAll("%money", Integer.toString(deathcost)));
             }
-            p.sendMessage(pl.getLang("lang.youLoseXMoney").replaceAll("%money", Integer.toString(deathcost)));
         }
         killstreak = 0;
         if (pl.mysqlEnabled) {

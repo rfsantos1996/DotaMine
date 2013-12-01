@@ -32,7 +32,6 @@ public class Config {
         config.addDefault("config.useEffects", true);
         config.addDefault("config.nerfRangedAtNight", false);
         config.addDefault("config.worldName", "world");
-        config.addDefault("config.targetRunnableDelayInTicks", 30);
         config.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
         config.addDefault("config.MAX_PLAYERS", 12);
         config.addDefault("config.MIN_PLAYERS", 6);
@@ -48,10 +47,16 @@ public class Config {
         config.addDefault("lang.motd.SPAWNING", "&6[Dota] &eStarting in +-60 sec... %ingame/%max");
         config.addDefault("lang.motd.PLAYING", "&6[Dota] &cPlaying... %ingame/%max");
         config.addDefault("lang.motd.RESTARTING", "&6[Dota] &4Restarting...");
+        config.addDefault("lang.chat.ingame", "&6[%team&6] %general");
+        config.addDefault("lang.chat.spectating", "&6[&7Spectator&6] %general");
+        config.addDefault("lang.chat.general", "%name&r: %message");
+        config.addDefault("lang.chat.blueTeam", "&bBlue");
+        config.addDefault("lang.chat.redTeam", "&4Red");
         config.addDefault("lang.noPermission", "&cNo permission!");
         config.addDefault("lang.joinMessage", "&7+ %name");
         config.addDefault("lang.quitMessage", "&7- %name");
         config.addDefault("lang.onlyIngame", "&4You are not a player!");
+        config.addDefault("lang.alreadyInvisible", "&4Already invisible!");
         config.addDefault("lang.announceTowerKill", "&6You received &e%money&6 for destroying the tower.");
         config.addDefault("lang.tpDontMove", "&cYou are teleporting...");
         config.addDefault("lang.tpCancelled", "&4Teleport cancelled.");
@@ -65,7 +70,7 @@ public class Config {
         config.addDefault("lang.leftQueue", "&4You left queue. &6Use &c/join (meele/ranged) &6to rejoin.");
         config.addDefault("lang.gameNotStarted", "&cThere is no game to spectate!");
         config.addDefault("lang.startingIn60sec", "&6Game starting in &c60 seconds&6! Use &c/bs&6 for shopping.");
-        config.addDefault("lang.youLoseXMoney", "&cYou lose &4%money&c for dying.");
+        config.addDefault("lang.youLoseXMoney", "&cYou lost &4%money&c for dying.");
         config.addDefault("lang.theGamehasStarted", "&6Good Luck and Have fun! &4Dota&c has started!");
         config.addDefault("lang.creepsWillSpawn", "&6Creeps will spawn in 10 seconds.");
         config.addDefault("lang.joinedSpectator", "&6You are now a spectator! &cTo leave, use &4/spectate leave");
@@ -84,7 +89,7 @@ public class Config {
         config.addDefault("lang.forcingStart", "&cForcing start...");
         config.addDefault("lang.nobodyOnQueue", "&cQueue is empty! Cant force start...");
         config.addDefault("lang.diedForNeutral", "%name &cdied for a &4creep or neutral&c.");
-        config.addDefault("lang.queueSizeIs", "&e%size&6 in queue! &cWe need %needed player(s).");
+        config.addDefault("lang.queueSizeIs", "&e%size players &6in queue! &cWe need %needed player(s).");
         config.addDefault("lang.onePlayerLeft", "&cThere's only 1 player left. &4Restarting server...");
         config.addDefault("lang.lowRangedNightVision", "&cRanged players have low night vision. &4ATENTION AT NIGHT!");
         config.addDefault("lang.alreadyInQueueUpdatedAttack", "&cAlready on queue. &6New attack type: %attack");
@@ -99,6 +104,7 @@ public class Config {
         config.addDefault("lang.hasTarrasque", "&6You now have &eHeart of Tarrasque&6. You will regen every 5 sec.");
         config.addDefault("lang.tarrasqueRemoved", "&cYou don't have &4Heart of Tarrasque&c.");
         config.addDefault("lang.alreadySpectating", "&cYou're already spectating");
+        config.addDefault("lang.cantTeleportEverytime", "&4Please, calm down. &cYou can't teleport everytime.");
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
         config.addDefault("lang.rankingTitle", "&eName &6|&e Wins &6|&e Loses &6|&e Kills &6|&e Deaths");
         config.addDefault("lang.rankingEntry", "&e%name &6|&e %wins &6|&e %loses &6|&e %kills &6|&e %deaths");
@@ -122,7 +128,6 @@ public class Config {
         pl.useVault = config.getBoolean("config.useVault");
         pl.useControllableMobs = config.getBoolean("config.useControllableMobs");
         pl.useEffects = config.getBoolean("config.useEffects");
-        pl.targetRunnable = config.getInt("config.targetRunnableDelayInTicks");
         pl.scoreRunnable = config.getInt("config.scoreRunnableDelayInTicks");
         pl.MIN_PLAYERS = config.getInt("config.MIN_PLAYERS");
         pl.MAX_PLAYERS = config.getInt("config.MAX_PLAYERS");

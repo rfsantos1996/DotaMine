@@ -24,13 +24,7 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Location spawnloc : pl.botCreepSpawn) {
-            spawn(spawnloc);
-        }
-        for (Location spawnloc : pl.topCreepSpawn) {
-            spawn(spawnloc);
-        }
-        for (Location spawnloc : pl.midCreepSpawn) {
+        for (Location spawnloc : pl.jungleSpawn) {
             spawn(spawnloc);
         }
     }

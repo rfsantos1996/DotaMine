@@ -32,96 +32,99 @@ public class EntityListener implements Listener {
 
     @EventHandler
     public void onEntityDamageEntity(EntityDamageByEntityEvent e) {
-        if (e.getDamager() instanceof Projectile) {
-            Projectile damager = (Projectile) e.getDamager();
-            if (damager.getShooter() instanceof Player) {
-                Player shooter = (Player) damager.getShooter();
-                if (pl.ingameList.get(shooter).getAttackType() == 1) {
+        if (e.getEntity() instanceof Player) { // Hit player
+            Player damaged = (Player) e.getEntity();
+            if (!checkIngame(damaged)) {
+                e.setCancelled(true);
+                return;
+            }
+            if (e.getDamager() instanceof Player) { // Player
+                Player damager = (Player) e.getDamager();
+                if (!checkIngame(damager)) {
+                    e.setCancelled(true);
+                }
+                if (checkForShadowBlade(damager)) {
                     e.setCancelled(true);
                     return;
                 }
-                if (pl.teleporting.containsKey(shooter)) {
-                    cancelTp(shooter);
+                if (pl.ingameList.get(damager).getAttackType() == 2) {
+                    if (damager.getItemInHand().getType().equals(Material.IRON_SWORD) || damager.getItemInHand().getType().equals(Material.DIAMOND_SWORD) || damager.getItemInHand().getType().equals(Material.GOLD_SWORD)) {
+                        e.setCancelled(true);
+                        return;
+                    }
+                }
+
+                checkTeleport(damager);
+            } else if (e.getDamager() instanceof Projectile) { // Arrow
+                Projectile proj = (Projectile) e.getDamager();
+                Player shooter = (Player) proj.getShooter();
+                if (!checkIngame(shooter)) {
+                    e.setCancelled(true);
+                    return;
+                }
+                if (pl.ingameList.get(shooter).getAttackType() == 1) {
+                    e.setCancelled(true);
                     return;
                 }
                 if (checkForShadowBlade(shooter)) {
                     e.setCancelled(true);
                     return;
                 }
-                if (e.getEntity() instanceof Player) {
-                    Player damaged = (Player) e.getEntity();
-                    if (pl.spectators.containsKey(damaged)) {
-                        e.setCancelled(true);
-                        return;
-                    }
-                    if (pl.hasTarrasque.contains(damaged)) {
-                        pl.removeTarrasque(damaged);
-                    }
-                    if (e.getDamage() > 0) {
-                        pl.breakEffect(damaged.getLocation(), 3, 11);
-                    }
-                    damaged.damage(e.getDamage(), damager);
-                    e.setCancelled(true); // remove knockback
-                    return;
-                }
-            }
-            if (e.getDamage() > 0) {
-                pl.breakEffect(e.getEntity().getLocation(), 2, 55);
-            }
 
-        }
-        if (e.getDamager() instanceof Player) {
-            Player damager = (Player) e.getDamager();
-            if (pl.teleporting.containsKey(damager)) {
-                cancelTp(damager);
-                return;
-            }
-            if (pl.spectators.containsKey(damager)) {
-                e.setCancelled(true);
-                return;
-            }
-            if (pl.invisibleSB.containsKey(damager)) {
-                if (checkForShadowBlade(damager)) {
+                checkTeleport(shooter);
+                if (!e.isCancelled()) {
+                    damaged.damage(e.getDamage());
+                    checkTarrasque(damaged);
+                    checkTeleport(damaged);
+                    pl.breakEffect(damaged.getLocation(), 3, 11);
                     e.setCancelled(true);
                     return;
                 }
             }
-            if (e.getEntity() instanceof Player) {
-                Player damaged = (Player) e.getEntity();
-                if (pl.ingameList.containsKey(damager) && pl.ingameList.containsKey(damaged)) {
-                    if (pl.ingameList.get(damaged).getTeam() == pl.ingameList.get(damager).getTeam()) {
+
+            if (!e.isCancelled()) {
+                checkTarrasque(damaged);
+                checkTeleport(damaged);
+                pl.breakEffect(damaged.getLocation(), 3, 11);
+            }
+        } else { // Hit a non-player
+            if (e.getDamager() instanceof Player) { // Player
+                Player damager = (Player) e.getDamager();
+                if (!checkIngame(damager)) {
+                    e.setCancelled(true);
+                }
+                if (checkForShadowBlade(damager)) {
+                    e.setCancelled(true);
+                    return;
+                }
+                if (pl.ingameList.get(damager).getAttackType() == 2) {
+                    if (damager.getItemInHand().getType().equals(Material.IRON_SWORD) || damager.getItemInHand().getType().equals(Material.DIAMOND_SWORD) || damager.getItemInHand().getType().equals(Material.GOLD_SWORD)) {
                         e.setCancelled(true);
                         return;
                     }
-                    if (pl.ingameList.get(damager).getAttackType() == 2) {
-                        if (damager.getItemInHand().getType().equals(Material.IRON_SWORD) || damager.getItemInHand().getType().equals(Material.DIAMOND_SWORD) || damager.getItemInHand().getType().equals(Material.GOLD_SWORD)) {
-                            e.setCancelled(true);
-                            return;
-                        }
-                    }
-                    if (pl.hasTarrasque.contains(damaged)) {
-                        pl.removeTarrasque(damaged);
-                        if (e.getDamage() > 0) {
-                            pl.breakEffect(damaged.getLocation(), 3, 11);
-                        }
-                        return;
-                    }
                 }
+
+                checkTeleport(damager);
+            } else if (e.getDamager() instanceof Projectile) { // Arrow
+                Projectile proj = (Projectile) e.getDamager();
+                Player shooter = (Player) proj.getShooter();
+                if (!checkIngame(shooter)) {
+                    e.setCancelled(true);
+                    return;
+                }
+                if (pl.ingameList.get(shooter).getAttackType() == 1) {
+                    e.setCancelled(true);
+                    return;
+                }
+                if (checkForShadowBlade(shooter)) {
+                    e.setCancelled(true);
+                    return;
+                }
+
+                checkTeleport(shooter);
             }
-            if (e.getDamage() > 0) {
+            if (!e.isCancelled()) {
                 pl.breakEffect(e.getEntity().getLocation(), 2, 55);
-            }
-        }
-        if (e.getEntity() instanceof Player) {
-            Player p = (Player) e.getEntity();
-            if (pl.hasTarrasque.contains(p)) {
-                pl.removeTarrasque(p);
-            }
-            if (pl.teleporting.containsKey(p)) {
-                cancelTp(p);
-            }
-            if (e.getDamage() > 0) {
-                pl.breakEffect(p.getLocation(), 3, 11);
             }
         }
     }
@@ -140,14 +143,17 @@ public class EntityListener implements Listener {
     }
 
     @EventHandler
-    public void onEntityTarged(EntityTargetEvent e) {
-        if (e.getEntityType().equals(EntityType.PLAYER)) {
-            if (pl.invisibleSB.containsKey((Player) e.getTarget())) {
-                e.setCancelled(true);
-                return;
-            }
-            if (pl.spectators.containsKey((Player) e.getEntity())) {
-                e.setCancelled(true);
+    public void onEntityTarget(EntityTargetEvent e) {
+        if (e.getTarget() != null) {
+            if (e.getTarget().getType().equals(EntityType.PLAYER)) {
+                Player target = (Player) e.getTarget();
+                if (!pl.ingameList.containsKey(target)) {
+                    e.setCancelled(true);
+                } else {
+                    if (pl.invisible.containsKey(target)) {
+                        e.setCancelled(true);
+                    }
+                }
             }
         }
     }
@@ -212,9 +218,14 @@ public class EntityListener implements Listener {
     }
 
     private boolean checkForShadowBlade(Player p) {
-        if (pl.invisibleSB.containsKey(p) && pl.ingameList.size() > 0) {
-            pl.getServer().getScheduler().cancelTask(pl.invisibleSB.get(p));
-            pl.getServer().getScheduler().runTask(pl, new ShowRunnable(pl, p, 1));
+        if (pl.invisible.containsKey(p)) {
+            if (pl.invisible.get(p) == 1) {
+                pl.getServer().getScheduler().cancelTask(pl.invisibleSB.get(p));
+                pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new ShowRunnable(pl, p));
+            } else {
+                pl.getServer().getScheduler().cancelTask(pl.invisibleW.get(p));
+                pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new ShowRunnable(pl, p));
+            }
             return true;
         }
         return false;
@@ -224,5 +235,21 @@ public class EntityListener implements Listener {
         pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
         pl.teleporting.remove(p);
         p.sendMessage(pl.getLang("lang.tpCancelled"));
+    }
+
+    private void checkTarrasque(Player damaged) {
+        if (pl.hasTarrasque.contains(damaged)) {
+            pl.removeTarrasque(damaged);
+        }
+    }
+
+    private boolean checkIngame(Player p) {
+        return pl.ingameList.containsKey(p);
+    }
+
+    private void checkTeleport(Player p) {
+        if (pl.teleporting.containsKey(p)) {
+            cancelTp(p);
+        }
     }
 }
