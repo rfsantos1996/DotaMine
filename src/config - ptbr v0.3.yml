@@ -1,0 +1,100 @@
+config:
+  useVault: true
+  useControllableMobs: false
+  useEffects: true
+  nerfRangedAtNight: false
+  worldName: world
+  scoreRunnableDelayInTicks: 60
+  MAX_PLAYERS: 12
+  MIN_PLAYERS: 6
+mysql:
+  enabled: false
+  username: root
+  password: root
+  database: minecraft
+  host: localhost
+  port: 3306
+lang:
+  motd:
+    WAITING: '&aEsperando %queue/%min'
+    WAITING_QUEUE: '&ePreparando..'
+    SPAWNING: '&eIniciando %ingame/%max'
+    PLAYING: '&cJogando.. %ingame/%max'
+    RESTARTING: '&4Reiniciando...'
+  chat:
+    ingame: '&6[%team&6] %general'
+    spectating: '&6[&7Espectador&6] %general'
+    general: '%name&r: %message'
+    blueTeam: '&bAzul'
+    redTeam: '&4Vermelho'
+  noPermission: '&cSem permissao!'
+  joinMessage: '&7+ %name'
+  quitMessage: '&7- %name'
+  onlyIngame: '&4Voce nao e um jogador!'
+  alreadyInvisible: '&4Ja invisivel!'
+  announceTowerKill: '&6Voce recebeu &e%money&6 por destruir a torre.'
+  tpDontMove: '&cVoce esta teleportando...'
+  tpCancelled: '&4Teleporte cancelado.'
+  noPaperOnHand: '&cVoce precisa estar com papel na mao.'
+  notEvenPlaying: '&4Voce deve estar em um jogo para isso.'
+  gameIsFull: '&cDesculpe, jogo esta lotado!'
+  onBlueTeam: '&6Voce esta no &bTime azul&6!'
+  onRedTeam: '&6Voce esta no &4Time vermelho&6!'
+  alreadyStarted: '&4O jogo ja comecou!'
+  cantJoinQueue: '&cNao foi possivel entrar na fila!'
+  leftQueue: '&4Voce saiu da fila. &6Use &c/join (meele/ranged) &6para reentrar.'
+  gameNotStarted: '&cNao ha jogo para assistir!'
+  startingIn60sec: '&6Jogo iniciando em &c60 segundos&6! Use &c/bs&6 para fazer compras.'
+  youLoseXMoney: '&cVoce perdeu &4%money&c por morrer.'
+  theGamehasStarted: '&6Boa sorte e se divirta! &4Dota&c comecou!'
+  creepsWillSpawn: '&6Creeps irao nascer em 10 segundos.'
+  joinedSpectator: '&6Voce e um espectador agora! &cPara sair, use &4/spectate leave'
+  leftSpectator: '&cVoce deixou o modo espectador!'
+  waitingTheGame: '&6Voce esta na fila! &cAguardando jogadores...'
+  youCanPlay: '&6Voce pode jogar usando &c/join'
+  youCanJoin: '&6Voce pode jogar usando &c/join&6 antes que o jogo comece'
+  youCanSpectate: '&6Voce pode assistir usando &c/spectate&6!'
+  redTeamWon: '&cTime vermelho &6ganhou! &eParabens! &cReiniciando em 30 segundos!'
+  blueTeamWon: '&bTime azul &6ganhou! &eParabens! &cReiniciando em 30 segundos!'
+  towerDestroyed: '&4%tower &cfoi destruida.'
+  kickMessage: '&4O jogo acabou!&c Reiniciando...'
+  usePlayCommand: '&cUso: &6/play (ranged/meele/leave)'
+  settedMeele: '&6Voce ira jogar como um Meele.'
+  settedRanged: '&6Voce ira jogar como um Ranged.'
+  forcingStart: '&cForcing start...'
+  nobodyOnQueue: '&cNao ha fila para iniciar.'
+  diedForNeutral: '%name &cmorreu para um &4creep ou neutro&c.'
+  queueSizeIs: '&e%size&6 jogadores em fila! &cPrecisamos de mais %needed jogador(es).'
+  onePlayerLeft: '&cSo resta 1 jogador no jogo. &4Reiniciando servidor...'
+  lowRangedNightVision: '&cRanged tem menos visao durante a noite. &4PRESTE ATENCAO!'
+  alreadyInQueueUpdatedAttack: '&cJa esta em fila. &6Novo tipo de ataque: %attack'
+  noRankingFound: '&cNao ha ranking disponivel.'
+  startingIn2Minutes: '&cIniciando jogo em 2 minutos. &6Ultima chance para usar &4/join'
+  couldntStartGame: '&4Nao foi possivel iniciar o jogo! &cTentando novamente...'
+  itemCDMessage: '&4%item &cesta em cooldown.'
+  itemOverCDMessage: '&e%item &6esta usavel novamente.'
+  inviOverMessage: '&cVoce esta visivel.'
+  itemUseMessage: '&6voce usou &e%item&6. Voce pode usa-lo novamente em %cd segundos.'
+  itemUseMessageDontCD: '&6Voce usou &e%item&6.'
+  hasTarrasque: '&6Voce tem &eHeart of Tarrasque&6. Voce ira regenerar a cada 5 segundos.'
+  tarrasqueRemoved: '&cVoce perdeu o &4Heart of Tarrasque&c.'
+  alreadySpectating: '&cVoce ja e um espectador'
+  cantTeleportEverytime: '&4Va com calma. &cVoce nao pode teleportar o tempo todo'
+  tpCommand: '&cUso: &4/dota tp (bot/mid/top/base)'
+  rankingTitle: '&eName &6|&e Wins &6|&e Loses &6|&e Kills &6|&e Deaths'
+  rankingEntry: '&e%name &6|&e %wins &6|&e %loses &6|&e %kills &6|&e %deaths'
+  killstreak:
+    one: '%name &6matou %dead &6por &e%money'
+    two: '%name &6matou %dead &6por &e%money'
+    tree: '%name &6matou %dead &6por &e%money &6- &4KILLING SPREE'
+    four: '%name &6matou %dead &6por &e%money &6- &4DOMINATING'
+    five: '%name &6matou %dead &6por &e%money &6- &4MEGA KILL'
+    six: '%name &6matou %dead &6por &e%money &6- &4UNSTOPPABLE'
+    seven: '%name &6matou %dead &6por &e%money &6- &4WICKED SICK'
+    eight: '%name &6matou %dead &6por &e%money &6- &4MONSTER KILL'
+    nine: '%name &6matou %dead &6por &e%money &6- &4GOD LIKE'
+    tenAndBeyond: '%name &6matou %dead &6por &e%money &6- &4BEYOND GOD LIKE'
+    fiftyAndBeyond: '%name &6matou %dead &6por &e%money &6- &4KILLING DOMINATING
+      MEGA UNSTOPPABLE WICKED MONSTER BEYOND GODLIKE'
+DoNotChangeThis:
+  ConfigVersion: 2

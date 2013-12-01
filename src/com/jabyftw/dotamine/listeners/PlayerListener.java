@@ -8,6 +8,8 @@ import com.jabyftw.dotamine.runnables.item.SmokeDeceitEffectRunnable;
 import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,13 +42,13 @@ import org.bukkit.util.Vector;
  * @author Rafael
  */
 public class PlayerListener implements Listener {
-
+    
     private final DotaMine pl;
-
+    
     public PlayerListener(DotaMine pl) {
         this.pl = pl;
     }
-
+    
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
@@ -79,7 +81,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
@@ -89,9 +91,9 @@ public class PlayerListener implements Listener {
             pl.broadcast(pl.getLang("lang.onePlayerLeft"));
             pl.endGame(true, 0);
         }
-
+        
     }
-
+    
     @EventHandler
     public void onKick(PlayerKickEvent e) {
         Player p = e.getPlayer();
@@ -102,7 +104,7 @@ public class PlayerListener implements Listener {
             pl.endGame(true, 0);
         }
     }
-
+    
     @EventHandler
     public void onPickUp(PlayerPickupItemEvent e) {
         Player p = e.getPlayer();
@@ -110,7 +112,7 @@ public class PlayerListener implements Listener {
             e.setCancelled(true);
         }
     }
-
+    
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
@@ -130,7 +132,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.getSlotType().equals(SlotType.ARMOR)) {
@@ -139,7 +141,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
@@ -216,6 +218,18 @@ public class PlayerListener implements Listener {
                         }
                     }
                 }
+            } else if (e.getAction() == Action.RIGHT_CLICK_BLOCK) { // SIGN
+                Block block = e.getClickedBlock();
+                if (block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST) || block.getType().equals(Material.WALL_SIGN)) {
+                    Sign s = (Sign) block;
+                    if (s.getLine(0).equalsIgnoreCase("[Dota]")) {
+                        if (s.getLine(1).equalsIgnoreCase("Shop")) {
+                            if (!p.performCommand("bs")) {
+                                p.sendMessage(ChatColor.RED + "No BossShop for you");
+                            }
+                        }
+                    }
+                }
             }
         } else if (pl.spectators.containsKey(p)) {
             if (e.getItem() != null && e.getItem().getType().equals(Material.COMPASS)) {
@@ -227,7 +241,7 @@ public class PlayerListener implements Listener {
                     } else {
                         p.sendMessage(pl.getLang("lang.cantTeleportEverytime"));
                     }
-
+                    
                 } else if ((e.getAction() == Action.LEFT_CLICK_AIR) || (e.getAction() == Action.LEFT_CLICK_BLOCK)) {
                     if (!pl.spectatorsCD.contains(p)) {
                         p.teleport(pl.spectators.get(p).subN().getLocation().add(0, 2, 0));
@@ -238,9 +252,27 @@ public class PlayerListener implements Listener {
                     }
                 }
             }
+        } else {
+            if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                Block block = e.getClickedBlock();
+                if (block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST) || block.getType().equals(Material.WALL_SIGN)) {
+                    Sign s = (Sign) block;
+                    if (s.getLine(0).equalsIgnoreCase("[Dota]")) {
+                        if (s.getLine(1).equalsIgnoreCase("Join")) {
+                            if (s.getLine(2).startsWith("Meele")) {
+                                p.performCommand("join m");
+                            } else if (s.getLine(2).startsWith("Ranged")) {
+                                p.performCommand("join r");
+                            } else { // Spectator
+                                p.performCommand("spectate");
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
-
+    
     @EventHandler
     public void onFoodChange(FoodLevelChangeEvent e) {
         if (e.getEntity() instanceof Player) {
@@ -250,7 +282,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     @EventHandler
     public void onTeleport(PlayerTeleportEvent e) {
         Player p = e.getPlayer();
@@ -260,7 +292,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
@@ -277,7 +309,7 @@ public class PlayerListener implements Listener {
         }
         e.setDeathMessage("");
     }
-
+    
     @EventHandler
     public void onRespawn(PlayerRespawnEvent e) {
         Player p = e.getPlayer();
@@ -304,7 +336,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent e) {
         Player sender = e.getPlayer();
@@ -312,7 +344,7 @@ public class PlayerListener implements Listener {
         e.setCancelled(true);
         executeChat(sender, msg);
     }
-
+    
     private void checkIngameThings(Player p) {
         if (pl.queue.containsKey(p)) {
             pl.removePlayerFromQueue(p);
@@ -339,7 +371,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     private void executeChat(Player sender, String msg) {
         String message = pl.getLang("lang.chat.general").replaceAll("%name", sender.getDisplayName()).replaceAll("%message", msg);
         if (pl.spectators.containsKey(sender)) {
@@ -366,7 +398,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-
+    
     private String getTeamName(int team) {
         if (team == 1) {
             return pl.getLang("lang.chat.blueTeam");
@@ -374,29 +406,29 @@ public class PlayerListener implements Listener {
             return pl.getLang("lang.chat.redTeam");
         }
     }
-
+    
     private class SpecCDRunnable implements Runnable {
-
+        
         private final Player p;
-
+        
         public SpecCDRunnable(Player p) {
             this.p = p;
         }
-
+        
         @Override
         public void run() {
             pl.spectatorsCD.remove(p);
         }
     }
-
+    
     private class ForceStaffRunnable extends BukkitRunnable {
-
+        
         private final Player p;
-
+        
         public ForceStaffRunnable(Player p) {
             this.p = p;
         }
-
+        
         @Override
         public void run() {
             Vector vec = p.getLocation().getDirection();
@@ -406,59 +438,59 @@ public class PlayerListener implements Listener {
             p.setVelocity(vec);
         }
     }
-
+    
     private class ForceEffectRunnable extends BukkitRunnable {
-
+        
         private final Player p;
-
+        
         public ForceEffectRunnable(Player p) {
             this.p = p;
         }
-
+        
         @Override
         public void run() {
             pl.smokeEffect(p.getLocation(), 10);
         }
     }
-
+    
     private class ForceStopRunnable extends BukkitRunnable {
-
+        
         private final Player p;
-
+        
         public ForceStopRunnable(Player p) {
             this.p = p;
         }
-
+        
         @Override
         public void run() {
             pl.getServer().getScheduler().cancelTask(pl.forcingStaff.get(p));
             pl.forcingStaff.remove(p);
         }
     }
-
+    
     private class RespawnEffectRunnable implements Runnable {
-
+        
         private final Player p;
-
+        
         public RespawnEffectRunnable(Player p) {
             this.p = p;
         }
-
+        
         @Override
         public void run() {
             pl.breakEffect(p.getLocation(), 2, 18);
-
+            
         }
     }
-
+    
     private class RespawnStopRunnable implements Runnable {
-
+        
         private final Player p;
-
+        
         public RespawnStopRunnable(Player p) {
             this.p = p;
         }
-
+        
         @Override
         public void run() {
             pl.getServer().getScheduler().cancelTask(pl.respawning.get(p));

@@ -29,11 +29,23 @@ public class AnnounceQueueRunnable extends BukkitRunnable {
                     announced = false;
                 }
             } else {
-                if (!announced) {
-                    pl.state = pl.WAITING_QUEUE;
-                    pl.broadcast(pl.getLang("lang.startingIn2Minutes"));
-                    startGame = pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, false), 20 * 121);
-                    announced = true;
+                if (pl.queue.size() >= pl.MAX_PLAYERS) {
+                    if(!announced) {
+                        pl.broadcast(pl.getLang("lang.startingNow"));
+                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, false), 20);
+                        announced = true;
+                    } else {
+                        pl.broadcast(pl.getLang("lang.startingNow"));
+                        pl.getServer().getScheduler().cancelTask(startGame);
+                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, false), 20);
+                    }
+                } else {
+                    if (!announced) {
+                        pl.state = pl.WAITING_QUEUE;
+                        pl.broadcast(pl.getLang("lang.startingIn2Minutes"));
+                        startGame = pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, false), 20 * 121);
+                        announced = true;
+                    }
                 }
             }
         }

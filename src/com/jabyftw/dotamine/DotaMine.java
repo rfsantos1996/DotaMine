@@ -117,7 +117,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     public void onEnable() {
         state = WAITING;
         megaCreeps = false;
-        version = 2; // config version
+        version = 3; // config version
         config.generateConfig(getConfig());
         config.setLocations(getServer().getWorld(worldName));
         if (useVault) {

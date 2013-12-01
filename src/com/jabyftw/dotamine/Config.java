@@ -83,7 +83,7 @@ public class Config {
         config.addDefault("lang.blueTeamWon", "&bBlue Team &6won! &eCongratulations! &cRestarting in 30 sec!");
         config.addDefault("lang.towerDestroyed", "&4%tower &cwas destroyed");
         config.addDefault("lang.kickMessage", "&4The game is over!&c Restarting...");
-        config.addDefault("lang.usePlayCommand", "&cUsage: &6/play (ranged/meele)");
+        config.addDefault("lang.usePlayCommand", "&cUsage: &6/play (ranged/meele/leave)");
         config.addDefault("lang.settedMeele", "&6You will play as a Meele hero.");
         config.addDefault("lang.settedRanged", "&6You will play as a Ranged hero.");
         config.addDefault("lang.forcingStart", "&cForcing start...");
@@ -104,8 +104,9 @@ public class Config {
         config.addDefault("lang.hasTarrasque", "&6You now have &eHeart of Tarrasque&6. You will regen every 5 sec.");
         config.addDefault("lang.tarrasqueRemoved", "&cYou don't have &4Heart of Tarrasque&c.");
         config.addDefault("lang.alreadySpectating", "&cYou're already spectating");
-        config.addDefault("lang.cantTeleportEverytime", "&4Please, calm down. &cYou can't teleport everytime.");
+        config.addDefault("lang.cantTeleportEverytime", "&4Please, calm down. &cYou can't teleport everytime."); // 
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
+        config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
         config.addDefault("lang.rankingTitle", "&eName &6|&e Wins &6|&e Loses &6|&e Kills &6|&e Deaths");
         config.addDefault("lang.rankingEntry", "&e%name &6|&e %wins &6|&e %loses &6|&e %kills &6|&e %deaths");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
