@@ -57,35 +57,37 @@ public class EntityListener implements Listener {
                 checkTeleport(damager);
             } else if (e.getDamager() instanceof Projectile) { // Arrow
                 Projectile proj = (Projectile) e.getDamager();
-                Player shooter = (Player) proj.getShooter();
-                if (!checkIngame(shooter)) {
-                    e.setCancelled(true);
-                    return;
-                }
-                if (pl.ingameList.get(shooter).getAttackType() == 1) {
-                    e.setCancelled(true);
-                    return;
-                }
-                if (checkForShadowBlade(shooter)) {
-                    e.setCancelled(true);
-                    return;
+                if (proj.getShooter() instanceof Player) {
+                    Player shooter = (Player) proj.getShooter();
+                    if (!checkIngame(shooter)) {
+                        e.setCancelled(true);
+                        return;
+                    }
+                    if (pl.ingameList.get(shooter).getAttackType() == 1) {
+                        e.setCancelled(true);
+                        return;
+                    }
+                    if (checkForShadowBlade(shooter)) {
+                        e.setCancelled(true);
+                        return;
+                    }
+
+                    checkTeleport(shooter);
+                    if (!e.isCancelled()) {
+                        damaged.damage(e.getDamage());
+                        checkTarrasque(damaged);
+                        checkTeleport(damaged);
+                        pl.breakEffect(damaged.getLocation(), 3, 11);
+                        e.setCancelled(true);
+                        return;
+                    }
                 }
 
-                checkTeleport(shooter);
                 if (!e.isCancelled()) {
-                    damaged.damage(e.getDamage());
                     checkTarrasque(damaged);
                     checkTeleport(damaged);
                     pl.breakEffect(damaged.getLocation(), 3, 11);
-                    e.setCancelled(true);
-                    return;
                 }
-            }
-
-            if (!e.isCancelled()) {
-                checkTarrasque(damaged);
-                checkTeleport(damaged);
-                pl.breakEffect(damaged.getLocation(), 3, 11);
             }
         } else { // Hit a non-player
             if (e.getDamager() instanceof Player) { // Player
@@ -107,21 +109,23 @@ public class EntityListener implements Listener {
                 checkTeleport(damager);
             } else if (e.getDamager() instanceof Projectile) { // Arrow
                 Projectile proj = (Projectile) e.getDamager();
-                Player shooter = (Player) proj.getShooter();
-                if (!checkIngame(shooter)) {
-                    e.setCancelled(true);
-                    return;
-                }
-                if (pl.ingameList.get(shooter).getAttackType() == 1) {
-                    e.setCancelled(true);
-                    return;
-                }
-                if (checkForShadowBlade(shooter)) {
-                    e.setCancelled(true);
-                    return;
-                }
+                if (proj.getShooter() instanceof Player) {
+                    Player shooter = (Player) proj.getShooter();
+                    if (!checkIngame(shooter)) {
+                        e.setCancelled(true);
+                        return;
+                    }
+                    if (pl.ingameList.get(shooter).getAttackType() == 1) {
+                        e.setCancelled(true);
+                        return;
+                    }
+                    if (checkForShadowBlade(shooter)) {
+                        e.setCancelled(true);
+                        return;
+                    }
 
-                checkTeleport(shooter);
+                    checkTeleport(shooter);
+                }
             }
             if (!e.isCancelled()) {
                 pl.breakEffect(e.getEntity().getLocation(), 2, 55);

@@ -104,7 +104,7 @@ public class Config {
         config.addDefault("lang.hasTarrasque", "&6You now have &eHeart of Tarrasque&6. You will regen every 5 sec.");
         config.addDefault("lang.tarrasqueRemoved", "&cYou don't have &4Heart of Tarrasque&c.");
         config.addDefault("lang.alreadySpectating", "&cYou're already spectating");
-        config.addDefault("lang.cantTeleportEverytime", "&4Please, calm down. &cYou can't teleport everytime."); // 
+        config.addDefault("lang.dontSpamClicks", "&4Please, calm down. &cDon't spam clicks.");
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
         config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
         config.addDefault("lang.rankingTitle", "&eName &6|&e Wins &6|&e Loses &6|&e Kills &6|&e Deaths");

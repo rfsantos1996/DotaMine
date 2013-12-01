@@ -106,7 +106,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     public List<Player> forceCD = new ArrayList();
     public Map<Player, Integer> forcingStaff = new HashMap();
     public List<Player> tpCD = new ArrayList();
-    public List<Player> spectatorsCD = new ArrayList();
+    public List<Player> interactCD = new ArrayList();
     public Map<Player, Integer> teleporting = new HashMap();
     public Map<Player, Integer> respawning = new HashMap();
     public List<Player> hasTarrasque = new ArrayList();

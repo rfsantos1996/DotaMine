@@ -86,7 +86,11 @@ public class DotaCommand implements CommandExecutor {
                                 } else {
                                     toGo = 4;
                                 }
-                                p.getInventory().remove(onHand);
+                                if (onHand.getAmount() > 1) {
+                                    onHand.setAmount(onHand.getAmount() - 1);
+                                } else {
+                                    p.getInventory().remove(onHand);
+                                }
                                 useTp(p, toGo);
                                 pl.tpCD.add(p);
                                 pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, 3), 20 * 90);
@@ -245,10 +249,12 @@ public class DotaCommand implements CommandExecutor {
 
         @Override
         public void run() {
-            p.teleport(destination);
-            destination.getWorld().playSound(destination, Sound.PORTAL_TRIGGER, 1, 0);
-            pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
-            pl.teleporting.remove(p);
+            if (pl.teleporting.containsKey(p)) {
+                p.teleport(destination);
+                destination.getWorld().playSound(destination, Sound.PORTAL_TRIGGER, 1, 0);
+                pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
+                pl.teleporting.remove(p);
+            } // else, was removed before, dont execute
         }
     }
 

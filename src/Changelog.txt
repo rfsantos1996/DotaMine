@@ -2,8 +2,19 @@
  * GAMEPLAY:
  - Still nothing
  * PLUGIN:
+ - Still nothing
+
+0.3.1:
+ * GAMEPLAY:
+ - Fixed Shadow Blade duration
+ - Chats are now shown on Console
+ - /Dota tp will consume only ONE paper now
+ - Tp is now correctly cancelled
+ * PLUGIN:
+ - Fixed NullPointerException when attacking skeletons and when skeleton attacking Players
  - Added Signs to join spectator, ranged or meele, and when ingame, to Shop (Sign's first line must be [Dota], second "Join"/"Shop", third "Ranged"/"Meele"/"Spectator"
  - If queue is full, the game will start
+ - Respawn effect will be executed on Respawn Location with -1 Y instead of Players' location
 
 0.3:
  * GAMEPLAY:
@@ -17,6 +28,7 @@
  - Last hit money: creeps -> from 42 to 52 | jungle -> from 83 to 94 (random value between and including that)
  - If a ranged attacks with iron/gold/diamond sword, won't deal any damage
  - People now receive money for destroying towers (from 130 to 180)
+ - Lane zombies will target you if no near targets are found
  - Jungle now spawn more easily
  - Jungle now drops between 0 and 3 arrows
  - Jungle now drops between 6 and 8 EXP (default is 5)
