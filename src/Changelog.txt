@@ -1,9 +1,15 @@
 0.4:
  * GAMEPLAY:
  - Zombies WILL target you in crowd if you shoot them
+ - Spectators won't affect gameplay when blocking arrows
+ - Higher EXP drop on Jungle creeps (after: 7-9 / before: 6-8)
+ - Fixed Spawn camping poison/regeneration didn't applying, and increased radius.
+ - Fixed arrows killing players counting as neutral kill
  * PLUGIN:
  - Ranking now show Kill/Death ratio and Win/Lost ratio
  - Added a column on dotamine's table on MySQL: "lhs" - this will save last hits
+ - Don't allow random players drop items
+ - Fixed NullPointerException when someone that aren't ingame dies.
 
 0.3.1:
  * GAMEPLAY:

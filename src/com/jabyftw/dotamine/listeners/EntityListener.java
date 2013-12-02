@@ -5,6 +5,7 @@ import com.jabyftw.dotamine.runnables.item.ShowRunnable;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
 import org.bukkit.Material;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 /**
  *
@@ -34,12 +36,12 @@ public class EntityListener implements Listener {
     public void onEntityDamageEntity(EntityDamageByEntityEvent e) {
         if (e.getEntity() instanceof Player) { // Hit player
             Player damaged = (Player) e.getEntity();
-            if (!checkIngame(damaged)) {
-                e.setCancelled(true);
-                return;
-            }
             if (e.getDamager() instanceof Player) { // Player
                 Player damager = (Player) e.getDamager();
+                if (!checkIngame(damaged)) {
+                    e.setCancelled(true);
+                    return;
+                }
                 if (!checkIngame(damager)) {
                     e.setCancelled(true);
                 }
@@ -53,8 +55,9 @@ public class EntityListener implements Listener {
                         return;
                     }
                 }
-
-                checkTeleport(damager);
+                if (!e.isCancelled()) {
+                    checkTeleport(damager);
+                }
             } else if (e.getDamager() instanceof Projectile) { // Arrow
                 Projectile proj = (Projectile) e.getDamager();
                 if (proj.getShooter() instanceof Player) {
@@ -74,19 +77,24 @@ public class EntityListener implements Listener {
 
                     checkTeleport(shooter);
                     if (!e.isCancelled()) {
+                        if (!checkIngame(damaged)) { // spectator wont get hurt, and the arrow wont stop
+                            proj.setBounce(false);
+                            Vector vel = proj.getVelocity();
+                            damaged.teleport(damaged.getLocation().add(0, 3, 0));
+                            damaged.setFlying(true);
+                            Arrow newArrow = shooter.launchProjectile(Arrow.class);
+                            newArrow.setShooter(shooter);
+                            newArrow.setVelocity(vel);
+                            e.setCancelled(true);
+                            proj.remove();
+                            return;
+                        }
                         damaged.damage(e.getDamage());
                         checkTarrasque(damaged);
                         checkTeleport(damaged);
+                        checkTeleport(shooter);
                         pl.breakEffect(damaged.getLocation(), 3, 11);
-                        e.setCancelled(true);
-                        return;
                     }
-                }
-
-                if (!e.isCancelled()) {
-                    checkTarrasque(damaged);
-                    checkTeleport(damaged);
-                    pl.breakEffect(damaged.getLocation(), 3, 11);
                 }
             }
         } else { // Hit a non-player
@@ -166,8 +174,26 @@ public class EntityListener implements Listener {
     public void onEntityDeath(EntityDeathEvent e) {
         if (e.getEntity() instanceof Player) {
             Player dead = (Player) e.getEntity();
-            if (e.getEntity().getKiller() instanceof Player) {
-                Player killer = dead.getKiller();
+            if (!checkIngame(dead)) {
+                e.setDroppedExp(0);
+                e.getDrops().clear();
+                return;
+            }
+            Player killer = null;
+            if (dead.getKiller() instanceof Player) {
+                killer = dead.getKiller();
+            } else {
+                if (dead.getLastDamageCause() instanceof EntityDamageByEntityEvent) {
+                    EntityDamageByEntityEvent ev = (EntityDamageByEntityEvent) dead.getLastDamageCause();
+                    if (ev.getDamager() instanceof Projectile) {
+                        Projectile proj = (Projectile) ev.getDamager();
+                        if (proj.getShooter() instanceof Player) {
+                            killer = (Player) proj.getShooter();
+                        }
+                    }
+                }
+            }
+            if (killer != null) {
                 pl.ingameList.get(killer).addKill(pl.ingameList.get(dead));
                 pl.ingameList.get(dead).addDeath();
             } else {
@@ -189,7 +215,7 @@ public class EntityListener implements Listener {
                             if (e.getEntity().getKiller() != null) {
                                 pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
                                 pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
-                                e.setDroppedExp(pl.getRandom(6, 8)); // normal = 5
+                                e.setDroppedExp(pl.getRandom(7, 9)); // normal = 5
                             }
                         }
                         ControllableMobs.releaseControl(cm);
@@ -210,7 +236,7 @@ public class EntityListener implements Listener {
                             if (e.getEntity().getKiller() != null) {
                                 pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
                                 pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
-                                e.setDroppedExp(pl.getRandom(6, 8)); // normal = 5
+                                e.setDroppedExp(pl.getRandom(7, 9)); // normal = 5
                             }
                         }
                         pl.spawnedMobs.remove(en);
