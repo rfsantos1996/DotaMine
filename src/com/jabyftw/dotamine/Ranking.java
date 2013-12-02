@@ -1,5 +1,7 @@
 package com.jabyftw.dotamine;
 
+import java.text.DecimalFormat;
+
 /**
  *
  * @author Rafael
@@ -44,8 +46,9 @@ public class Ranking {
         if (lose == 0) {
             lose = 1;
         }
-        double d = (wins / lose);
-        return Double.toString(d);
+        double d = (wins * 1.0 / lose);
+        //return Double.toString(d);
+        return new DecimalFormat("##0.00").format(d);
     }
 
     public String getKillDeathRatio() {
@@ -53,8 +56,9 @@ public class Ranking {
         if (death == 0) {
             death = 1;
         }
-        double d = (kills / death);
-        return Double.toString(d);
+        double d = (kills * 1.0 / death);
+        //return Double.toString(d);
+        return new DecimalFormat("##0.00").format(d);
     }
 
     public String getAvgLH() {
@@ -62,7 +66,8 @@ public class Ranking {
         if (gamesPlayd == 0) {
             gamesPlayd = 1;
         }
-        double d = (lhs / gamesPlayd);
-        return Double.toString(d);
+        double d = (lhs * 1.0 / gamesPlayd);
+        //return Double.toString(d);
+        return new DecimalFormat("##0.00").format(d);
     }
 }
