@@ -41,7 +41,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable; // TODO: better SQL, k/d, avg. LH per game
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  *
@@ -117,7 +117,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     public void onEnable() {
         state = WAITING;
         megaCreeps = false;
-        version = 3; // config version
+        version = 4; // config version
         config.generateConfig(getConfig());
         config.setLocations(getServer().getWorld(worldName));
         if (useVault) {
@@ -504,10 +504,10 @@ public class DotaMine extends JavaPlugin implements Listener {
         public void run() {
             try {
                 Statement s = sql.getConn().createStatement();
-                ResultSet rs = s.executeQuery("SELECT `name`, `wins`, `loses`, `kills`, `deaths` FROM `dotamine` ORDER BY `wins` DESC LIMIT 6;");
+                ResultSet rs = s.executeQuery("SELECT `name`, `wins`, `loses`, `kills`, `deaths`, `lhs` FROM `dotamine` ORDER BY `wins` DESC LIMIT 6;");
                 rankingList.clear();
                 while (rs.next()) {
-                    rankingList.add(new Ranking(rs.getString("name"), rs.getInt("wins"), rs.getInt("loses"), rs.getInt("kills"), rs.getInt("deaths")));
+                    rankingList.add(new Ranking(rs.getString("name"), rs.getInt("wins"), rs.getInt("loses"), rs.getInt("kills"), rs.getInt("deaths"), rs.getInt("lhs")));
                 }
             } catch (SQLException ex) {
                 getLogger().log(Level.SEVERE, "Couldn''t connect to MySQL: {0}", ex.getMessage());

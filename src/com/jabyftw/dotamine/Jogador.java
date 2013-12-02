@@ -69,6 +69,20 @@ public class Jogador {
         }
         return mysqlkills;
     }
+    
+    public int getMySQLLHs() {
+        int mysqlLHs = 0;
+        try {
+            Statement s = pl.sql.getConn().createStatement();
+            ResultSet rs = s.executeQuery("SELECT `lhs` FROM dotamine WHERE `name`='" + p.getName() + "' LIMIT 1;");
+            while (rs.next()) {
+                mysqlLHs = rs.getInt("lhs");
+            }
+        } catch (SQLException ex) {
+            pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
+        }
+        return mysqlLHs;
+    }
 
     public int getMySQLDeaths() {
         int mysqldeaths = 0;
@@ -116,7 +130,7 @@ public class Jogador {
         if (pl.mysqlEnabled) {
             try {
                 Statement s = pl.sql.getConn().createStatement();
-                s.executeUpdate("UPDATE `dotamine` SET `wins`=" + (getWins() + 1) + " WHERE `name`='" + p.getName() + "';");
+                s.executeUpdate("UPDATE `dotamine` SET `wins`=" + (getWins() + 1) + ", `lhs`=" + (getMySQLLHs() + lh) + " WHERE `name`='" + p.getName() + "';");
             } catch (SQLException ex) {
                 pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
             }
@@ -127,7 +141,7 @@ public class Jogador {
         if (pl.mysqlEnabled) {
             try {
                 Statement s = pl.sql.getConn().createStatement();
-                s.executeUpdate("UPDATE `dotamine` SET `loses`=" + (getLoses() + 1) + " WHERE `name`='" + p.getName() + "';");
+                s.executeUpdate("UPDATE `dotamine` SET `loses`=" + (getLoses() + 1) + ", `lhs`=" + (getMySQLLHs() + lh) + " WHERE `name`='" + p.getName() + "';");
             } catch (SQLException ex) {
                 pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
             }

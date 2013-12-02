@@ -103,13 +103,13 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             z.setRemoveWhenFarAway(false);
             z.setCanPickupItems(false);
             ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
-            cz.getAttributes().setMaximumNavigationDistance(64);
+            cz.getAttributes().setMaximumNavigationDistance(16);
             cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", LknockM, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getAttributes().getAttackDamageAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "attack dmg", LdmgM, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", LhealthM, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
             cz.getAI().addBehavior(new AIAttackMelee(1, 1.1));
-            cz.getAI().addBehavior(new AITargetHurtBy(2, false));
+            cz.getAI().addBehavior(new AITargetHurtBy(2, true));
             cz.getAI().addBehavior(new AITargetNearest(3, 10, false, 20 * 3));
             cz.getAI().addBehavior(new AIFloat(4));
             cz.getAI().addBehavior(new AILookAtEntity(5, (float) 8));
@@ -133,7 +133,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             s.setRemoveWhenFarAway(false);
             s.setCanPickupItems(false);
             ControllableMob<Skeleton> cs = ControllableMobs.putUnderControl(s, true);
-            cs.getAttributes().setMaximumNavigationDistance(64);
+            cs.getAttributes().setMaximumNavigationDistance(16);
             cs.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", LknockR, ModifyOperation.ADD_TO_BASIS_VALUE));
             cs.getAttributes().getAttackDamageAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "attack dmg", LdmgR, ModifyOperation.ADD_TO_BASIS_VALUE));
             cs.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", LhealthR, ModifyOperation.ADD_TO_BASIS_VALUE));

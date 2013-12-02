@@ -84,6 +84,7 @@ public class EntityCreepSpawnRunnable extends BukkitRunnable {
             z.setRemoveWhenFarAway(false);
             z.setCanPickupItems(false);
             z.setMaxHealth(20 + LhealthM);
+            z.setHealth(z.getMaxHealth());
             pl.laneEntityCreeps.add(z);
             pl.spawnedMobs.add(z);
         }
@@ -103,6 +104,7 @@ public class EntityCreepSpawnRunnable extends BukkitRunnable {
             s.setRemoveWhenFarAway(false);
             s.setCanPickupItems(false);
             s.setMaxHealth(20 + LhealthR);
+            s.setHealth(s.getMaxHealth());
             pl.laneEntityCreeps.add(s);
             pl.spawnedMobs.add(s);
         }

@@ -107,8 +107,8 @@ public class Config {
         config.addDefault("lang.dontSpamClicks", "&4Please, calm down. &cDon't spam clicks.");
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
         config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
-        config.addDefault("lang.rankingTitle", "&eName &6|&e Wins &6|&e Loses &6|&e Kills &6|&e Deaths");
-        config.addDefault("lang.rankingEntry", "&e%name &6|&e %wins &6|&e %loses &6|&e %kills &6|&e %deaths");
+        config.addDefault("lang.rankingTitle", "&e=== &6Ranking &e===");
+        config.addDefault("lang.rankingEntry", "&e%name &6| W/L:&e %wlr &6| W:&e %wins &6| L:&e %loses &6| K/D:&e %kdr &6| K:&e %kills &6| D:&e %deaths &6| Avg. LH:&e %avgLH");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.two", "%name &6killed %dead &6for &e%money");
         config.addDefault("lang.killstreak.tree", "%name &6killed %dead &6for &e%money &6- &4KILLING SPREE");
@@ -140,6 +140,9 @@ public class Config {
         }
         if (config.getInt("DoNotChangeThis.ConfigVersion") != pl.version) {
             pl.getLogger().log(Level.WARNING, "Recommended: recreate your config.yml");
+            if (config.getInt("DoNotChangeThis.ConfigVersion") < 4) {
+                alterTable();
+            }
         }
     }
 
@@ -237,10 +240,20 @@ public class Config {
                     + "  `loses` INT NOT NULL DEFAULT 0,\n"
                     + "  `kills` INT NOT NULL DEFAULT 0,\n"
                     + "  `deaths` INT NOT NULL DEFAULT 0,\n"
+                    + "  `lhs` INT NOT NULL DEFAULT 0,\n"
                     + "  PRIMARY KEY (`name`));");
         } catch (SQLException e) {
             pl.mysqlEnabled = false;
             pl.getLogger().log(Level.SEVERE, "Couldn''t connect to MySQL and create table: {0}", e.getMessage());
+        }
+    }
+
+    private void alterTable() {
+        try {
+            Statement s = pl.sql.getConn().createStatement();
+            s.execute("ALTER TABLE `dotamine` ADD COLUMN `lhs` INT(11) NOT NULL DEFAULT 0 AFTER `deaths`;");
+        } catch (SQLException ex) {
+            pl.getLogger().log(Level.SEVERE, "Couldn''t alterate table: {0}", ex.getMessage());
         }
     }
 }

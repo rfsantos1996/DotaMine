@@ -62,6 +62,7 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
             z.setRemoveWhenFarAway(false);
             z.setCanPickupItems(false);
             z.setMaxHealth(32);
+            z.setHealth(z.getMaxHealth());
             pl.jungleEntityCreeps.add(z);
             pl.spawnedMobs.add(z);
         }

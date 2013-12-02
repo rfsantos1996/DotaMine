@@ -1,8 +1,9 @@
 0.4:
  * GAMEPLAY:
- - Still nothing
+ - Zombies WILL target you in crowd if you shoot them
  * PLUGIN:
- - Still nothing
+ - Ranking now show Kill/Death ratio and Win/Lost ratio
+ - Added a column on dotamine's table on MySQL: "lhs" - this will save last hits
 
 0.3.1:
  * GAMEPLAY:

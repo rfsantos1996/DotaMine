@@ -55,7 +55,7 @@ public class DotaCommand implements CommandExecutor {
                     int i = 0;
                     while (i < 5) {
                         for (Ranking r : pl.rankingList) {
-                            sender.sendMessage(pl.getLang("lang.rankingEntry").replaceAll("%name", r.getName()).replaceAll("%wins", r.getWins()).replaceAll("%loses", r.getLoses()).replaceAll("%kills", r.getKills()).replaceAll("%deaths", r.getDeaths()));
+                            sender.sendMessage(pl.getLang("lang.rankingEntry").replaceAll("%name", r.getName()).replaceAll("%wins", r.getWins()).replaceAll("%loses", r.getLoses()).replaceAll("%kills", r.getKills()).replaceAll("%deaths", r.getDeaths()).replaceAll("%kdr", r.getKillDeathRatio()).replaceAll("%wlr", r.getWinLossRatio()).replaceAll("%avgLH", r.getAvgLH()));
                             i++;
                         }
                     }
@@ -118,6 +118,7 @@ public class DotaCommand implements CommandExecutor {
         } else {
             /*Location l = ((Player) sender).getLocation();
              sender.sendMessage(l.getBlockX() + " " + l.getBlockY() + " " + l.getBlockZ() + " " + l.getYaw() + " " + l.getPitch());*/
+            pl.ingameList.get((Player) sender).addWin();
             return false;
         }
     }
