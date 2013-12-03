@@ -2,7 +2,6 @@ package com.jabyftw.dotamine.listeners;
 
 import com.jabyftw.dotamine.DotaMine;
 import com.jabyftw.dotamine.runnables.item.ShowRunnable;
-import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
@@ -19,6 +18,8 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 /**
@@ -26,14 +27,14 @@ import org.bukkit.util.Vector;
  * @author Rafael
  */
 public class EntityListener implements Listener {
-
+    
     private final DotaMine pl;
-
+    
     public EntityListener(DotaMine pl) {
         this.pl = pl;
     }
-
-    @EventHandler
+    
+    @EventHandler(ignoreCancelled = true)
     public void onEntityDamageEntity(EntityDamageByEntityEvent e) {
         if (e.getEntity() instanceof Player) { // Hit player
             Player damaged = (Player) e.getEntity();
@@ -76,7 +77,7 @@ public class EntityListener implements Listener {
                         e.setCancelled(true);
                         return;
                     }
-
+                    
                     checkTeleport(shooter);
                     if (!e.isCancelled()) {
                         if (!checkIngame(damaged)) { // spectator wont get hurt, and the arrow wont stop
@@ -115,7 +116,7 @@ public class EntityListener implements Listener {
                         return;
                     }
                 }
-
+                
                 checkTeleport(damager);
             } else if (e.getDamager() instanceof Projectile) { // Arrow
                 Projectile proj = (Projectile) e.getDamager();
@@ -133,7 +134,7 @@ public class EntityListener implements Listener {
                         e.setCancelled(true);
                         return;
                     }
-
+                    
                     checkTeleport(shooter);
                 }
             }
@@ -142,10 +143,12 @@ public class EntityListener implements Listener {
             }
         }
     }
-
-    @EventHandler
+    
+    @EventHandler(ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent e) {
         if (e.getCause().equals(DamageCause.FIRE_TICK) || e.getCause().equals(DamageCause.FIRE)) {
+            e.getEntity().setFireTicks(0);
+            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StopFireRunnable(e.getEntity()), 1);
             e.setCancelled(true);
             return;
         }
@@ -155,8 +158,8 @@ public class EntityListener implements Listener {
             }
         }
     }
-
-    @EventHandler
+    
+    @EventHandler(ignoreCancelled = true)
     public void onEntityTarget(EntityTargetEvent e) {
         if (e.getTarget() != null) {
             if (e.getTarget().getType().equals(EntityType.PLAYER)) {
@@ -171,8 +174,8 @@ public class EntityListener implements Listener {
             }
         }
     }
-
-    @EventHandler
+    
+    @EventHandler(ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent e) {
         if (e.getEntity() instanceof Player) {
             Player dead = (Player) e.getEntity();
@@ -211,6 +214,20 @@ public class EntityListener implements Listener {
                     if (e.getEntity().getKiller() != null) {
                         pl.ingameList.get(e.getEntity().getKiller()).addLH();
                     }
+                } else if (pl.jungleSpecialCreeps.containsKey(en)) {
+                    if (e.getEntity().getKiller() != null) {
+                        Player killer = e.getEntity().getKiller();
+                        pl.ingameList.get(killer).addJungleLH();
+                        pl.getServer().getWorld(pl.worldName).dropItemNaturally(en.getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
+                        int n = pl.jungleSpecialCreeps.get(en);
+                        if (n == 1) { // red
+                            killer.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 90, 0), true);
+                        } else { // blue
+                            killer.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 20 * 90, 1), true);
+                        }
+                    }
+                    e.setDroppedExp(pl.getRandom(12, 14));
+                    pl.jungleSpecialCreeps.remove(en);
                 } else if (pl.jungleCreeps.containsKey(en)) {
                     pl.jungleCreeps.remove(en);
                     if (e.getEntity().getKiller() != null) {
@@ -218,7 +235,6 @@ public class EntityListener implements Listener {
                         pl.getServer().getWorld(pl.worldName).dropItemNaturally(en.getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
                     }
                     e.setDroppedExp(pl.getRandom(7, 9));
-
                 }
                 ControllableMobs.releaseControl(pl.controlMobs.get(en));
             } else {
@@ -229,20 +245,27 @@ public class EntityListener implements Listener {
                         if (e.getEntity().getKiller() != null) {
                             pl.ingameList.get(en.getKiller()).addLH();
                         }
-                    } else if (pl.jungleEntityCreeps.contains(en)) {
-                        pl.jungleEntityCreeps.remove(en);
+                    } else if (pl.jungleEntityCreeps.containsKey(en)) {
                         if (e.getEntity().getKiller() != null) {
-                            pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
+                            Player killer = e.getEntity().getKiller();
+                            pl.ingameList.get(killer).addJungleLH();
                             pl.getServer().getWorld(pl.worldName).dropItemNaturally(en.getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
+                            int n = pl.jungleEntityCreeps.get(en);
+                            if (n == 1) { // red
+                                killer.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 90, 0), true);
+                            } else { // blue
+                                killer.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 20 * 90, 1), true);
+                            }
                         }
                         e.setDroppedExp(pl.getRandom(7, 9));
+                        pl.jungleEntityCreeps.remove(en);
                     }
                     pl.spawnedMobs.remove(en);
                 }
             }
         }
     }
-
+    
     private boolean checkForShadowBlade(Player p) {
         if (pl.invisible.containsKey(p)) {
             if (pl.invisible.get(p) == 1) {
@@ -256,26 +279,40 @@ public class EntityListener implements Listener {
         }
         return false;
     }
-
+    
     private void cancelTp(Player p) {
         pl.getServer().getScheduler().cancelTask(pl.teleporting.get(p));
         pl.teleporting.remove(p);
         p.sendMessage(pl.getLang("lang.tpCancelled"));
     }
-
+    
     private void checkTarrasque(Player damaged) {
         if (pl.hasTarrasque.contains(damaged)) {
             pl.removeTarrasque(damaged);
         }
     }
-
+    
     private boolean checkIngame(Player p) {
         return pl.ingameList.containsKey(p);
     }
-
+    
     private void checkTeleport(Player p) {
         if (pl.teleporting.containsKey(p)) {
             cancelTp(p);
+        }
+    }
+    
+    private class StopFireRunnable implements Runnable {
+        
+        private final Entity entity;
+        
+        public StopFireRunnable(Entity entity) {
+            this.entity = entity;
+        }
+        
+        @Override
+        public void run() {
+            entity.setFireTicks(0);
         }
     }
 }

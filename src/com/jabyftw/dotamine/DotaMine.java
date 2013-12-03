@@ -11,7 +11,9 @@ import com.jabyftw.dotamine.runnables.CreepSpawnRunnable;
 import com.jabyftw.dotamine.runnables.CheckNightRunnable;
 import com.jabyftw.dotamine.runnables.EntityCreepSpawnRunnable;
 import com.jabyftw.dotamine.runnables.EntityJungleSpawnRunnable;
+import com.jabyftw.dotamine.runnables.EntitySpecialJungleSpawnRunnable;
 import com.jabyftw.dotamine.runnables.JungleSpawnRunnable;
+import com.jabyftw.dotamine.runnables.JungleSpecialSpawnRunnable;
 import com.jabyftw.dotamine.runnables.ScoreboardRunnable;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import java.sql.ResultSet;
@@ -84,6 +86,8 @@ public class DotaMine extends JavaPlugin implements Listener {
     public List<Location> midCreepSpawn = new ArrayList();
     public List<Location> topCreepSpawn = new ArrayList();
     public List<Location> jungleSpawn = new ArrayList();
+    public List<Location> jungleRedSpawn = new ArrayList();
+    public List<Location> jungleBlueSpawn = new ArrayList();
     public Location redDeploy, blueDeploy, specDeploy, normalSpawn;
     // Players
     public List<Ranking> rankingList = new ArrayList();
@@ -95,10 +99,11 @@ public class DotaMine extends JavaPlugin implements Listener {
     // Mobs
     public Map<Entity, ControllableMob> controlMobs = new HashMap();
     public Map<Entity, ControllableMob> jungleCreeps = new HashMap();
+    public Map<Entity, Integer> jungleSpecialCreeps = new HashMap();
     public Map<Entity, ControllableMob> laneCreeps = new HashMap();
     public List<Entity> spawnedMobs = new ArrayList();
     public List<Entity> laneEntityCreeps = new ArrayList();
-    public List<Entity> jungleEntityCreeps = new ArrayList();
+    public Map<Entity, Integer> jungleEntityCreeps = new HashMap();
     public Random random = new Random();
     /*
      ITEM
@@ -143,7 +148,6 @@ public class DotaMine extends JavaPlugin implements Listener {
             getServer().getScheduler().scheduleAsyncRepeatingTask(this, new RankingUpdateRunnable(), 10, 20 * 60);
         }
         getLogger().log(Level.INFO, "Registered runnables.");
-        getLogger().log(Level.WARNING, "Plugin configured to edited Duurax's LOL Map Rev 1.");
     }
 
     @Override
@@ -363,7 +367,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         cleanPlayer(p, false, false);
         p.teleport(normalSpawn);
         p.sendMessage(getLang("lang.leftSpectator"));
-        p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10, 100));
+        p.setFallDistance(0);
         spectators.remove(p);
     }
 
@@ -383,10 +387,12 @@ public class DotaMine extends JavaPlugin implements Listener {
         getServer().getScheduler().scheduleSyncDelayedTask(this, new AnnounceGameRunnable(), 20 * 50);
         if (useControllableMobs) {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 60, 20 * 30);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 40);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 45);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpecialSpawnRunnable(this), 20 * 60, 20 * 180);
         } else {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntityCreepSpawnRunnable(this), 20 * 60, 20 * 30);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntityJungleSpawnRunnable(this), 20 * 60, 20 * 40);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntityJungleSpawnRunnable(this), 20 * 60, 20 * 45);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntitySpecialJungleSpawnRunnable(this), 20 * 60, 20 * 180);
             getLogger().log(Level.WARNING, "You should use ControllableMobs for better experience.");
         }
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), 1, scoreRunnable);
@@ -410,10 +416,7 @@ public class DotaMine extends JavaPlugin implements Listener {
             }
         }
         getServer().setWhitelist(true);
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new StopRunnable(), 20 * 10);
-        for (Player p : getServer().getOnlinePlayers()) {
-            p.kickPlayer(getLang("lang.kickMessage"));
-        }
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new StopRunnable(), 20 * 5);
     }
 
     public void removePlayerFromQueue(Player p) {
@@ -450,6 +453,14 @@ public class DotaMine extends JavaPlugin implements Listener {
         if (useEffects) {
             for (int i = 0; i < quantity; i++) {
                 location.getWorld().playEffect(location, Effect.STEP_SOUND, BlockID);
+            }
+        }
+    }
+
+    public void flamesEffect(Location location, int quantity) {
+        if (useEffects) {
+            for (int i = 0; i < quantity; i++) {
+                location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 0, 1);
             }
         }
     }
@@ -584,6 +595,9 @@ public class DotaMine extends JavaPlugin implements Listener {
 
         @Override
         public void run() {
+            for (Player p : getServer().getOnlinePlayers()) {
+                p.kickPlayer(getLang("lang.kickMessage"));
+            }
             getServer().shutdown();
         }
     }

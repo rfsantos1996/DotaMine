@@ -32,20 +32,20 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
     private void spawn(Location spawnloc) {
         spawnloc.getChunk().load();
         boolean playernear = false;
-        int spawn = 0;
+        boolean spawn = true;
         for (Player p : pl.ingameList.keySet()) {
             if (p.getLocation().distance(spawnloc) < 32) {
                 playernear = true;
             }
         }
         if (pl.jungleEntityCreeps.size() > 0 && playernear) {
-            for (Entity e : pl.jungleEntityCreeps) {
+            for (Entity e : pl.jungleEntityCreeps.keySet()) {
                 if (e.getLocation().distance(spawnloc) < 22) {
-                    spawn++;
+                    spawn = true;
                 }
             }
         }
-        if (spawn < 3 && playernear) {
+        if (spawn && playernear) {
             spawnCreeps(spawnloc);
         }
     }
@@ -53,17 +53,15 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
     private void spawnCreeps(Location spawnloc) {
         for (int i = 0; i < 2; i++) {
             Zombie z = pl.getServer().getWorld(pl.worldName).spawn(spawnloc, Zombie.class);
-            if (pl.megaCreeps) {
-                ItemStack sword = new ItemStack(Material.STONE_SWORD);
-                sword.addEnchantment(Enchantment.DAMAGE_ALL, 4);
-                z.getEquipment().setItemInHand(sword);
-                z.getEquipment().setItemInHandDropChance(0);
-            }
+            ItemStack sword = new ItemStack(Material.STONE_SWORD);
+            sword.addEnchantment(Enchantment.DAMAGE_ALL, 3);
+            z.getEquipment().setItemInHand(sword);
+            z.getEquipment().setItemInHandDropChance(0);
             z.setRemoveWhenFarAway(false);
             z.setCanPickupItems(false);
             z.setMaxHealth(32);
             z.setHealth(z.getMaxHealth());
-            pl.jungleEntityCreeps.add(z);
+            pl.jungleEntityCreeps.put(z, 0);
             pl.spawnedMobs.add(z);
         }
     }

@@ -1,6 +1,7 @@
 0.4:
  * GAMEPLAY:
  - Better map (Duurax's Summoners Rift)
+ - Changed a little (Jungle)
  - Zombies WILL target you in crowd if you shoot them
  - Spectators won't affect gameplay when blocking arrows
  - Higher EXP drop on Jungle creeps (after: 7-9 / before: 6-8)
@@ -9,6 +10,7 @@
  - Removed fire bow from Meele, not needed anymore
  * PLUGIN:
  - Added fixed debug mode
+ - Plugin will ignore most events that have been cancelled
  - Changed A LOT OF THINGS, also, a lot TODO, to start using Duurax's map and custom maps
  - Changed how Jungle and Lanes creeps work on code
  - Ranking now show Kill/Death ratio and Win/Lost ratio

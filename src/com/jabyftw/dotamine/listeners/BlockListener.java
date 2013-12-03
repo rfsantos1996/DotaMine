@@ -33,7 +33,7 @@ public class BlockListener implements Listener {
             return;
         }
         if (pl.ingameList.containsKey(p)) {
-            if (e.getPlayer().getItemInHand().getType().equals(Material.AIR)) {
+            if (p.getItemInHand().getType().equals(Material.AIR)) {
                 if (pl.state == pl.PLAYING) {
                     for (Structure s : pl.structures.keySet()) {
                         Block b = e.getBlock();
@@ -44,6 +44,9 @@ public class BlockListener implements Listener {
                                 if (s.getTeam() != pl.ingameList.get(p).getTeam()) {
                                     if (towerBreakable(s)) {
                                         s.punchTower(false);
+                                        if (s.getHP() > 0) {
+                                            p.sendMessage(pl.getLang("lang.youDamagedTower").replaceAll("%tower", s.getName()).replaceAll("%hp", Integer.toString(s.getHP())));
+                                        }
                                         pl.debug("punched tower : " + s.getName());
                                     } else {
                                         p.sendMessage(pl.getLang("lang.youMustDestroyFirstTowers"));
@@ -67,7 +70,7 @@ public class BlockListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p) || pl.spectators.containsKey(p)) {
@@ -79,12 +82,12 @@ public class BlockListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBurn(BlockBurnEvent e) {
         e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onIgnnite(BlockIgniteEvent e) {
         if (e.getCause() == IgniteCause.SPREAD) {
             e.setCancelled(true);
@@ -102,7 +105,10 @@ public class BlockListener implements Listener {
             if (s.getLane().equalsIgnoreCase(s1.getLane())) {
                 pl.debug("equal lane");
                 if (s1.isDestroyed() && pl.structures.get(s1) < sNumber) { // if 1 < 2 and tower is destroyed
-                    return true;
+                    int deltaN = pl.structures.get(s1) - sNumber;
+                    if(deltaN == 1) {
+                        return true;
+                    }
                 }
             }
 

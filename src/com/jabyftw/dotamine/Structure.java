@@ -12,7 +12,7 @@ import org.bukkit.block.Block;
  * @author Rafael
  */
 public class Structure {
-
+    
     private final DotaMine pl;
     private final Location loc, tpLoc, afterDestroy;
     private final String name, lane;
@@ -34,11 +34,11 @@ public class Structure {
         getNearbyBlocks(5);
         pl.debug("name: lane: number: team: type: " + getName() + "." + pl.structures.get(this));
     }
-
+    
     public Location getLoc() {
         return loc;
     }
-
+    
     public String getName() {
         if (team == 1) {
             return ChatColor.AQUA + name;
@@ -46,29 +46,29 @@ public class Structure {
             return ChatColor.RED + name;
         }
     }
-
+    
     public String getLane() {
         return lane;
     }
-
+    
     public int getTeam() {
         return team;
     }
-
+    
     public int getType() {
         return type;
     }
-
+    
     public void setHP(int multi) {
         for (int i = 0; i < multi; i++) {
             hp = (int) (hp * 0.75);
         }
     }
-
+    
     public int getHP() {
         return hp;
     }
-
+    
     public void punchTower(boolean denied) {
         hp = hp - 15;
         if (!announced) {
@@ -87,7 +87,7 @@ public class Structure {
             }
         }
     }
-
+    
     public boolean isDestroyed() {
         for (Block b : blocks) {
             if (b.getType().equals(Material.AIR)) {
@@ -96,7 +96,7 @@ public class Structure {
         }
         return false;
     }
-
+    
     public void setDestroyed() {
         if (getType() == 2) {
             if (team == 1) {
@@ -110,14 +110,15 @@ public class Structure {
             pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", getName()));
             pl.checkForMegacreeps();
             if (afterDestroy != null) {
-                // TODO: add creep spawn location
+                pl.addCreepLocSpawn(getLane(), afterDestroy);
             }
             for (Block b : blocks) {
                 b.setType(Material.AIR);
+                pl.smokeEffect(b.getLocation(), 2);
             }
         }
     }
-
+    
     private int getFromStringTeam(String team) {
         if (team.startsWith("b")) {
             return 1;
@@ -125,7 +126,7 @@ public class Structure {
             return 2;
         }
     }
-
+    
     private String getFromStringLane(String lane) {
         if (lane.startsWith("bo")) {
             return "bot";
@@ -137,7 +138,7 @@ public class Structure {
             return "base";
         }
     }
-
+    
     private void addTowerMoney(int team) {
         for (Jogador j : pl.ingameList.values()) {
             if (j.getTeam() == team) {
@@ -145,7 +146,7 @@ public class Structure {
             }
         }
     }
-
+    
     private void getNearbyBlocks(int radius) {
         for (int x = -(radius); x <= radius; x++) {
             for (int y = -(radius); y <= radius; y++) {
@@ -158,13 +159,13 @@ public class Structure {
             }
         }
     }
-
+    
     public Location getTpLoc() {
         return tpLoc;
     }
-
+    
     private class AnnounceCDRunnable implements Runnable {
-
+        
         @Override
         public void run() {
             announced = false;

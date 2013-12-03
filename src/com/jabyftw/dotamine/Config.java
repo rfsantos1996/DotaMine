@@ -125,20 +125,17 @@ public class Config {
             }
         }
         pl.debug("setted structures HP");
-        // TODO: LOL jungle, change jungle
-        // Lane, creep > location
-        // Red blue > -967, 11, 87
-        // Red red > -904, 11, 164
-        // Blue blue > -850, 11, 111
-        // Blue red > -913, 11, 34
+        pl.jungleRedSpawn.add(new Location(w, -904, 11, 164));
+        pl.jungleRedSpawn.add(new Location(w, -913, 11, 34));
+        pl.jungleBlueSpawn.add(new Location(w, -850, 11, 111));
+        pl.jungleBlueSpawn.add(new Location(w, -967, 11, 87));
+        pl.jungleSpawn.add(new Location(w, -845, 11, 81));
+        pl.jungleSpawn.add(new Location(w, -901, 11, 68));
+        pl.jungleSpawn.add(new Location(w, -933, 11, 18));
+        pl.jungleSpawn.add(new Location(w, -884, 11, 181));
+        pl.jungleSpawn.add(new Location(w, -916, 11, 130));
+        pl.jungleSpawn.add(new Location(w, -963, 11, 116));
 
-        // Blue normal > -854 11 81
-        // Blue normal > -901 11 68
-        // Blue normal > -933 11 18
-        // Red normal > -884 11 181
-        // Red normal > -916 11 130
-        // Red normal > -963 11 116
-        //config.addDefault("structures.creepspawn.top.s1.locX", -821);
         for (String keys : config.getConfigurationSection("structures.creepspawn.top").getKeys(false)) {
             pl.addCreepLocSpawn("top", new Location(w, config.getInt("structures.creepspawn.top." + keys + ".locX"), config.getInt("structures.creepspawn.top." + keys + ".locY"), config.getInt("structures.creepspawn.top." + keys + ".locZ")));
         }
@@ -269,6 +266,7 @@ public class Config {
         config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
         config.addDefault("lang.towerUnderAttack", "%tower &4is under attack. &6Tower HP: &e%hp");
         config.addDefault("lang.youMustDestroyFirstTowers", "&cYou must destroy towers behind you first.");
+        config.addDefault("lang.youDamagedTower", "&6You caused &e15 damage&6 on %tower &6(%hp&6)");
         config.addDefault("lang.rankingTitle", "&e=== &6Ranking &e===");
         config.addDefault("lang.rankingEntry", "&e%name &6| W/L:&e %wlr &6| W:&e %wins &6| L:&e %loses &6| K/D:&e %kdr &6| K:&e %kills &6| D:&e %deaths &6| Avg. LH:&e %avgLH");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
@@ -377,7 +375,7 @@ public class Config {
             config.addDefault("structures.towers.btower3m.number", 1);
 
             config.addDefault("structures.towers.btower1t.name", "Blue Top Third Tower");
-            config.addDefault("structures.towers.btower1t.locX", -881);
+            config.addDefault("structures.towers.btower1t.locX", -811);
             config.addDefault("structures.towers.btower1t.locY", 16);
             config.addDefault("structures.towers.btower1t.locZ", 63);
             config.addDefault("structures.towers.btower1t.tpLocX", -811);
@@ -626,6 +624,7 @@ public class Config {
             config.addDefault("structures.ancients.ancientr.lane", "mid");
             config.addDefault("structures.ancients.ancientr.team", "red");
             config.addDefault("structures.ancients.ancientr.number", 5);
+            pl.getLogger().log(Level.INFO, "Plugin configured to edited Duurax's LOL Map Rev 1.");
         }
     }
 }

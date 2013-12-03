@@ -44,14 +44,14 @@ import org.bukkit.util.Vector;
  * @author Rafael
  */
 public class PlayerListener implements Listener {
-    
+
     private final DotaMine pl;
-    
+
     public PlayerListener(DotaMine pl) {
         this.pl = pl;
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
         if (pl.state == pl.RESTARTING) {
@@ -83,7 +83,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
@@ -93,10 +93,10 @@ public class PlayerListener implements Listener {
             pl.broadcast(pl.getLang("lang.onePlayerLeft"));
             pl.endGame(true, 0);
         }
-        
+
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onKick(PlayerKickEvent e) {
         Player p = e.getPlayer();
         e.setLeaveMessage(pl.getLang("lang.quitMessage").replaceAll("%name", p.getName()));
@@ -106,16 +106,16 @@ public class PlayerListener implements Listener {
             pl.endGame(true, 0);
         }
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onPickUp(PlayerPickupItemEvent e) {
         Player p = e.getPlayer();
         if (!pl.ingameList.containsKey(p)) {
             e.setCancelled(true);
         }
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p)) {
@@ -134,8 +134,8 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.getWhoClicked() instanceof Player) {
             Player p = (Player) e.getWhoClicked();
@@ -145,13 +145,13 @@ public class PlayerListener implements Listener {
                         e.setCancelled(true);
                     }
                 }
-            } else if(pl.spectators.containsKey(p)) {
+            } else if (pl.spectators.containsKey(p)) {
                 e.setCancelled(true);
             }
         }
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p)) {
@@ -250,7 +250,7 @@ public class PlayerListener implements Listener {
                     } else {
                         p.sendMessage(pl.getLang("lang.dontSpamClicks"));
                     }
-                    
+
                 } else if ((e.getAction() == Action.LEFT_CLICK_AIR) || (e.getAction() == Action.LEFT_CLICK_BLOCK)) {
                     if (!pl.interactCD.contains(p)) {
                         p.teleport(pl.spectators.get(p).subN().getLocation().add(0, 2, 0));
@@ -287,7 +287,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onFoodChange(FoodLevelChangeEvent e) {
         if (e.getEntity() instanceof Player) {
@@ -297,8 +297,8 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p) || pl.spectators.containsKey(p)) {
@@ -307,8 +307,8 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onDeath(PlayerDeathEvent e) {
         Player p = e.getEntity();
         if (pl.ingameList.containsKey(p)) {
@@ -324,8 +324,8 @@ public class PlayerListener implements Listener {
         }
         e.setDeathMessage("");
     }
-    
-    @EventHandler
+
+    @EventHandler(ignoreCancelled = true)
     public void onRespawn(PlayerRespawnEvent e) {
         Player p = e.getPlayer();
         if (pl.playerDeathItems.containsKey(p)) {
@@ -351,15 +351,15 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
-    @EventHandler(priority = EventPriority.HIGHEST)
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent e) {
         Player sender = e.getPlayer();
         String msg = e.getMessage();
         e.setCancelled(true);
         executeChat(sender, msg);
     }
-    
+
     private void checkIngameThings(Player p) {
         if (pl.queue.containsKey(p)) {
             pl.removePlayerFromQueue(p);
@@ -386,7 +386,7 @@ public class PlayerListener implements Listener {
             }
         }
     }
-    
+
     private void executeChat(Player sender, String msg) {
         String message = pl.getLang("lang.chat.general").replaceAll("%name", sender.getDisplayName()).replaceAll("%message", msg);
         if (pl.spectators.containsKey(sender)) {
@@ -418,7 +418,7 @@ public class PlayerListener implements Listener {
             pl.getLogger().log(Level.INFO, message);
         }
     }
-    
+
     private String getTeamName(int team) {
         if (team == 1) {
             return pl.getLang("lang.chat.blueTeam");
@@ -426,7 +426,7 @@ public class PlayerListener implements Listener {
             return pl.getLang("lang.chat.redTeam");
         }
     }
-    
+
     private Location getTeamSpawn(Player p) {
         if (pl.ingameList.get(p).getTeam() == 1) {
             Location l = pl.blueDeploy;
@@ -436,29 +436,29 @@ public class PlayerListener implements Listener {
             return l.subtract(0, 1, 0);
         }
     }
-    
+
     private class InteractCDRunnable implements Runnable {
-        
+
         private final Player p;
-        
+
         public InteractCDRunnable(Player p) {
             this.p = p;
         }
-        
+
         @Override
         public void run() {
             pl.interactCD.remove(p);
         }
     }
-    
+
     private class ForceStaffRunnable extends BukkitRunnable {
-        
+
         private final Player p;
-        
+
         public ForceStaffRunnable(Player p) {
             this.p = p;
         }
-        
+
         @Override
         public void run() {
             Vector vec = p.getLocation().getDirection();
@@ -468,61 +468,61 @@ public class PlayerListener implements Listener {
             p.setVelocity(vec);
         }
     }
-    
+
     private class ForceEffectRunnable extends BukkitRunnable {
-        
+
         private final Player p;
-        
+
         public ForceEffectRunnable(Player p) {
             this.p = p;
         }
-        
+
         @Override
         public void run() {
             pl.smokeEffect(p.getLocation(), 10);
         }
     }
-    
+
     private class ForceStopRunnable extends BukkitRunnable {
-        
+
         private final Player p;
-        
+
         public ForceStopRunnable(Player p) {
             this.p = p;
         }
-        
+
         @Override
         public void run() {
             pl.getServer().getScheduler().cancelTask(pl.forcingStaff.get(p));
             pl.forcingStaff.remove(p);
         }
     }
-    
+
     private class RespawnEffectRunnable implements Runnable {
-        
+
         private final Player p;
         private final Location respawnLoc;
-        
+
         public RespawnEffectRunnable(Player p, Location respawnLoc) {
             this.p = p;
             this.respawnLoc = respawnLoc;
         }
-        
+
         @Override
         public void run() {
             pl.breakEffect(respawnLoc, 2, 18);
-            
+
         }
     }
-    
+
     private class RespawnStopRunnable implements Runnable {
-        
+
         private final Player p;
-        
+
         public RespawnStopRunnable(Player p) {
             this.p = p;
         }
-        
+
         @Override
         public void run() {
             pl.getServer().getScheduler().cancelTask(pl.respawning.get(p));
