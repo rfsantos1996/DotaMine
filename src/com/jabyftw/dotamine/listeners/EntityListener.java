@@ -44,6 +44,7 @@ public class EntityListener implements Listener {
                 }
                 if (!checkIngame(damager)) {
                     e.setCancelled(true);
+                    return;
                 }
                 if (checkForShadowBlade(damager)) {
                     e.setCancelled(true);

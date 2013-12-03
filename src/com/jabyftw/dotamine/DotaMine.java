@@ -73,27 +73,31 @@ public class DotaMine extends JavaPlugin implements Listener {
     public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
     public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs;
     public Economy econ = null;
-    public Config config = new Config(this);
+    public Config config = null;
     public Permission permission = null;
-    public List<Ranking> rankingList = new ArrayList();
-    public Map<Player, Jogador> ingameList = new HashMap();
-    public Map<Location, Tower> towers = new HashMap();
+    // Location
+    public List<Structure> structures = new ArrayList();
+    public int maxN = 0;
     public Map<Location, Location> tpPlace = new HashMap();
-    public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
-    public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
     public List<Location> botCreepSpawn = new ArrayList();
     public List<Location> midCreepSpawn = new ArrayList();
     public List<Location> topCreepSpawn = new ArrayList();
     public List<Location> jungleSpawn = new ArrayList();
+    public Location redDeploy, blueDeploy, specDeploy, normalSpawn;
+    // Players
+    public List<Ranking> rankingList = new ArrayList();
+    public Map<Player, Jogador> ingameList = new HashMap();
     public Map<Player, Integer> queue = new HashMap();
     public Map<Player, Spectator> spectators = new HashMap();
+    public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
+    public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
+    // Mobs
     public List<ControllableMob> controlMobs = new ArrayList();
     public List<ControllableMob> jungleCreeps = new ArrayList();
     public List<ControllableMob> laneCreeps = new ArrayList();
     public List<Entity> spawnedMobs = new ArrayList();
     public List<Entity> laneEntityCreeps = new ArrayList();
     public List<Entity> jungleEntityCreeps = new ArrayList();
-    public Location botSpawnPre, botSpawnPosR, botSpawnPosB, midSpawnPre, midSpawnPosR, midSpawnPosB, topSpawnPre, topSpawnPosR, topSpawnPosB, blueJungleBot, blueJungleTop, redJungleBot, redJungleTop, blueSBotT, blueSMidT, blueSTopT, redSBotT, redSMidT, redSTopT, blueFBotT, blueFMidT, blueFTopT, redFBotT, redFMidT, redFTopT, blueDeploy, redDeploy, normalSpawn, specDeploy, blueAncient, redAncient;
     public Random random = new Random();
     /*
      ITEM
@@ -118,7 +122,8 @@ public class DotaMine extends JavaPlugin implements Listener {
         state = WAITING;
         megaCreeps = false;
         version = 4; // config version
-        config.generateConfig(getConfig());
+        config = new Config(this, getConfig());
+        config.generateConfig();
         config.setLocations(getServer().getWorld(worldName));
         if (useVault) {
             setupVault();
