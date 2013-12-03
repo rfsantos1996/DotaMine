@@ -145,7 +145,7 @@ public class PlayerListener implements Listener {
                         e.setCancelled(true);
                     }
                 }
-            } else {
+            } else if(pl.spectators.containsKey(p)) {
                 e.setCancelled(true);
             }
         }

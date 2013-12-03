@@ -35,10 +35,15 @@ public class Config {
         config.addDefault("config.useControllableMobs", false);
         config.addDefault("config.useEffects", true);
         config.addDefault("config.nerfRangedAtNight", false);
-        config.addDefault("config.worldName", "world");
+        config.addDefault("config.debugMode", false);
         config.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
         config.addDefault("config.MAX_PLAYERS", 12);
         config.addDefault("config.MIN_PLAYERS", 6);
+        config.addDefault("config.world.name", "world");
+        config.addDefault("config.world.fromChunkX", -66);
+        config.addDefault("config.world.toChunkX", -48);
+        config.addDefault("config.world.fromChunkY", 15);
+        config.addDefault("config.world.toChunkY", -5);
         config.addDefault("mysql.enabled", false);
         config.addDefault("mysql.username", "root");
         config.addDefault("mysql.password", "root");
@@ -52,8 +57,9 @@ public class Config {
         config.options().copyDefaults(true);
         pl.saveConfig();
         pl.reloadConfig();
+        pl.debug = config.getBoolean("config.debugMode");
         enabled = config.getBoolean("config.EnableAfterCheckingConfigDotYML");
-        pl.worldName = config.getString("config.worldName");
+        pl.worldName = config.getString("config.world.name");
         pl.useVault = config.getBoolean("config.useVault");
         pl.useControllableMobs = config.getBoolean("config.useControllableMobs");
         pl.useEffects = config.getBoolean("config.useEffects");
@@ -72,6 +78,7 @@ public class Config {
                 alterTable();
             }
         }
+        setLocations(pl.getServer().getWorld(pl.worldName));
     }
 
     public void setLocations(World w) {
@@ -86,36 +93,84 @@ public class Config {
         pl.redDeploy = new Location(w, config.getInt("structures.locations.redspawn.locX"), config.getInt("structures.locations.redspawn.locY"), config.getInt("structures.locations.redspawn.locZ"));
         pl.blueDeploy = new Location(w, config.getInt("structures.locations.bluespawn.locX"), config.getInt("structures.locations.bluespawn.locY"), config.getInt("structures.locations.bluespawn.locZ"));
         pl.specDeploy = new Location(w, config.getInt("structures.locations.spectator.locX"), config.getInt("structures.locations.spectator.locY"), config.getInt("structures.locations.spectator.locZ"));
-
+        pl.debug("setted deploys");
         for (String keys : config.getConfigurationSection("structures.towers").getKeys(false)) {
-            Structure t = new Structure(pl, new Location(w, config.getInt("structures.towers." + keys + ".locX"), config.getInt("structures.towers." + keys + ".locY"), config.getInt("structures.towers." + keys + ".locZ")), config.getString("structures.towers." + keys + ".name"), config.getString("structures.towers." + keys + ".lane"), config.getInt("structures.towers." + keys + ".number"), config.getString("structures.towers." + keys + ".team"), 1);
-            pl.structures.add(t);
+            Structure t = new Structure(pl, getLoc(w, "structures.towers." + keys), getTpLoc(w, "structures.towers." + keys), config.getString("structures.towers." + keys + ".name"), config.getString("structures.towers." + keys + ".lane"), config.getString("structures.towers." + keys + ".team"), 1, getAfterDestroyLoc(w, "structures.towers." + keys));
+            pl.structures.put(t, config.getInt("structures.towers." + keys + ".number"));
         }
         for (String keys : config.getConfigurationSection("structures.ancients").getKeys(false)) {
-            Structure t = new Structure(pl, new Location(w, config.getInt("structures.ancients." + keys + ".locX"), config.getInt("structures.ancients." + keys + ".locY"), config.getInt("structures.ancients." + keys + ".locZ")), config.getString("structures.ancients." + keys + ".name"), config.getString("structures.ancients." + keys + ".lane"), config.getInt("structures.ancients." + keys + ".number"), config.getString("structures.ancients." + keys + ".team"), 2);
-            pl.structures.add(t);
+            Structure t = new Structure(pl, getLoc(w, "structures.ancients." + keys), null, config.getString("structures.ancients." + keys + ".name"), config.getString("structures.ancients." + keys + ".lane"), config.getString("structures.ancients." + keys + ".team"), 2, null);
+            pl.structures.put(t, config.getInt("structures.ancients." + keys + ".number"));
         }
-        for (Structure t : pl.structures) {
-            if (t.getNumber() < 0) {
+        pl.debug("setted structures");
+        for (Structure t : pl.structures.keySet()) {
+            int n = pl.structures.get(t);
+            if (n < 0) {
                 pl.getLogger().log(Level.WARNING, "Tower/Ancient number cant be lower than 0");
                 pl.getPluginLoader().disablePlugin(pl);
             }
-            if (t.getNumber() > pl.maxN) {
-                pl.maxN = t.getNumber();
+            if (n > pl.maxN) {
+                pl.maxN = n;
+                pl.debug(Integer.toString(pl.maxN));
+            } else if (n < pl.minN) {
+                pl.minN = n;
             }
         }
-        for (Structure s : pl.structures) {
-            int deltaN = (pl.maxN - s.getNumber()); // there are 3 towers, first = 1, then, 3 - 1 = 2 times *0.75
+        for (Structure s : pl.structures.keySet()) {
+            int deltaN = (pl.maxN - pl.structures.get(s)); // there are 3 towers, first = 1, then, 3 - 1 = 2 times *0.75
             if (deltaN == 0) {
                 s.setHP(1);
             } else {
                 s.setHP(deltaN);
             }
         }
-        for (int a = -11; a <= 9; a++) {
-            for (int b = -10; b <= 10; b++) {
+        pl.debug("setted structures HP");
+        // TODO: LOL jungle, change jungle
+        // Lane, creep > location
+        // Red blue > -967, 11, 87
+        // Red red > -904, 11, 164
+        // Blue blue > -850, 11, 111
+        // Blue red > -913, 11, 34
+
+        // Blue normal > -854 11 81
+        // Blue normal > -901 11 68
+        // Blue normal > -933 11 18
+        // Red normal > -884 11 181
+        // Red normal > -916 11 130
+        // Red normal > -963 11 116
+        //config.addDefault("structures.creepspawn.top.s1.locX", -821);
+        for (String keys : config.getConfigurationSection("structures.creepspawn.top").getKeys(false)) {
+            pl.addCreepLocSpawn("top", new Location(w, config.getInt("structures.creepspawn.top." + keys + ".locX"), config.getInt("structures.creepspawn.top." + keys + ".locY"), config.getInt("structures.creepspawn.top." + keys + ".locZ")));
+        }
+        pl.debug("setted top creepspawn");
+        for (String keys : config.getConfigurationSection("structures.creepspawn.mid").getKeys(false)) {
+            pl.addCreepLocSpawn("mid", new Location(w, config.getInt("structures.creepspawn.mid." + keys + ".locX"), config.getInt("structures.creepspawn.mid." + keys + ".locY"), config.getInt("structures.creepspawn.mid." + keys + ".locZ")));
+        }
+        pl.debug("setted mid creepspawn");
+        for (String keys : config.getConfigurationSection("structures.creepspawn.bot").getKeys(false)) {
+            pl.addCreepLocSpawn("bot", new Location(w, config.getInt("structures.creepspawn.bot." + keys + ".locX"), config.getInt("structures.creepspawn.bot." + keys + ".locY"), config.getInt("structures.creepspawn.bot." + keys + ".locZ")));
+        }
+        pl.debug("setted bot creepspawn");
+        for (int a = -config.getInt("config.world.fromChunkX"); a <= config.getInt("config.world.toChunkX"); a++) {
+            for (int b = -config.getInt("config.world.fromChunkY"); b <= config.getInt("config.world.toChunkY"); b++) {
                 w.loadChunk(a, b);
             }
+        }
+    }
+
+    private Location getLoc(World w, String path) {
+        return new Location(w, config.getInt(path + ".locX"), config.getInt(path + ".locY"), config.getInt(path + ".locZ"));
+    }
+
+    private Location getTpLoc(World w, String path) {
+        return new Location(w, config.getInt(path + ".tpLocX"), config.getInt(path + ".tpLocY"), config.getInt(path + ".tpLocZ"));
+    }
+
+    private Location getAfterDestroyLoc(World w, String path) {
+        try {
+            return new Location(w, config.getInt(path + ".afterDestroyLocX"), config.getInt(path + ".afterDestroyLocY"), config.getInt(path + ".afterDestroyLocZ"));
+        } catch (NullPointerException e) {
+            return null;
         }
     }
 
@@ -213,6 +268,7 @@ public class Config {
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
         config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
         config.addDefault("lang.towerUnderAttack", "%tower &4is under attack. &6Tower HP: &e%hp");
+        config.addDefault("lang.youMustDestroyFirstTowers", "&cYou must destroy towers behind you first.");
         config.addDefault("lang.rankingTitle", "&e=== &6Ranking &e===");
         config.addDefault("lang.rankingEntry", "&e%name &6| W/L:&e %wlr &6| W:&e %wins &6| L:&e %loses &6| K/D:&e %kdr &6| K:&e %kills &6| D:&e %deaths &6| Avg. LH:&e %avgLH");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");
@@ -230,53 +286,346 @@ public class Config {
 
     private void setupStructures() {
         if (!enabled) {
-            config.addDefault("structures.locations.normalspawn.locX", 5);
-            config.addDefault("structures.locations.normalspawn.locY", 64);
-            config.addDefault("structures.locations.normalspawn.locZ", -5);
+            config.addDefault("structures.locations.normalspawn.locX", -817);
+            config.addDefault("structures.locations.normalspawn.locY", 5);
+            config.addDefault("structures.locations.normalspawn.locZ", -29);
+            config.addDefault("structures.locations.spectator.locX", -908);
+            config.addDefault("structures.locations.spectator.locY", 25);
+            config.addDefault("structures.locations.spectator.locZ", 98);
+            config.addDefault("structures.locations.redspawn.locX", -1011);
+            config.addDefault("structures.locations.redspawn.locY", 14);
+            config.addDefault("structures.locations.redspawn.locZ", 203);
+            config.addDefault("structures.locations.bluespawn.locX", -806);
+            config.addDefault("structures.locations.bluespawn.locY", 14);
+            config.addDefault("structures.locations.bluespawn.locZ", -4);
 
-            config.addDefault("structures.locations.spectator.locX", 5);
-            config.addDefault("structures.locations.spectator.locY", 64);
-            config.addDefault("structures.locations.spectator.locZ", -5);
+            config.addDefault("structures.creepspawn.bot.s1.locX", -997);
+            config.addDefault("structures.creepspawn.bot.s1.locY", 11);
+            config.addDefault("structures.creepspawn.bot.s1.locZ", 10);
+            config.addDefault("structures.creepspawn.mid.s1.locX", -907);
+            config.addDefault("structures.creepspawn.mid.s1.locY", 11);
+            config.addDefault("structures.creepspawn.mid.s1.locZ", 98);
+            config.addDefault("structures.creepspawn.top.s1.locX", -821);
+            config.addDefault("structures.creepspawn.top.s1.locY", 11);
+            config.addDefault("structures.creepspawn.top.s1.locZ", 187);
 
-            config.addDefault("structures.locations.redspawn.locX", 5);
-            config.addDefault("structures.locations.redspawn.locY", 64);
-            config.addDefault("structures.locations.redspawn.locZ", -5);
+            /*
+             BLUE
+             */
+            config.addDefault("structures.towers.btower1.name", "Blue Left Ancient Tower");
+            config.addDefault("structures.towers.btower1.locX", -823);
+            config.addDefault("structures.towers.btower1.locY", 16);
+            config.addDefault("structures.towers.btower1.locZ", 17);
+            config.addDefault("structures.towers.btower1.tpLocX", -825);
+            config.addDefault("structures.towers.btower1.tpLocY", 12);
+            config.addDefault("structures.towers.btower1.tpLocZ", 19);
+            config.addDefault("structures.towers.btower1.lane", "mid");
+            config.addDefault("structures.towers.btower1.team", "blue");
+            config.addDefault("structures.towers.btower1.number", 4);
 
-            config.addDefault("structures.locations.bluespawn.locX", 5);
-            config.addDefault("structures.locations.bluespawn.locY", 64);
-            config.addDefault("structures.locations.bluespawn.locZ", -5);
+            config.addDefault("structures.towers.btower2.name", "Blue Right Ancient Tower");
+            config.addDefault("structures.towers.btower2.locX", -828);
+            config.addDefault("structures.towers.btower2.locY", 16);
+            config.addDefault("structures.towers.btower2.locZ", 12);
+            config.addDefault("structures.towers.btower2.tpLocX", -830);
+            config.addDefault("structures.towers.btower2.tpLocY", 12);
+            config.addDefault("structures.towers.btower2.tpLocZ", 14);
+            config.addDefault("structures.towers.btower2.lane", "mid");
+            config.addDefault("structures.towers.btower2.team", "blue");
+            config.addDefault("structures.towers.btower2.number", 4);
 
-            config.addDefault("structures.towers.tower1.name", "bob blue");
-            config.addDefault("structures.towers.tower1.locX", 5);
-            config.addDefault("structures.towers.tower1.locY", 64);
-            config.addDefault("structures.towers.tower1.locZ", -5);
-            config.addDefault("structures.towers.tower1.lane", "mid");
-            config.addDefault("structures.towers.tower1.team", "blue");
-            config.addDefault("structures.towers.tower1.number", "1");
+            config.addDefault("structures.towers.btower1m.name", "Blue Mid Third Tower");
+            config.addDefault("structures.towers.btower1m.locX", -852);
+            config.addDefault("structures.towers.btower1m.locY", 16);
+            config.addDefault("structures.towers.btower1m.locZ", 41);
+            config.addDefault("structures.towers.btower1m.tpLocX", -854);
+            config.addDefault("structures.towers.btower1m.tpLocY", 12);
+            config.addDefault("structures.towers.btower1m.tpLocZ", 43);
+            config.addDefault("structures.towers.btower1m.afterDestroyLocX", -832);
+            config.addDefault("structures.towers.btower1m.afterDestroyLocY", 12);
+            config.addDefault("structures.towers.btower1m.afterDestroyLocZ", 20);
+            config.addDefault("structures.towers.btower1m.lane", "mid");
+            config.addDefault("structures.towers.btower1m.team", "blue");
+            config.addDefault("structures.towers.btower1m.number", 3);
 
-            config.addDefault("structures.towers.tower1.name", "bob red");
-            config.addDefault("structures.towers.tower1.locX", 5);
-            config.addDefault("structures.towers.tower1.locY", 64);
-            config.addDefault("structures.towers.tower1.locZ", -5);
-            config.addDefault("structures.towers.tower1.lane", "mid");
-            config.addDefault("structures.towers.tower1.team", "red");
-            config.addDefault("structures.towers.tower1.number", "1");
+            config.addDefault("structures.towers.btower2m.name", "Blue Mid Second Tower");
+            config.addDefault("structures.towers.btower2m.locX", -871);
+            config.addDefault("structures.towers.btower2m.locY", 15);
+            config.addDefault("structures.towers.btower2m.locZ", 55);
+            config.addDefault("structures.towers.btower2m.tpLocX", -870);
+            config.addDefault("structures.towers.btower2m.tpLocY", 11);
+            config.addDefault("structures.towers.btower2m.tpLocZ", 54);
+            config.addDefault("structures.towers.btower2m.afterDestroyLocX", -860);
+            config.addDefault("structures.towers.btower2m.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.btower2m.afterDestroyLocZ", 49);
+            config.addDefault("structures.towers.btower2m.lane", "mid");
+            config.addDefault("structures.towers.btower2m.team", "blue");
+            config.addDefault("structures.towers.btower2m.number", 2);
 
-            config.addDefault("structures.ancients.ancient1.name", "ancient blue");
-            config.addDefault("structures.ancients.ancient1.locX", 5);
-            config.addDefault("structures.ancients.ancient1.locY", 64);
-            config.addDefault("structures.ancients.ancient1.locZ", -5);
-            config.addDefault("structures.ancients.ancient1.lane", "mid");
-            config.addDefault("structures.ancients.ancient1.team", "blue");
-            config.addDefault("structures.ancients.ancient1.number", "1");
+            config.addDefault("structures.towers.btower3m.name", "Blue Mid First Tower");
+            config.addDefault("structures.towers.btower3m.locX", -890);
+            config.addDefault("structures.towers.btower3m.locY", 15);
+            config.addDefault("structures.towers.btower3m.locZ", 84);
+            config.addDefault("structures.towers.btower3m.tpLocX", -889);
+            config.addDefault("structures.towers.btower3m.tpLocY", 11);
+            config.addDefault("structures.towers.btower3m.tpLocZ", 83);
+            config.addDefault("structures.towers.btower3m.afterDestroyLocX", -877);
+            config.addDefault("structures.towers.btower3m.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.btower3m.afterDestroyLocZ", 65);
+            config.addDefault("structures.towers.btower3m.lane", "mid");
+            config.addDefault("structures.towers.btower3m.team", "blue");
+            config.addDefault("structures.towers.btower3m.number", 1);
 
-            config.addDefault("structures.ancients.ancient1.name", "ancient red");
-            config.addDefault("structures.ancients.ancient1.locX", 5);
-            config.addDefault("structures.ancients.ancient1.locY", 64);
-            config.addDefault("structures.ancients.ancient1.locZ", -5);
-            config.addDefault("structures.ancients.ancient1.lane", "mid");
-            config.addDefault("structures.ancients.ancient1.team", "red");
-            config.addDefault("structures.ancients.ancient1.number", "1");
+            config.addDefault("structures.towers.btower1t.name", "Blue Top Third Tower");
+            config.addDefault("structures.towers.btower1t.locX", -881);
+            config.addDefault("structures.towers.btower1t.locY", 16);
+            config.addDefault("structures.towers.btower1t.locZ", 63);
+            config.addDefault("structures.towers.btower1t.tpLocX", -811);
+            config.addDefault("structures.towers.btower1t.tpLocY", 12);
+            config.addDefault("structures.towers.btower1t.tpLocZ", 65);
+            config.addDefault("structures.towers.btower1t.afterDestroyLocX", -820);
+            config.addDefault("structures.towers.btower1t.afterDestroyLocY", 12);
+            config.addDefault("structures.towers.btower1t.afterDestroyLocZ", 29);
+            config.addDefault("structures.towers.btower1t.lane", "top");
+            config.addDefault("structures.towers.btower1t.team", "blue");
+            config.addDefault("structures.towers.btower1t.number", 3);
+
+            config.addDefault("structures.towers.btower2t.name", "Blue Top Second Tower");
+            config.addDefault("structures.towers.btower2t.locX", -813);
+            config.addDefault("structures.towers.btower2t.locY", 15);
+            config.addDefault("structures.towers.btower2t.locZ", 91);
+            config.addDefault("structures.towers.btower2t.tpLocX", -813);
+            config.addDefault("structures.towers.btower2t.tpLocY", 11);
+            config.addDefault("structures.towers.btower2t.tpLocZ", 89);
+            config.addDefault("structures.towers.btower2t.afterDestroyLocX", -810);
+            config.addDefault("structures.towers.btower2t.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.btower2t.afterDestroyLocZ", 73);
+            config.addDefault("structures.towers.btower2t.lane", "top");
+            config.addDefault("structures.towers.btower2t.team", "blue");
+            config.addDefault("structures.towers.btower2t.number", 2);
+
+            config.addDefault("structures.towers.btower3t.name", "Blue Top First Tower");
+            config.addDefault("structures.towers.btower3t.locX", -808);
+            config.addDefault("structures.towers.btower3t.locY", 15);
+            config.addDefault("structures.towers.btower3t.locZ", 159);
+            config.addDefault("structures.towers.btower3t.tpLocX", -808);
+            config.addDefault("structures.towers.btower3t.tpLocY", 11);
+            config.addDefault("structures.towers.btower3t.tpLocZ", 157);
+            config.addDefault("structures.towers.btower3t.afterDestroyLocX", -810);
+            config.addDefault("structures.towers.btower3t.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.btower3t.afterDestroyLocZ", 128);
+            config.addDefault("structures.towers.btower3t.lane", "top");
+            config.addDefault("structures.towers.btower3t.team", "blue");
+            config.addDefault("structures.towers.btower3t.number", 1);
+
+            config.addDefault("structures.towers.btower1b.name", "Blue Bot Third Tower");
+            config.addDefault("structures.towers.btower1b.locX", -874);
+            config.addDefault("structures.towers.btower1b.locY", 16);
+            config.addDefault("structures.towers.btower1b.locZ", 0);
+            config.addDefault("structures.towers.btower1b.tpLocX", -876);
+            config.addDefault("structures.towers.btower1b.tpLocY", 12);
+            config.addDefault("structures.towers.btower1b.tpLocZ", 0);
+            config.addDefault("structures.towers.btower1b.afterDestroyLocX", -838);
+            config.addDefault("structures.towers.btower1b.afterDestroyLocY", 12);
+            config.addDefault("structures.towers.btower1b.afterDestroyLocZ", 10);
+            config.addDefault("structures.towers.btower1b.lane", "bot");
+            config.addDefault("structures.towers.btower1b.team", "blue");
+            config.addDefault("structures.towers.btower1b.number", 3);
+
+            config.addDefault("structures.towers.btower2b.name", "Blue Bot Second Tower");
+            config.addDefault("structures.towers.btower2b.locX", -902);
+            config.addDefault("structures.towers.btower2b.locY", 15);
+            config.addDefault("structures.towers.btower2b.locZ", 2);
+            config.addDefault("structures.towers.btower2b.tpLocX", -900);
+            config.addDefault("structures.towers.btower2b.tpLocY", 11);
+            config.addDefault("structures.towers.btower2b.tpLocZ", 2);
+            config.addDefault("structures.towers.btower2b.afterDestroyLocX", -884);
+            config.addDefault("structures.towers.btower2b.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.btower2b.afterDestroyLocZ", 0);
+            config.addDefault("structures.towers.btower2b.lane", "bot");
+            config.addDefault("structures.towers.btower2b.team", "blue");
+            config.addDefault("structures.towers.btower2b.number", 2);
+
+            config.addDefault("structures.towers.btower3b.name", "Blue Bot First Tower");
+            config.addDefault("structures.towers.btower3b.locX", -970);
+            config.addDefault("structures.towers.btower3b.locY", 15);
+            config.addDefault("structures.towers.btower3b.locZ", -2);
+            config.addDefault("structures.towers.btower3b.tpLocX", -968);
+            config.addDefault("structures.towers.btower3b.tpLocY", 11);
+            config.addDefault("structures.towers.btower3b.tpLocZ", -2);
+            config.addDefault("structures.towers.btower3b.afterDestroyLocX", -934);
+            config.addDefault("structures.towers.btower3b.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.btower3b.afterDestroyLocZ", 0);
+            config.addDefault("structures.towers.btower3b.lane", "bot");
+            config.addDefault("structures.towers.btower3b.team", "blue");
+            config.addDefault("structures.towers.btower3b.number", 1);
+
+            /*
+             RED
+             */
+            config.addDefault("structures.towers.rtower1.name", "Red Left Ancient Tower");
+            config.addDefault("structures.towers.rtower1.locX", -994);
+            config.addDefault("structures.towers.rtower1.locY", 16);
+            config.addDefault("structures.towers.rtower1.locZ", 181);
+            config.addDefault("structures.towers.rtower1.tpLocX", -992);
+            config.addDefault("structures.towers.rtower1.tpLocY", 12);
+            config.addDefault("structures.towers.rtower1.tpLocZ", 179);
+            config.addDefault("structures.towers.rtower1.lane", "mid");
+            config.addDefault("structures.towers.rtower1.team", "red");
+            config.addDefault("structures.towers.rtower1.number", 4);
+
+            config.addDefault("structures.towers.rtower2.name", "Red Right Ancient Tower");
+            config.addDefault("structures.towers.rtower2.locX", -989);
+            config.addDefault("structures.towers.rtower2.locY", 16);
+            config.addDefault("structures.towers.rtower2.locZ", 189);
+            config.addDefault("structures.towers.rtower2.tpLocX", -987);
+            config.addDefault("structures.towers.rtower2.tpLocY", 12);
+            config.addDefault("structures.towers.rtower2.tpLocZ", 184);
+            config.addDefault("structures.towers.rtower2.lane", "mid");
+            config.addDefault("structures.towers.rtower2.team", "red");
+            config.addDefault("structures.towers.rtower2.number", 4);
+
+            config.addDefault("structures.towers.rtower1m.name", "Red Mid Third Tower");
+            config.addDefault("structures.towers.rtower1m.locX", -965);
+            config.addDefault("structures.towers.rtower1m.locY", 16);
+            config.addDefault("structures.towers.rtower1m.locZ", 157);
+            config.addDefault("structures.towers.rtower1m.tpLocX", -963);
+            config.addDefault("structures.towers.rtower1m.tpLocY", 12);
+            config.addDefault("structures.towers.rtower1m.tpLocZ", 155);
+            config.addDefault("structures.towers.rtower1m.afterDestroyLocX", -984);
+            config.addDefault("structures.towers.rtower1m.afterDestroyLocY", 12);
+            config.addDefault("structures.towers.rtower1m.afterDestroyLocZ", 177);
+            config.addDefault("structures.towers.rtower1m.lane", "mid");
+            config.addDefault("structures.towers.rtower1m.team", "red");
+            config.addDefault("structures.towers.rtower1m.number", 3);
+
+            config.addDefault("structures.towers.rtower2m.name", "Red Mid Second Tower");
+            config.addDefault("structures.towers.rtower2m.locX", -946);
+            config.addDefault("structures.towers.rtower2m.locY", 15);
+            config.addDefault("structures.towers.rtower2m.locZ", 143);
+            config.addDefault("structures.towers.rtower2m.tpLocX", -947);
+            config.addDefault("structures.towers.rtower2m.tpLocY", 11);
+            config.addDefault("structures.towers.rtower2m.tpLocZ", 144);
+            config.addDefault("structures.towers.rtower2m.afterDestroyLocX", -957);
+            config.addDefault("structures.towers.rtower2m.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.rtower2m.afterDestroyLocZ", 148);
+            config.addDefault("structures.towers.rtower2m.lane", "mid");
+            config.addDefault("structures.towers.rtower2m.team", "red");
+            config.addDefault("structures.towers.rtower2m.number", 2);
+
+            config.addDefault("structures.towers.rtower3m.name", "Red Mid First Tower");
+            config.addDefault("structures.towers.rtower3m.locX", -927);
+            config.addDefault("structures.towers.rtower3m.locY", 15);
+            config.addDefault("structures.towers.rtower3m.locZ", 114);
+            config.addDefault("structures.towers.rtower3m.tpLocX", -928);
+            config.addDefault("structures.towers.rtower3m.tpLocY", 11);
+            config.addDefault("structures.towers.rtower3m.tpLocZ", 115);
+            config.addDefault("structures.towers.rtower3m.afterDestroyLocX", -940);
+            config.addDefault("structures.towers.rtower3m.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.rtower3m.afterDestroyLocZ", 132);
+            config.addDefault("structures.towers.rtower3m.lane", "mid");
+            config.addDefault("structures.towers.rtower3m.team", "red");
+            config.addDefault("structures.towers.rtower3m.number", 1);
+
+            config.addDefault("structures.towers.rtower1t.name", "Red Top Third Tower");
+            config.addDefault("structures.towers.rtower1t.locX", -943);
+            config.addDefault("structures.towers.rtower1t.locY", 16);
+            config.addDefault("structures.towers.rtower1t.locZ", 198);
+            config.addDefault("structures.towers.rtower1t.tpLocX", -941);
+            config.addDefault("structures.towers.rtower1t.tpLocY", 12);
+            config.addDefault("structures.towers.rtower1t.tpLocZ", 198);
+            config.addDefault("structures.towers.rtower1t.afterDestroyLocX", -981);
+            config.addDefault("structures.towers.rtower1t.afterDestroyLocY", 12);
+            config.addDefault("structures.towers.rtower1t.afterDestroyLocZ", 186);
+            config.addDefault("structures.towers.rtower1t.lane", "top");
+            config.addDefault("structures.towers.rtower1t.team", "red");
+            config.addDefault("structures.towers.rtower1t.number", 3);
+
+            config.addDefault("structures.towers.rtower2t.name", "Red Top Second Tower");
+            config.addDefault("structures.towers.rtower2t.locX", -915);
+            config.addDefault("structures.towers.rtower2t.locY", 15);
+            config.addDefault("structures.towers.rtower2t.locZ", 196);
+            config.addDefault("structures.towers.rtower2t.tpLocX", -917);
+            config.addDefault("structures.towers.rtower2t.tpLocY", 11);
+            config.addDefault("structures.towers.rtower2t.tpLocZ", 196);
+            config.addDefault("structures.towers.rtower2t.afterDestroyLocX", -932);
+            config.addDefault("structures.towers.rtower2t.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.rtower2t.afterDestroyLocZ", 199);
+            config.addDefault("structures.towers.rtower2t.lane", "top");
+            config.addDefault("structures.towers.rtower2t.team", "red");
+            config.addDefault("structures.towers.rtower2t.number", 2);
+
+            config.addDefault("structures.towers.rtower3t.name", "Red Top First Tower");
+            config.addDefault("structures.towers.rtower3t.locX", -847);
+            config.addDefault("structures.towers.rtower3t.locY", 15);
+            config.addDefault("structures.towers.rtower3t.locZ", 201);
+            config.addDefault("structures.towers.rtower3t.tpLocX", -849);
+            config.addDefault("structures.towers.rtower3t.tpLocY", 11);
+            config.addDefault("structures.towers.rtower3t.tpLocZ", 201);
+            config.addDefault("structures.towers.rtower3t.afterDestroyLocX", -885);
+            config.addDefault("structures.towers.rtower3t.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.rtower3t.afterDestroyLocZ", 198);
+            config.addDefault("structures.towers.rtower3t.lane", "top");
+            config.addDefault("structures.towers.rtower3t.team", "red");
+            config.addDefault("structures.towers.rtower3t.number", 1);
+
+            config.addDefault("structures.towers.rtower1b.name", "Red Bot Third Tower");
+            config.addDefault("structures.towers.rtower1b.locX", -1006);
+            config.addDefault("structures.towers.rtower1b.locY", 16);
+            config.addDefault("structures.towers.rtower1b.locZ", 135);
+            config.addDefault("structures.towers.rtower1b.tpLocX", -1006);
+            config.addDefault("structures.towers.rtower1b.tpLocY", 12);
+            config.addDefault("structures.towers.rtower1b.tpLocZ", 133);
+            config.addDefault("structures.towers.rtower1b.afterDestroyLocX", -993);
+            config.addDefault("structures.towers.rtower1b.afterDestroyLocY", 12);
+            config.addDefault("structures.towers.rtower1b.afterDestroyLocZ", 172);
+            config.addDefault("structures.towers.rtower1b.lane", "bot");
+            config.addDefault("structures.towers.rtower1b.team", "red");
+            config.addDefault("structures.towers.rtower1b.number", 3);
+
+            config.addDefault("structures.towers.rtower2b.name", "Red Bot Second Tower");
+            config.addDefault("structures.towers.rtower2b.locX", -1004);
+            config.addDefault("structures.towers.rtower2b.locY", 15);
+            config.addDefault("structures.towers.rtower2b.locZ", 107);
+            config.addDefault("structures.towers.rtower2b.tpLocX", -1004);
+            config.addDefault("structures.towers.rtower2b.tpLocY", 11);
+            config.addDefault("structures.towers.rtower2b.tpLocZ", 109);
+            config.addDefault("structures.towers.rtower2b.afterDestroyLocX", -1006);
+            config.addDefault("structures.towers.rtower2b.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.rtower2b.afterDestroyLocZ", 125);
+            config.addDefault("structures.towers.rtower2b.lane", "bot");
+            config.addDefault("structures.towers.rtower2b.team", "red");
+            config.addDefault("structures.towers.rtower2b.number", 2);
+
+            config.addDefault("structures.towers.rtower3b.name", "Red Bot First Tower");
+            config.addDefault("structures.towers.rtower3b.locX", -1009);
+            config.addDefault("structures.towers.rtower3b.locY", 15);
+            config.addDefault("structures.towers.rtower3b.locZ", 39);
+            config.addDefault("structures.towers.rtower3b.tpLocX", -1009);
+            config.addDefault("structures.towers.rtower3b.tpLocY", 11);
+            config.addDefault("structures.towers.rtower3b.tpLocZ", 41);
+            config.addDefault("structures.towers.rtower3b.afterDestroyLocX", -1006);
+            config.addDefault("structures.towers.rtower3b.afterDestroyLocY", 11);
+            config.addDefault("structures.towers.rtower3b.afterDestroyLocZ", 76);
+            config.addDefault("structures.towers.rtower3b.lane", "bot");
+            config.addDefault("structures.towers.rtower3b.team", "red");
+            config.addDefault("structures.towers.rtower3b.number", 1);
+
+            config.addDefault("structures.ancients.ancientb.name", "Blue Ancient");
+            config.addDefault("structures.ancients.ancientb.locX", -820);
+            config.addDefault("structures.ancients.ancientb.locY", 15);
+            config.addDefault("structures.ancients.ancientb.locZ", 9);
+            config.addDefault("structures.ancients.ancientb.lane", "mid");
+            config.addDefault("structures.ancients.ancientb.team", "blue");
+            config.addDefault("structures.ancients.ancientb.number", 5);
+
+            config.addDefault("structures.ancients.ancientr.name", "Red Ancient");
+            config.addDefault("structures.ancients.ancientr.locX", -997);
+            config.addDefault("structures.ancients.ancientr.locY", 15);
+            config.addDefault("structures.ancients.ancientr.locZ", 189);
+            config.addDefault("structures.ancients.ancientr.lane", "mid");
+            config.addDefault("structures.ancients.ancientr.team", "red");
+            config.addDefault("structures.ancients.ancientr.number", 5);
         }
     }
 }

@@ -10,6 +10,7 @@ import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifier
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
 import java.util.UUID;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -38,8 +39,8 @@ public class JungleSpawnRunnable extends BukkitRunnable {
                 }
             }
             if (pl.jungleCreeps.size() > 0 && playernear) {
-                for (ControllableMob cm : pl.jungleCreeps) {
-                    if (cm.getEntity().getLocation().distance(loc) < 12 && !cm.getEntity().isDead()) {
+                for (Entity en : pl.jungleCreeps.keySet()) {
+                    if (en.getLocation().distance(loc) < 12 && !en.isDead()) {
                         spawn = false;
                     }
                 }
@@ -48,6 +49,7 @@ public class JungleSpawnRunnable extends BukkitRunnable {
                 spawnJungle(loc);
             }
         }
+        pl.debug("creepspawn jungle");
     }
 
     private void spawnJungle(Location loc) {
@@ -64,8 +66,8 @@ public class JungleSpawnRunnable extends BukkitRunnable {
             cz.getAI().addBehavior(new AIAttackMelee(1, 1.2));
             cz.getAI().addBehavior(new AITargetNearest(2, 5, true));
             cz.getAI().addBehavior(new AILookAtEntity(3, (float) 12));
-            pl.jungleCreeps.add(cz);
-            pl.controlMobs.add(cz);
+            pl.jungleCreeps.put(z, cz);
+            pl.controlMobs.put(z, cz);
         }
     }
 }

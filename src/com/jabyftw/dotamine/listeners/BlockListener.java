@@ -8,6 +8,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.event.block.BlockPlaceEvent;
 
 /**
@@ -25,18 +28,30 @@ public class BlockListener implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
-        if (pl.ingameList.containsKey(p) || pl.spectators.containsKey(p)) {
-            if (e.getPlayer().getItemInHand() == null) {
+        if (pl.spectators.containsKey(p)) {
+            e.setCancelled(true);
+            return;
+        }
+        if (pl.ingameList.containsKey(p)) {
+            if (e.getPlayer().getItemInHand().getType().equals(Material.AIR)) {
                 if (pl.state == pl.PLAYING) {
-                    for (Structure s : pl.structures) {
+                    for (Structure s : pl.structures.keySet()) {
                         Block b = e.getBlock();
                         if (b.getLocation().distance(s.getLoc()) < 5) {
+                            pl.debug("block break 1");
                             if (b.getType() == Material.WOOL) {
+                                pl.debug("block break 2");
                                 if (s.getTeam() != pl.ingameList.get(p).getTeam()) {
-                                    s.punchTower(false);
+                                    if (towerBreakable(s)) {
+                                        s.punchTower(false);
+                                        pl.debug("punched tower : " + s.getName());
+                                    } else {
+                                        p.sendMessage(pl.getLang("lang.youMustDestroyFirstTowers"));
+                                    }
                                 } else {
                                     if (s.getHP() < 50) {
                                         s.punchTower(true);
+                                        pl.debug("denied tower");
                                     }
                                 }
                             }
@@ -62,5 +77,36 @@ public class BlockListener implements Listener {
         if (!p.isOp()) {
             e.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onBlockBurn(BlockBurnEvent e) {
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onIgnnite(BlockIgniteEvent e) {
+        if (e.getCause() == IgniteCause.SPREAD) {
+            e.setCancelled(true);
+        }
+    }
+
+    private boolean towerBreakable(Structure s) { // mid 2
+        int sNumber = pl.structures.get(s);
+        if (sNumber == pl.minN) { // first tower
+            pl.debug(Integer.toString(sNumber));
+            return true;
+        }
+        pl.debug(Integer.toString(sNumber));
+        for (Structure s1 : pl.structures.keySet()) {
+            if (s.getLane().equalsIgnoreCase(s1.getLane())) {
+                pl.debug("equal lane");
+                if (s1.isDestroyed() && pl.structures.get(s1) < sNumber) { // if 1 < 2 and tower is destroyed
+                    return true;
+                }
+            }
+
+        }
+        return false;
     }
 }

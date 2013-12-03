@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -204,45 +205,39 @@ public class EntityListener implements Listener {
             e.getEntity().getEquipment().setArmorContents(null);
             e.getDrops().clear();
             if (pl.useControllableMobs) {
-                for (ControllableMob cm : pl.controlMobs) {
-                    if (cm.getEntity().equals(e.getEntity())) {
-                        if (pl.laneCreeps.contains(cm)) {
-                            pl.laneCreeps.remove(cm);
-                            if (e.getEntity().getKiller() != null) {
-                                pl.ingameList.get(e.getEntity().getKiller()).addLH();
-                            }
-                        } else if (pl.jungleCreeps.contains(cm)) {
-                            pl.jungleCreeps.remove(cm);
-                            if (e.getEntity().getKiller() != null) {
-                                pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
-                                pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
-                                e.setDroppedExp(pl.getRandom(7, 9)); // normal = 5
-                            }
-                        }
-                        ControllableMobs.releaseControl(cm);
-                        pl.controlMobs.remove(cm);
-                        return;
+                LivingEntity en = e.getEntity();
+                if (pl.laneCreeps.containsKey(en)) {
+                    pl.laneCreeps.remove(en);
+                    if (e.getEntity().getKiller() != null) {
+                        pl.ingameList.get(e.getEntity().getKiller()).addLH();
                     }
+                } else if (pl.jungleCreeps.containsKey(en)) {
+                    pl.jungleCreeps.remove(en);
+                    if (e.getEntity().getKiller() != null) {
+                        pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
+                        pl.getServer().getWorld(pl.worldName).dropItemNaturally(en.getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
+                    }
+                    e.setDroppedExp(pl.getRandom(7, 9));
+
                 }
+                ControllableMobs.releaseControl(pl.controlMobs.get(en));
             } else {
-                for (Entity en : pl.spawnedMobs) {
-                    if (en.equals(e.getEntity())) {
-                        if (pl.laneEntityCreeps.contains(en)) {
-                            pl.laneEntityCreeps.remove(en);
-                            if (e.getEntity().getKiller() != null) {
-                                pl.ingameList.get(e.getEntity().getKiller()).addLH();
-                            }
-                        } else if (pl.jungleEntityCreeps.contains(en)) {
-                            pl.jungleEntityCreeps.remove(en);
-                            if (e.getEntity().getKiller() != null) {
-                                pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
-                                pl.getServer().getWorld(pl.worldName).dropItemNaturally(e.getEntity().getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
-                                e.setDroppedExp(pl.getRandom(7, 9)); // normal = 5
-                            }
+                LivingEntity en = e.getEntity();
+                if (pl.spawnedMobs.contains(en)) {
+                    if (pl.laneEntityCreeps.contains(en)) {
+                        pl.laneEntityCreeps.remove(en);
+                        if (e.getEntity().getKiller() != null) {
+                            pl.ingameList.get(en.getKiller()).addLH();
                         }
-                        pl.spawnedMobs.remove(en);
-                        return;
+                    } else if (pl.jungleEntityCreeps.contains(en)) {
+                        pl.jungleEntityCreeps.remove(en);
+                        if (e.getEntity().getKiller() != null) {
+                            pl.ingameList.get(e.getEntity().getKiller()).addJungleLH();
+                            pl.getServer().getWorld(pl.worldName).dropItemNaturally(en.getLocation(), new ItemStack(Material.ARROW, pl.getRandom(0, 3)));
+                        }
+                        e.setDroppedExp(pl.getRandom(7, 9));
                     }
+                    pl.spawnedMobs.remove(en);
                 }
             }
         }

@@ -16,6 +16,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
@@ -41,12 +42,15 @@ public class CreepSpawnRunnable extends BukkitRunnable {
     public void run() {
         for (Location spawnloc : pl.botCreepSpawn) {
             spawn(spawnloc);
+            pl.debug("creepspawn bot");
         }
         for (Location spawnloc : pl.topCreepSpawn) {
             spawn(spawnloc);
+            pl.debug("creepspawn top");
         }
         for (Location spawnloc : pl.midCreepSpawn) {
             spawn(spawnloc);
+            pl.debug("creepspawn mid");
         }
     }
 
@@ -54,20 +58,26 @@ public class CreepSpawnRunnable extends BukkitRunnable {
         spawnloc.getChunk().load();
         boolean playernear = false;
         int spawn = 0;
+        pl.debug("spawn method");
         for (Player p : pl.ingameList.keySet()) {
             if (p.getLocation().distance(spawnloc) < 32) {
                 playernear = true;
+                pl.debug("player is near");
+            } else {
+                pl.debug("player is far");
             }
         }
         if (pl.laneCreeps.size() > 0 && playernear) {
-            for (ControllableMob cm : pl.laneCreeps) {
-                if (cm.getEntity().getLocation().distance(spawnloc) < 22) {
+            for (Entity en : pl.laneCreeps.keySet()) {
+                if (en.getLocation().distance(spawnloc) < 22) {
                     spawn++;
+                    pl.debug("spawn++");
                 }
             }
         }
         if (spawn < 3 && playernear) {
             spawnLaneCreeps(spawnloc);
+            pl.debug("creepspawn spawn");
         }
     }
 
@@ -114,8 +124,8 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cz.getAI().addBehavior(new AIFloat(4));
             cz.getAI().addBehavior(new AILookAtEntity(5, (float) 8));
             cz.getAI().addBehavior(new AIRandomLookaround(5));
-            pl.laneCreeps.add(cz);
-            pl.controlMobs.add(cz);
+            pl.laneCreeps.put(z, cz);
+            pl.controlMobs.put(z, cz);
         }
         for (int i = 0; i < 2; i++) {
             Skeleton s = pl.getServer().getWorld(pl.worldName).spawn(spawnloc, Skeleton.class);
@@ -143,8 +153,8 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cs.getAI().addBehavior(new AITargetNearest(3, 16, false));
             cs.getAI().addBehavior(new AIFloat(4));
             cs.getAI().addBehavior(new AILookAtEntity(5, (float) 20));
-            pl.laneCreeps.add(cs);
-            pl.controlMobs.add(cs);
+            pl.laneCreeps.put(s, cs);
+            pl.controlMobs.put(s, cs);
         }
     }
 }

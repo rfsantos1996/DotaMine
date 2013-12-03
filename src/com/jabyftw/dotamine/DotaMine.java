@@ -71,14 +71,15 @@ public class DotaMine extends JavaPlugin implements Listener {
      PLUGIN
      */
     public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
-    public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs;
+    public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug;
     public Economy econ = null;
     public Config config = null;
     public Permission permission = null;
     // Location
-    public List<Structure> structures = new ArrayList();
+    public Map<Structure, Integer> structures = new HashMap();
+    //public List<Structure> structures = new ArrayList();
     public int maxN = 0;
-    public Map<Location, Location> tpPlace = new HashMap();
+    public int minN = 1;
     public List<Location> botCreepSpawn = new ArrayList();
     public List<Location> midCreepSpawn = new ArrayList();
     public List<Location> topCreepSpawn = new ArrayList();
@@ -92,9 +93,9 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
     public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
     // Mobs
-    public List<ControllableMob> controlMobs = new ArrayList();
-    public List<ControllableMob> jungleCreeps = new ArrayList();
-    public List<ControllableMob> laneCreeps = new ArrayList();
+    public Map<Entity, ControllableMob> controlMobs = new HashMap();
+    public Map<Entity, ControllableMob> jungleCreeps = new HashMap();
+    public Map<Entity, ControllableMob> laneCreeps = new HashMap();
     public List<Entity> spawnedMobs = new ArrayList();
     public List<Entity> laneEntityCreeps = new ArrayList();
     public List<Entity> jungleEntityCreeps = new ArrayList();
@@ -124,7 +125,6 @@ public class DotaMine extends JavaPlugin implements Listener {
         version = 4; // config version
         config = new Config(this, getConfig());
         config.generateConfig();
-        config.setLocations(getServer().getWorld(worldName));
         if (useVault) {
             setupVault();
         }
@@ -143,13 +143,13 @@ public class DotaMine extends JavaPlugin implements Listener {
             getServer().getScheduler().scheduleAsyncRepeatingTask(this, new RankingUpdateRunnable(), 10, 20 * 60);
         }
         getLogger().log(Level.INFO, "Registered runnables.");
-        getLogger().log(Level.WARNING, "Plugin configured to rfsantos1996's Dota Map Rev 1.");
+        getLogger().log(Level.WARNING, "Plugin configured to edited Duurax's LOL Map Rev 1.");
     }
 
     @Override
     public void onDisable() {
-        for (int a = -11; a <= 9; a++) {
-            for (int b = -10; b <= 10; b++) {
+        for (int a = -getConfig().getInt("config.world.fromChunkX"); a <= getConfig().getInt("config.world.toChunkX"); a++) {
+            for (int b = -getConfig().getInt("config.world.fromChunkY"); b <= getConfig().getInt("config.world.toChunkY"); b++) {
                 getServer().getWorld(worldName).unloadChunk(a, b, false, false);
             }
         }
@@ -192,6 +192,12 @@ public class DotaMine extends JavaPlugin implements Listener {
     public void broadcast(String msg) {
         for (Player p : getServer().getOnlinePlayers()) {
             p.sendMessage(msg);
+        }
+    }
+
+    public void debug(String msg) {
+        if (debug) {
+            getLogger().log(Level.OFF, "DEBUG: " + msg);
         }
     }
 
@@ -301,11 +307,7 @@ public class DotaMine extends JavaPlugin implements Listener {
             if (attackType == 1) { // Meele
                 ItemStack sword = new ItemStack(Material.WOOD_SWORD, 1);
                 sword.addUnsafeEnchantment(Enchantment.DURABILITY, 1000); // 0.1% chance for losing durability when using
-                ItemStack bow = new ItemStack(Material.BOW, 1);
-                bow.addEnchantment(Enchantment.ARROW_FIRE, 1);
-                bow.addEnchantment(Enchantment.DURABILITY, 2);
                 p.getInventory().addItem(sword);
-                p.getInventory().addItem(bow);
                 if (p.hasPermission("dotamine.ranged")) {
                     permission.playerRemove(p, "dotamine.ranged");
                 }
@@ -377,6 +379,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         }
         queue.clear();
         state = SPAWNING;
+        debug("state = spawning");
         getServer().getScheduler().scheduleSyncDelayedTask(this, new AnnounceGameRunnable(), 20 * 50);
         if (useControllableMobs) {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 60, 20 * 30);
@@ -391,10 +394,12 @@ public class DotaMine extends JavaPlugin implements Listener {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CheckNightRunnable(this), 20, 20 * 3);
         }
         getServer().getWorld(worldName).setTime(0); // start as day
+        debug("prepared to start");
     }
 
     public void endGame(boolean forced, int winTeam) {
         state = RESTARTING;
+        debug("state = restarting");
         if (!forced) {
             for (Jogador j : ingameList.values()) {
                 if (j.getTeam() == winTeam) {
@@ -503,6 +508,31 @@ public class DotaMine extends JavaPlugin implements Listener {
         return l;
     }
 
+    public void checkForMegacreeps() {
+        int i = 0;
+        for (Structure s : structures.keySet()) {
+            if (structures.get(s) == minN && s.isDestroyed()) { // All first 6 towers must be destroyed on both teams
+                i++;
+            }
+        }
+        if (i > 5) {
+            megaCreeps = true;
+        }
+    }
+
+    public void addCreepLocSpawn(String lane, Location loc) {
+        if (lane.startsWith("b")) {
+            botCreepSpawn.add(loc);
+            debug("added creep spawn b");
+        } else if (lane.startsWith("m")) {
+            midCreepSpawn.add(loc);
+            debug("added creep spawn m");
+        } else {
+            topCreepSpawn.add(loc);
+            debug("added creep spawn t");
+        }
+    }
+
     private class RankingUpdateRunnable extends BukkitRunnable {
 
         @Override
@@ -563,6 +593,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         @Override
         public void run() {
             state = PLAYING;
+            debug("state = playing");
             broadcast(getLang("lang.theGamehasStarted"));
             broadcast(getLang("lang.creepsWillSpawn"));
         }

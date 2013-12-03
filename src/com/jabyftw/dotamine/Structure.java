@@ -14,23 +14,25 @@ import org.bukkit.block.Block;
 public class Structure {
 
     private final DotaMine pl;
-    private final Location loc;
+    private final Location loc, tpLoc, afterDestroy;
     private final String name, lane;
-    private final int team, number, type;
+    private final int team, type;
     private boolean announced = false;
     private List<Block> blocks = new ArrayList();
-    private int hp = 1800; // every wool break = 1.5 seconds, 4.5 minutes of breaking = 180 punchs, punch = 10 hp remove
+    private int hp = 1300; // every wool break = 1.5 seconds, 4.5 minutes of breaking = 180 punchs, punch = 10 hp remove
 
     // loc, name, lane, number, team, type
-    public Structure(DotaMine pl, Location loc, String name, String lane, int number, String team, int type) {
+    public Structure(DotaMine pl, Location loc, Location tpLoc, String name, String lane, String team, int type, Location afterDestroy) {
         this.pl = pl;
         this.loc = loc;
+        this.tpLoc = tpLoc;
         this.name = name;
         this.lane = getFromStringLane(lane);
-        this.number = number;
         this.team = getFromStringTeam(team);
         this.type = type;
+        this.afterDestroy = afterDestroy;
         getNearbyBlocks(5);
+        pl.debug("name: lane: number: team: type: " + getName() + "." + pl.structures.get(this));
     }
 
     public Location getLoc() {
@@ -53,10 +55,6 @@ public class Structure {
         return team;
     }
 
-    public int getNumber() {
-        return number;
-    }
-
     public int getType() {
         return type;
     }
@@ -72,7 +70,7 @@ public class Structure {
     }
 
     public void punchTower(boolean denied) {
-        hp = hp - 10;
+        hp = hp - 15;
         if (!announced) {
             for (Jogador j : pl.ingameList.values()) {
                 if (j.getTeam() == team) {
@@ -110,7 +108,10 @@ public class Structure {
             }
         } else {
             pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", getName()));
-            checkForMegacreeps();
+            pl.checkForMegacreeps();
+            if (afterDestroy != null) {
+                // TODO: add creep spawn location
+            }
             for (Block b : blocks) {
                 b.setType(Material.AIR);
             }
@@ -145,10 +146,6 @@ public class Structure {
         }
     }
 
-    private void checkForMegacreeps() {
-        // TODO: remake
-    }
-
     private void getNearbyBlocks(int radius) {
         for (int x = -(radius); x <= radius; x++) {
             for (int y = -(radius); y <= radius; y++) {
@@ -160,6 +157,10 @@ public class Structure {
                 }
             }
         }
+    }
+
+    public Location getTpLoc() {
+        return tpLoc;
     }
 
     private class AnnounceCDRunnable implements Runnable {

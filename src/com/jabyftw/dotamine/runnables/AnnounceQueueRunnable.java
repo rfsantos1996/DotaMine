@@ -26,6 +26,7 @@ public class AnnounceQueueRunnable extends BukkitRunnable {
                 if (announced) {
                     pl.getServer().getScheduler().cancelTask(startGame);
                     pl.state = pl.WAITING;
+                    pl.debug("state = waiting");
                     announced = false;
                 }
             } else {
@@ -42,6 +43,7 @@ public class AnnounceQueueRunnable extends BukkitRunnable {
                 } else {
                     if (!announced) {
                         pl.state = pl.WAITING_QUEUE;
+                        pl.debug("state = waiting queue");
                         pl.broadcast(pl.getLang("lang.startingIn2Minutes"));
                         startGame = pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new StartGameRunnable(pl, false), 20 * 121);
                         announced = true;

@@ -125,126 +125,46 @@ public class DotaCommand implements CommandExecutor {
     }
 
     private void useTp(Player p, int togo) {
-        if(togo == 1) { // TOP
+        if (togo == 1) { // TOP
             for (int i = 0; i < pl.maxN; i++) {
-                for(Structure s : pl.structures) {
-                    if(s.getLane().startsWith("t")) {
-                        if(i == s.getNumber() && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam()) {
-                            tp(p, s.getLoc());// TODO: location, team
+                for (Structure s : pl.structures.keySet()) {
+                    if (s.getLane().startsWith("t")) {
+                        if (i == pl.structures.get(s) && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam() && s.getType() != 2) { // just towers
+                            tp(p, s.getTpLoc());
                         }
                     }
                 }
             }
+        } else if (togo == 2) { // MID
+            for (int i = 0; i < pl.maxN; i++) {
+                for (Structure s : pl.structures.keySet()) {
+                    if (s.getLane().startsWith("m")) {
+                        if (i == pl.structures.get(s) && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam() && s.getType() != 2) {
+                            tp(p, s.getTpLoc());
+                        }
+                    }
+                }
+            }
+        } else if (togo == 3) { // BOT
+            for (int i = 0; i < pl.maxN; i++) {
+                for (Structure s : pl.structures.keySet()) {
+                    if (s.getLane().startsWith("bo")) {
+                        if (i == pl.structures.get(s) && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam() && s.getType() != 2) {
+                            tp(p, s.getTpLoc());
+                        }
+                    }
+                }
+            }
+        } else { // Base
+            if (pl.ingameList.get(p).getTeam() == 1) {
+                tp(p, pl.blueDeploy);
+            } else {
+                tp(p, pl.redDeploy);
+            }
         }
-        /*   if (togo == 1) { // top
-         if (pl.ingameList.get(p).getTeam() == 1) {
-         if (pl.towers.get(pl.blueFTopT).isDestroyed()) {
-         if (pl.towers.get(pl.blueSTopT).isDestroyed()) {
-         tp(p, pl.blueDeploy);
-         } else {
-         tp(p, pl.blueSTopT);
-         }
-         } else {
-         tp(p, pl.blueFTopT);
-         }
-         } else {
-         if (pl.towers.get(pl.redFTopT).isDestroyed()) {
-         if (pl.towers.get(pl.redSTopT).isDestroyed()) {
-         tp(p, pl.redDeploy);
-         } else {
-         tp(p, pl.redSTopT);
-         }
-         } else {
-         tp(p, pl.redFTopT);
-         }
-         }
-         } else if (togo == 2) { // mid
-         if (pl.ingameList.get(p).getTeam() == 1) {
-         if (pl.towers.get(pl.blueFMidT).isDestroyed()) {
-         if (pl.towers.get(pl.blueSMidT).isDestroyed()) {
-         tp(p, pl.blueDeploy);
-         } else {
-         tp(p, pl.blueSMidT);
-         }
-         } else {
-         tp(p, pl.blueFMidT);
-         }
-         } else {
-         if (pl.towers.get(pl.redFMidT).isDestroyed()) {
-         if (pl.towers.get(pl.redSMidT).isDestroyed()) {
-         tp(p, pl.redDeploy);
-         } else {
-         tp(p, pl.redSMidT);
-         }
-         } else {
-         tp(p, pl.redFMidT);
-         }
-         }
-         } else if (togo == 3) { // bot
-         if (pl.ingameList.get(p).getTeam() == 1) {
-         if (pl.towers.get(pl.blueFBotT).isDestroyed()) {
-         if (pl.towers.get(pl.blueSBotT).isDestroyed()) {
-         tp(p, pl.blueDeploy);
-         } else {
-         tp(p, pl.blueSBotT);
-         }
-         } else {
-         tp(p, pl.blueFBotT);
-         }
-         } else {
-         if (pl.towers.get(pl.redFBotT).isDestroyed()) {
-         if (pl.towers.get(pl.redSBotT).isDestroyed()) {
-         tp(p, pl.redDeploy);
-         } else {
-         tp(p, pl.redSBotT);
-         }
-         } else {
-         tp(p, pl.redFBotT);
-         }
-         }
-         } else { // base*/
-        if (pl.ingameList.get(p).getTeam() == 1) {
-            tp(p, pl.blueDeploy);
-        } else {
-            tp(p, pl.redDeploy);
-        }
-        //}
     }
 
-    private void tp(Player p, Location location) {
-        if (location.equals(pl.blueDeploy)) {
-            ftp(p, pl.blueDeploy);
-        } else if (location.equals(pl.redDeploy)) {
-            ftp(p, pl.redDeploy);
-        }/* else if (location.equals(pl.blueFBotT)) {
-         ftp(p, pl.tpPlace.get(pl.blueFBotT));
-         } else if (location.equals(pl.blueSBotT)) {
-         ftp(p, pl.tpPlace.get(pl.blueSBotT));
-         } else if (location.equals(pl.blueFMidT)) {
-         ftp(p, pl.tpPlace.get(pl.blueFMidT));
-         } else if (location.equals(pl.blueSMidT)) {
-         ftp(p, pl.tpPlace.get(pl.blueSMidT));
-         } else if (location.equals(pl.blueFTopT)) {
-         ftp(p, pl.tpPlace.get(pl.blueFTopT));
-         } else if (location.equals(pl.blueSTopT)) {
-         ftp(p, pl.tpPlace.get(pl.blueSTopT));
-         } else if (location.equals(pl.redFBotT)) {
-         ftp(p, pl.tpPlace.get(pl.redFBotT));
-         } else if (location.equals(pl.redSBotT)) {
-         ftp(p, pl.tpPlace.get(pl.redSBotT));
-         } else if (location.equals(pl.redFMidT)) {
-         ftp(p, pl.tpPlace.get(pl.redFMidT));
-         } else if (location.equals(pl.redSMidT)) {
-         ftp(p, pl.tpPlace.get(pl.redSMidT));
-         } else if (location.equals(pl.redFTopT)) {
-         ftp(p, pl.tpPlace.get(pl.redFTopT));
-         } else if (location.equals(pl.redSTopT)) {
-         ftp(p, pl.tpPlace.get(pl.redSTopT));
-         }*/
-
-    }
-
-    private void ftp(Player p, Location destination) {
+    private void tp(Player p, Location destination) {
         p.sendMessage(pl.getLang("lang.tpDontMove"));
         int TPTask = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new TeleportEffectRunnable(p, destination), 2, 2);
         pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRunnable(p, destination), 20 * 3);
