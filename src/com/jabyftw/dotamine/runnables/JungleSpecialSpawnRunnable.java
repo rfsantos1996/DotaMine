@@ -5,7 +5,6 @@ import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackMelee;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
-import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetHurtBy;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;

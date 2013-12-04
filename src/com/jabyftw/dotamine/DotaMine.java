@@ -32,6 +32,7 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -53,6 +54,8 @@ public class DotaMine extends JavaPlugin implements Listener {
 
     public MySQL sql;
     public String worldName;
+    public Config config = null;
+    public FileConfiguration lang;
     /*
      MOTD
      */
@@ -75,7 +78,6 @@ public class DotaMine extends JavaPlugin implements Listener {
     public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
     public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug;
     public Economy econ = null;
-    public Config config = null;
     public Permission permission = null;
     // Location
     public Map<Structure, Integer> structures = new HashMap();
@@ -128,7 +130,7 @@ public class DotaMine extends JavaPlugin implements Listener {
         state = WAITING;
         megaCreeps = false;
         version = 4; // config version
-        config = new Config(this, getConfig());
+        config = new Config(this);
         config.generateConfig();
         if (useVault) {
             setupVault();
@@ -190,7 +192,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     }
 
     public String getLang(String path) {
-        return getConfig().getString(path).replaceAll("&", "§");
+        return config.lang.getString(path).replaceAll("&", "§");
     }
 
     public void broadcast(String msg) {

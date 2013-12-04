@@ -20,68 +20,75 @@ import org.bukkit.entity.Entity;
 public class Config {
 
     private final DotaMine pl;
-    private final FileConfiguration config;
+    private CustomConfig configYML;
+    private CustomConfig langYML;
+    private CustomConfig structuresYML;
+    public FileConfiguration defConfig;
+    public FileConfiguration lang;
+    public FileConfiguration structures;
     private boolean enabled;
 
-    public Config(DotaMine pl, FileConfiguration config) {
+    public Config(DotaMine pl) {
         this.pl = pl;
-        this.config = config;
     }
 
     public void generateConfig() {
+        configYML = new CustomConfig(pl, "config");
+        langYML = new CustomConfig(pl, "lang");
+        structuresYML = new CustomConfig(pl, "structures");
+
+        defConfig = configYML.getCustomConfig();
+        lang = langYML.getCustomConfig();
+        structures = structuresYML.getCustomConfig();
+
         //config.addDefault("config.", value);
-        config.addDefault("config.EnableAfterCheckingConfigDotYML", false);
-        config.addDefault("config.useVault", false);
-        config.addDefault("config.useControllableMobs", false);
-        config.addDefault("config.useEffects", true);
-        config.addDefault("config.nerfRangedAtNight", false);
-        config.addDefault("config.debugMode", false);
-        config.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
-        config.addDefault("config.MAX_PLAYERS", 12);
-        config.addDefault("config.MIN_PLAYERS", 6);
-        config.addDefault("config.world.name", "world");
-        config.addDefault("config.world.fromChunkX", -66);
-        config.addDefault("config.world.toChunkX", -48);
-        config.addDefault("config.world.fromChunkY", 15);
-        config.addDefault("config.world.toChunkY", -5);
-        config.addDefault("mysql.enabled", false);
-        config.addDefault("mysql.username", "root");
-        config.addDefault("mysql.password", "root");
-        config.addDefault("mysql.database", "minecraft");
-        config.addDefault("mysql.host", "localhost");
-        config.addDefault("mysql.port", 3306);
-        setupStructures();
-        setupLang();
+        defConfig.addDefault("config.EnableAfterCheckingStructuresDotYML", false);
+        defConfig.addDefault("config.useVault", false);
+        defConfig.addDefault("config.useControllableMobs", false);
+        defConfig.addDefault("config.useEffects", true);
+        defConfig.addDefault("config.nerfRangedAtNight", false);
+        defConfig.addDefault("config.debugMode", false);
+        defConfig.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
+        defConfig.addDefault("config.MAX_PLAYERS", 12);
+        defConfig.addDefault("config.MIN_PLAYERS", 6);
+        defConfig.addDefault("config.world.name", "world");
+        defConfig.addDefault("config.world.fromChunkX", -66);
+        defConfig.addDefault("config.world.toChunkX", -48);
+        defConfig.addDefault("config.world.fromChunkY", 15);
+        defConfig.addDefault("config.world.toChunkY", -5);
+        defConfig.addDefault("mysql.enabled", false);
+        defConfig.addDefault("mysql.username", "root");
+        defConfig.addDefault("mysql.password", "root");
+        defConfig.addDefault("mysql.database", "minecraft");
+        defConfig.addDefault("mysql.host", "localhost");
+        defConfig.addDefault("mysql.port", 3306);
+        setupStructures(structures);
+        setupLang(lang);
         // Version
-        config.addDefault("DoNotChangeThis.ConfigVersion", pl.version);
-        config.options().copyDefaults(true);
-        pl.saveConfig();
-        pl.reloadConfig();
-        pl.debug = config.getBoolean("config.debugMode");
-        enabled = config.getBoolean("config.EnableAfterCheckingConfigDotYML");
-        pl.worldName = config.getString("config.world.name");
-        pl.useVault = config.getBoolean("config.useVault");
-        pl.useControllableMobs = config.getBoolean("config.useControllableMobs");
-        pl.useEffects = config.getBoolean("config.useEffects");
-        pl.scoreRunnable = config.getInt("config.scoreRunnableDelayInTicks");
-        pl.MIN_PLAYERS = config.getInt("config.MIN_PLAYERS");
-        pl.MAX_PLAYERS = config.getInt("config.MAX_PLAYERS");
-        pl.nerfRanged = config.getBoolean("config.nerfRangedAtNight");
-        pl.mysqlEnabled = config.getBoolean("mysql.enabled");
+        defConfig.addDefault("DoNotChangeThis.ConfigVersion", pl.version);
+        configYML.saveCustomConfig();
+        pl.debug = defConfig.getBoolean("config.debugMode");
+        enabled = defConfig.getBoolean("config.EnableAfterCheckingStructuresDotYML");
+        pl.worldName = defConfig.getString("config.world.name");
+        pl.useVault = defConfig.getBoolean("config.useVault");
+        pl.useControllableMobs = defConfig.getBoolean("config.useControllableMobs");
+        pl.useEffects = defConfig.getBoolean("config.useEffects");
+        pl.scoreRunnable = defConfig.getInt("config.scoreRunnableDelayInTicks");
+        pl.MIN_PLAYERS = defConfig.getInt("config.MIN_PLAYERS");
+        pl.MAX_PLAYERS = defConfig.getInt("config.MAX_PLAYERS");
+        pl.nerfRanged = defConfig.getBoolean("config.nerfRangedAtNight");
+        pl.mysqlEnabled = defConfig.getBoolean("mysql.enabled");
         if (pl.mysqlEnabled) {
-            pl.sql = new MySQL(pl, config.getString("mysql.username"), config.getString("mysql.password"), "jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getInt("mysql.port") + "/" + config.getString("mysql.database"));
+            pl.sql = new MySQL(pl, defConfig.getString("mysql.username"), defConfig.getString("mysql.password"), "jdbc:mysql://" + defConfig.getString("mysql.host") + ":" + defConfig.getInt("mysql.port") + "/" + defConfig.getString("mysql.database"));
             createTable();
-        }
-        if (config.getInt("DoNotChangeThis.ConfigVersion") != pl.version) {
-            pl.getLogger().log(Level.WARNING, "Recommended: recreate your config.yml");
-            if (config.getInt("DoNotChangeThis.ConfigVersion") < 4) {
+            if (defConfig.getInt("DoNotChangeThis.ConfigVersion") < 4) {
                 alterTable();
             }
         }
-        setLocations(pl.getServer().getWorld(pl.worldName));
+        setLocations(pl.getServer().getWorld(pl.worldName), structures);
     }
 
-    public void setLocations(World w) {
+    public void setLocations(World w, FileConfiguration config) {
         w.setPVP(true);
         w.setAutoSave(false);
         w.setSpawnFlags(false, false);
@@ -95,11 +102,11 @@ public class Config {
         pl.specDeploy = new Location(w, config.getInt("structures.locations.spectator.locX"), config.getInt("structures.locations.spectator.locY"), config.getInt("structures.locations.spectator.locZ"));
         pl.debug("setted deploys");
         for (String keys : config.getConfigurationSection("structures.towers").getKeys(false)) {
-            Structure t = new Structure(pl, getLoc(w, "structures.towers." + keys), getTpLoc(w, "structures.towers." + keys), config.getString("structures.towers." + keys + ".name"), config.getString("structures.towers." + keys + ".lane"), config.getString("structures.towers." + keys + ".team"), 1, getAfterDestroyLoc(w, "structures.towers." + keys));
+            Structure t = new Structure(pl, getLoc(w, "structures.towers." + keys, config), getTpLoc(w, "structures.towers." + keys, config), config.getString("structures.towers." + keys + ".name"), config.getString("structures.towers." + keys + ".lane"), config.getString("structures.towers." + keys + ".team"), 1, getAfterDestroyLoc(w, "structures.towers." + keys, config));
             pl.structures.put(t, config.getInt("structures.towers." + keys + ".number"));
         }
         for (String keys : config.getConfigurationSection("structures.ancients").getKeys(false)) {
-            Structure t = new Structure(pl, getLoc(w, "structures.ancients." + keys), null, config.getString("structures.ancients." + keys + ".name"), config.getString("structures.ancients." + keys + ".lane"), config.getString("structures.ancients." + keys + ".team"), 2, null);
+            Structure t = new Structure(pl, getLoc(w, "structures.ancients." + keys, config), null, config.getString("structures.ancients." + keys + ".name"), config.getString("structures.ancients." + keys + ".lane"), config.getString("structures.ancients." + keys + ".team"), 2, null);
             pl.structures.put(t, config.getInt("structures.ancients." + keys + ".number"));
         }
         pl.debug("setted structures");
@@ -155,15 +162,15 @@ public class Config {
         }
     }
 
-    private Location getLoc(World w, String path) {
+    private Location getLoc(World w, String path, FileConfiguration config) {
         return new Location(w, config.getInt(path + ".locX"), config.getInt(path + ".locY"), config.getInt(path + ".locZ"));
     }
 
-    private Location getTpLoc(World w, String path) {
+    private Location getTpLoc(World w, String path, FileConfiguration config) {
         return new Location(w, config.getInt(path + ".tpLocX"), config.getInt(path + ".tpLocY"), config.getInt(path + ".tpLocZ"));
     }
 
-    private Location getAfterDestroyLoc(World w, String path) {
+    private Location getAfterDestroyLoc(World w, String path, FileConfiguration config) {
         try {
             return new Location(w, config.getInt(path + ".afterDestroyLocX"), config.getInt(path + ".afterDestroyLocY"), config.getInt(path + ".afterDestroyLocZ"));
         } catch (NullPointerException e) {
@@ -197,7 +204,7 @@ public class Config {
         }
     }
 
-    private void setupLang() {
+    private void setupLang(FileConfiguration config) {
         //config.addDefault("lang.", "&");
         config.addDefault("lang.motd.WAITING", "&6[Dota] &aWaiting players... %queue/%min");
         config.addDefault("lang.motd.WAITING_QUEUE", "&6[Dota] &eWaiting queue to fill...  %queue/%max");
@@ -280,9 +287,10 @@ public class Config {
         config.addDefault("lang.killstreak.nine", "%name &6killed %dead &6for &e%money &6- &4GOD LIKE");
         config.addDefault("lang.killstreak.tenAndBeyond", "%name &6killed %dead &6for &e%money &6- &4BEYOND GOD LIKE");
         config.addDefault("lang.killstreak.fiftyAndBeyond", "%name &6killed %dead &6for &e%money &6- &4KILLING DOMINATING MEGA UNSTOPPABLE WICKED MONSTER BEYOND GODLIKE");
+        langYML.saveCustomConfig();
     }
 
-    private void setupStructures() {
+    private void setupStructures(FileConfiguration config) {
         if (!enabled) {
             config.addDefault("structures.locations.normalspawn.locX", -817);
             config.addDefault("structures.locations.normalspawn.locY", 5);
@@ -624,6 +632,7 @@ public class Config {
             config.addDefault("structures.ancients.ancientr.lane", "mid");
             config.addDefault("structures.ancients.ancientr.team", "red");
             config.addDefault("structures.ancients.ancientr.number", 5);
+            structuresYML.saveCustomConfig();
             pl.getLogger().log(Level.INFO, "Plugin configured to edited Duurax's LOL Map Rev 1.");
         }
     }
