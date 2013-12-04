@@ -10,6 +10,8 @@
  - Removed fire bow from Meele, not needed anymore
  * PLUGIN:
  - Added fixed debug mode
+ - Separated config.yml into config.yml, structures.yml and lang.yml
+ - You don't need to restart your server anymore. This will unload and load the "config.world.name" @ config.yml
  - Plugin will ignore most events that have been cancelled
  - Changed A LOT OF THINGS, also, a lot TODO, to start using Duurax's map and custom maps
  - Changed how Jungle and Lanes creeps work on code

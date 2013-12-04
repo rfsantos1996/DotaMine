@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 
@@ -48,6 +49,7 @@ public class Config {
         defConfig.addDefault("config.useEffects", true);
         defConfig.addDefault("config.nerfRangedAtNight", false);
         defConfig.addDefault("config.debugMode", false);
+        defConfig.addDefault("config.restartAfterFinishing", true);
         defConfig.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
         defConfig.addDefault("config.MAX_PLAYERS", 12);
         defConfig.addDefault("config.MIN_PLAYERS", 6);
@@ -73,6 +75,7 @@ public class Config {
         pl.useVault = defConfig.getBoolean("config.useVault");
         pl.useControllableMobs = defConfig.getBoolean("config.useControllableMobs");
         pl.useEffects = defConfig.getBoolean("config.useEffects");
+        pl.restartAfter = defConfig.getBoolean("config.restartAfterFinishing");
         pl.scoreRunnable = defConfig.getInt("config.scoreRunnableDelayInTicks");
         pl.MIN_PLAYERS = defConfig.getInt("config.MIN_PLAYERS");
         pl.MAX_PLAYERS = defConfig.getInt("config.MAX_PLAYERS");
@@ -85,6 +88,15 @@ public class Config {
                 alterTable();
             }
         }
+        if (!pl.restartAfter) {
+            if (pl.getServer().getWorlds().size() < 2) {
+                pl.restartAfter = true;
+                pl.getLogger().log(Level.WARNING, "You must have more than 1 world to DotaMine unload the Dota world.");
+            }
+        }
+        if (pl.restarted) {
+            pl.getServer().createWorld(new WorldCreator(pl.worldName));
+        }
         setLocations(pl.getServer().getWorld(pl.worldName), structures);
     }
 
@@ -96,6 +108,7 @@ public class Config {
             e.remove();
         }
 
+        pl.otherWorldSpawn = new Location(w, config.getInt("structures.locations.otherworldspawn.locX"), config.getInt("structures.locations.otherworldspawn.locY"), config.getInt("structures.locations.otherworldspawn.locZ"));
         pl.normalSpawn = new Location(w, config.getInt("structures.locations.normalspawn.locX"), config.getInt("structures.locations.normalspawn.locY"), config.getInt("structures.locations.normalspawn.locZ"));
         pl.redDeploy = new Location(w, config.getInt("structures.locations.redspawn.locX"), config.getInt("structures.locations.redspawn.locY"), config.getInt("structures.locations.redspawn.locZ"));
         pl.blueDeploy = new Location(w, config.getInt("structures.locations.bluespawn.locX"), config.getInt("structures.locations.bluespawn.locY"), config.getInt("structures.locations.bluespawn.locZ"));
@@ -292,6 +305,9 @@ public class Config {
 
     private void setupStructures(FileConfiguration config) {
         if (!enabled) {
+            config.addDefault("structures.locations.otherworldspawn.locX", 5);
+            config.addDefault("structures.locations.otherworldspawn.locY", 5);
+            config.addDefault("structures.locations.otherworldspawn.locZ", 5);
             config.addDefault("structures.locations.normalspawn.locX", -817);
             config.addDefault("structures.locations.normalspawn.locY", 5);
             config.addDefault("structures.locations.normalspawn.locZ", -29);

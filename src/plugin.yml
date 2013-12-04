@@ -10,6 +10,7 @@ commands:
      usage: Use /dota (forcestart/ranking/tp)
    join:
      description: Join command
+     aliases: j
      permission: dotamine.play
      usage: Use /join (meele/ranged/leave)
    spectate:

@@ -32,7 +32,7 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.WorldCreator;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -55,7 +55,6 @@ public class DotaMine extends JavaPlugin implements Listener {
     public MySQL sql;
     public String worldName;
     public Config config = null;
-    public FileConfiguration lang;
     /*
      MOTD
      */
@@ -76,57 +75,77 @@ public class DotaMine extends JavaPlugin implements Listener {
      PLUGIN
      */
     public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
-    public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug;
+    public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug, restartAfter;
+    public boolean restarted = false;
     public Economy econ = null;
     public Permission permission = null;
+    private List<String> list = new ArrayList();
     // Location
-    public Map<Structure, Integer> structures = new HashMap();
-    //public List<Structure> structures = new ArrayList();
+    public Map<Structure, Integer> structures;
     public int maxN = 0;
     public int minN = 1;
-    public List<Location> botCreepSpawn = new ArrayList();
-    public List<Location> midCreepSpawn = new ArrayList();
-    public List<Location> topCreepSpawn = new ArrayList();
-    public List<Location> jungleSpawn = new ArrayList();
-    public List<Location> jungleRedSpawn = new ArrayList();
-    public List<Location> jungleBlueSpawn = new ArrayList();
-    public Location redDeploy, blueDeploy, specDeploy, normalSpawn;
+    public List<Location> botCreepSpawn, midCreepSpawn, topCreepSpawn, jungleSpawn, jungleRedSpawn, jungleBlueSpawn;
+    public Location redDeploy, blueDeploy, specDeploy, normalSpawn, otherWorldSpawn;
     // Players
-    public List<Ranking> rankingList = new ArrayList();
-    public Map<Player, Jogador> ingameList = new HashMap();
-    public Map<Player, Integer> queue = new HashMap();
-    public Map<Player, Spectator> spectators = new HashMap();
-    public Map<Player, ItemStack[]> playerDeathItems = new HashMap();
-    public Map<Player, ItemStack[]> playerDeathArmor = new HashMap();
+    public List<Ranking> rankingList;
+    public Map<Player, Jogador> ingameList;
+    public Map<Player, Integer> queue;
+    public Map<Player, Spectator> spectators;
+    public Map<Player, ItemStack[]> playerDeathItems, playerDeathArmor;
     // Mobs
-    public Map<Entity, ControllableMob> controlMobs = new HashMap();
-    public Map<Entity, ControllableMob> jungleCreeps = new HashMap();
-    public Map<Entity, Integer> jungleSpecialCreeps = new HashMap();
-    public Map<Entity, ControllableMob> laneCreeps = new HashMap();
-    public List<Entity> spawnedMobs = new ArrayList();
-    public List<Entity> laneEntityCreeps = new ArrayList();
-    public Map<Entity, Integer> jungleEntityCreeps = new HashMap();
+    public Map<Entity, ControllableMob> controlMobs, jungleCreeps, laneCreeps;
+    public Map<Entity, Integer> jungleSpecialCreeps, jungleEntityCreeps;
+    public List<Entity> spawnedMobs, laneEntityCreeps;
     public Random random = new Random();
     /*
      ITEM
      */
-    public List<Player> shadowCD = new ArrayList();
-    public Map<Player, Integer> invisible = new HashMap();
-    public Map<Player, Integer> invisibleSB = new HashMap();
-    public Map<Player, Integer> invisibleW = new HashMap();
-    public Map<Player, Integer> invisibleEffectW = new HashMap();
-    public List<Player> forceCD = new ArrayList();
-    public Map<Player, Integer> forcingStaff = new HashMap();
-    public List<Player> tpCD = new ArrayList();
-    public List<Player> interactCD = new ArrayList();
-    public Map<Player, Integer> teleporting = new HashMap();
-    public Map<Player, Integer> respawning = new HashMap();
-    public List<Player> hasTarrasque = new ArrayList();
-    public List<Player> tarrasqueRecentlyDamaged = new ArrayList();
-    public List<Player> smokeCD = new ArrayList();
+    public List<Player> shadowCD, forceCD, tpCD, interactCD, hasTarrasque, tarrasqueRecentlyDamaged, smokeCD;
+    public Map<Player, Integer> invisible, invisibleSB, invisibleW, invisibleEffectW, forcingStaff, teleporting, respawning;
+
+    private void startVariables() { // or restart
+        structures = new HashMap();
+        botCreepSpawn = new ArrayList();
+        midCreepSpawn = new ArrayList();
+        topCreepSpawn = new ArrayList();
+        jungleSpawn = new ArrayList();
+        jungleRedSpawn = new ArrayList();
+        jungleBlueSpawn = new ArrayList();
+
+        rankingList = new ArrayList();
+        ingameList = new HashMap();
+        queue = new HashMap();
+        spectators = new HashMap();
+        playerDeathItems = new HashMap();
+        playerDeathArmor = new HashMap();
+
+        controlMobs = new HashMap();
+        jungleCreeps = new HashMap();
+        jungleSpecialCreeps = new HashMap();
+        laneCreeps = new HashMap();
+        spawnedMobs = new ArrayList();
+        laneEntityCreeps = new ArrayList();
+        jungleEntityCreeps = new HashMap();
+
+        shadowCD = new ArrayList();
+        invisible = new HashMap();
+        invisibleSB = new HashMap();
+        invisibleW = new HashMap();
+        invisibleEffectW = new HashMap();
+        forceCD = new ArrayList();
+        forcingStaff = new HashMap();
+        tpCD = new ArrayList();
+        interactCD = new ArrayList();
+        teleporting = new HashMap();
+        respawning = new HashMap();
+        hasTarrasque = new ArrayList();
+        tarrasqueRecentlyDamaged = new ArrayList();
+        smokeCD = new ArrayList();
+    }
 
     @Override
     public void onEnable() {
+        startVariables();
         state = WAITING;
         megaCreeps = false;
         version = 4; // config version
@@ -141,6 +160,8 @@ public class DotaMine extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getLogger().log(Level.INFO, "Registered listeners.");
         getServer().getPluginCommand("join").setExecutor(new JoinCommand(this));
+        list.add("j");
+        getServer().getPluginCommand("join").setAliases(list);
         getServer().getPluginCommand("spectate").setExecutor(new SpectateCommand(this));
         getServer().getPluginCommand("dota").setExecutor(new DotaCommand(this));
         getLogger().log(Level.INFO, "Registered commands.");
@@ -154,12 +175,7 @@ public class DotaMine extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        for (int a = -getConfig().getInt("config.world.fromChunkX"); a <= getConfig().getInt("config.world.toChunkX"); a++) {
-            for (int b = -getConfig().getInt("config.world.fromChunkY"); b <= getConfig().getInt("config.world.toChunkY"); b++) {
-                getServer().getWorld(worldName).unloadChunk(a, b, false, false);
-            }
-        }
-        getServer().unloadWorld(worldName, false);
+        unloadGameWorld();
         if (mysqlEnabled) {
             sql.closeConn();
         }
@@ -417,8 +433,12 @@ public class DotaMine extends JavaPlugin implements Listener {
                 }
             }
         }
-        getServer().setWhitelist(true);
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new StopRunnable(), 20 * 5);
+        if (restartAfter) {
+            getServer().setWhitelist(true);
+            getServer().getScheduler().scheduleSyncDelayedTask(this, new StopRunnable(), 20 * 5);
+        } else {
+            getServer().getScheduler().scheduleSyncDelayedTask(this, new UnloadRunnable(), 20 * 5);
+        }
     }
 
     public void removePlayerFromQueue(Player p) {
@@ -543,6 +563,40 @@ public class DotaMine extends JavaPlugin implements Listener {
         } else {
             topCreepSpawn.add(loc);
             debug("added creep spawn t");
+        }
+    }
+
+    private void unloadGameWorld() {
+        if (getServer().getWorld(worldName) != null) {
+            for (int a = -getConfig().getInt("config.world.fromChunkX"); a <= getConfig().getInt("config.world.toChunkX"); a++) {
+                for (int b = -getConfig().getInt("config.world.fromChunkY"); b <= getConfig().getInt("config.world.toChunkY"); b++) {
+                    getServer().getWorld(worldName).unloadChunk(a, b, false, false);
+                }
+            }
+            for (Player p : ingameList.keySet()) {
+                p.teleport(otherWorldSpawn);
+            }
+            for (Player p : spectators.keySet()) {
+                p.teleport(otherWorldSpawn);
+            }
+            for (Player p : getServer().getWorld(worldName).getPlayers()) {
+                p.teleport(otherWorldSpawn);
+            }
+            getServer().unloadWorld(worldName, false);
+            getLogger().log(Level.INFO, "Unloaded game world.");
+            getServer().getScheduler().cancelTasks(this);
+        }
+    }
+
+    private class UnloadRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            if (mysqlEnabled) {
+                sql.closeConn();
+            }
+            unloadGameWorld();
+            onEnable();
         }
     }
 
