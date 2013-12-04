@@ -32,7 +32,6 @@ import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.WorldCreator;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -84,7 +83,8 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Structure, Integer> structures;
     public int maxN = 0;
     public int minN = 1;
-    public List<Location> botCreepSpawn, midCreepSpawn, topCreepSpawn, jungleSpawn, jungleRedSpawn, jungleBlueSpawn;
+    public List<Location> botCreepSpawn, midCreepSpawn, topCreepSpawn;
+    public Map<Location, Boolean> jungleRedSpawn, jungleBlueSpawn, jungleSpawn;
     public Location redDeploy, blueDeploy, specDeploy, normalSpawn, otherWorldSpawn;
     // Players
     public List<Ranking> rankingList;
@@ -108,9 +108,9 @@ public class DotaMine extends JavaPlugin implements Listener {
         botCreepSpawn = new ArrayList();
         midCreepSpawn = new ArrayList();
         topCreepSpawn = new ArrayList();
-        jungleSpawn = new ArrayList();
-        jungleRedSpawn = new ArrayList();
-        jungleBlueSpawn = new ArrayList();
+        jungleSpawn = new HashMap();
+        jungleRedSpawn = new HashMap();
+        jungleBlueSpawn = new HashMap();
 
         rankingList = new ArrayList();
         ingameList = new HashMap();
@@ -405,12 +405,12 @@ public class DotaMine extends JavaPlugin implements Listener {
         getServer().getScheduler().scheduleSyncDelayedTask(this, new AnnounceGameRunnable(), 20 * 50);
         if (useControllableMobs) {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new CreepSpawnRunnable(this), 20 * 60, 20 * 30);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 45);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpecialSpawnRunnable(this), 20 * 60, 20 * 180);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpawnRunnable(this), 20 * 60, 20 * 15);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new JungleSpecialSpawnRunnable(this), 20 * 60, 20 * 15);
         } else {
             getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntityCreepSpawnRunnable(this), 20 * 60, 20 * 30);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntityJungleSpawnRunnable(this), 20 * 60, 20 * 45);
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntitySpecialJungleSpawnRunnable(this), 20 * 60, 20 * 180);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntityJungleSpawnRunnable(this), 20 * 60, 20 * 15);
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new EntitySpecialJungleSpawnRunnable(this), 20 * 60, 20 * 15);
             getLogger().log(Level.WARNING, "You should use ControllableMobs for better experience.");
         }
         getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScoreboardRunnable(this), 1, scoreRunnable);

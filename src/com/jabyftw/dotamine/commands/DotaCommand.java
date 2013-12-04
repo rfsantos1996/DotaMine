@@ -131,6 +131,7 @@ public class DotaCommand implements CommandExecutor {
                     if (s.getLane().startsWith("t")) {
                         if (i == pl.structures.get(s) && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam() && s.getType() != 2) { // just towers
                             tp(p, s.getTpLoc());
+                            return;
                         }
                     }
                 }
@@ -141,6 +142,7 @@ public class DotaCommand implements CommandExecutor {
                     if (s.getLane().startsWith("m")) {
                         if (i == pl.structures.get(s) && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam() && s.getType() != 2) {
                             tp(p, s.getTpLoc());
+                            return;
                         }
                     }
                 }
@@ -151,6 +153,7 @@ public class DotaCommand implements CommandExecutor {
                     if (s.getLane().startsWith("bo")) {
                         if (i == pl.structures.get(s) && !s.isDestroyed() && s.getTeam() == pl.ingameList.get(p).getTeam() && s.getType() != 2) {
                             tp(p, s.getTpLoc());
+                            return;
                         }
                     }
                 }

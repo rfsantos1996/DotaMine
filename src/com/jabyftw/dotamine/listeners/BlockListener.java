@@ -28,6 +28,10 @@ public class BlockListener implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
+        if (e.getBlock().getLocation().distance(pl.normalSpawn) < 15) {
+            e.setCancelled(true);
+            return;
+        }
         if (pl.spectators.containsKey(p)) {
             e.setCancelled(true);
             return;
@@ -54,6 +58,7 @@ public class BlockListener implements Listener {
                                 } else {
                                     if (s.getHP() < 50) {
                                         s.punchTower(true);
+                                        p.sendMessage(pl.getLang("lang.youDamagedTower").replaceAll("%tower", s.getName()).replaceAll("%hp", Integer.toString(s.getHP())));
                                         pl.debug("denied tower");
                                     }
                                 }
@@ -63,10 +68,6 @@ public class BlockListener implements Listener {
                 }
             }
             e.setCancelled(true);
-            return;
-        }
-        if (!p.isOp()) {
-            e.setCancelled(true);
         }
     }
 
@@ -75,43 +76,39 @@ public class BlockListener implements Listener {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p) || pl.spectators.containsKey(p)) {
             e.setCancelled(true);
-            return;
-        }
-        if (!p.isOp()) {
+        } else if (p.getLocation().getWorld().getName().equalsIgnoreCase(pl.worldName)) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBurn(BlockBurnEvent e) {
-        e.setCancelled(true);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onIgnnite(BlockIgniteEvent e) {
-        if (e.getCause() == IgniteCause.SPREAD) {
+        if (e.getBlock().getLocation().getWorld().getName().equalsIgnoreCase(pl.worldName)) {
             e.setCancelled(true);
         }
     }
 
-    private boolean towerBreakable(Structure s) { // mid 2
-        int sNumber = pl.structures.get(s);
-        if (sNumber == pl.minN) { // first tower
-            pl.debug(Integer.toString(sNumber));
+    @EventHandler(ignoreCancelled = true)
+    public void onIgnnite(BlockIgniteEvent e) {
+        if (e.getBlock().getLocation().getWorld().getName().equalsIgnoreCase(pl.worldName)) {
+            if (e.getCause() == IgniteCause.SPREAD) {
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    private boolean towerBreakable(Structure s) {
+        int sNumber = pl.structures.get(s); // 2
+        pl.debug(Integer.toString(sNumber));
+        if (sNumber == pl.minN) { // first tower, allow
             return true;
         }
-        pl.debug(Integer.toString(sNumber));
         for (Structure s1 : pl.structures.keySet()) {
-            if (s.getLane().equalsIgnoreCase(s1.getLane())) {
-                pl.debug("equal lane");
-                if (s1.isDestroyed() && pl.structures.get(s1) < sNumber) { // if 1 < 2 and tower is destroyed
-                    int deltaN = pl.structures.get(s1) - sNumber;
-                    if(deltaN == 1) {
-                        return true;
-                    }
+            if (pl.structures.get(s1) == (sNumber - 1)) { // 1 = (2-1)
+                if (s1.getLane().equalsIgnoreCase(s.getLane()) && s1.getTeam() == s.getTeam()) { // same lane and team
+                    return s1.isDestroyed();
                 }
             }
-
         }
         return false;
     }

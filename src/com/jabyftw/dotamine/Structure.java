@@ -12,7 +12,7 @@ import org.bukkit.block.Block;
  * @author Rafael
  */
 public class Structure {
-    
+
     private final DotaMine pl;
     private final Location loc, tpLoc, afterDestroy;
     private final String name, lane;
@@ -34,11 +34,11 @@ public class Structure {
         getNearbyBlocks(5);
         pl.debug("name: lane: number: team: type: " + getName() + "." + pl.structures.get(this));
     }
-    
+
     public Location getLoc() {
         return loc;
     }
-    
+
     public String getName() {
         if (team == 1) {
             return ChatColor.AQUA + name;
@@ -46,31 +46,31 @@ public class Structure {
             return ChatColor.RED + name;
         }
     }
-    
+
     public String getLane() {
         return lane;
     }
-    
+
     public int getTeam() {
         return team;
     }
-    
+
     public int getType() {
         return type;
     }
-    
+
     public void setHP(int multi) {
         for (int i = 0; i < multi; i++) {
             hp = (int) (hp * 0.75);
         }
     }
-    
+
     public int getHP() {
         return hp;
     }
-    
+
     public void punchTower(boolean denied) {
-        hp = hp - 15;
+        hp = hp - pl.getRandom(8, 18);
         if (!announced) {
             for (Jogador j : pl.ingameList.values()) {
                 if (j.getTeam() == team) {
@@ -81,13 +81,13 @@ public class Structure {
             pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new AnnounceCDRunnable(), 20 * 30);
         }
         if (hp <= 0) {
-            setDestroyed();
+            setDestroyed(denied);
             if (!denied) {
                 addTowerMoney(pl.getOtherTeam(getTeam()));
             }
         }
     }
-    
+
     public boolean isDestroyed() {
         for (Block b : blocks) {
             if (b.getType().equals(Material.AIR)) {
@@ -96,8 +96,8 @@ public class Structure {
         }
         return false;
     }
-    
-    public void setDestroyed() {
+
+    public void setDestroyed(boolean denied) {
         if (getType() == 2) {
             if (team == 1) {
                 pl.broadcast(pl.getLang("lang.redTeamWon"));
@@ -107,7 +107,11 @@ public class Structure {
                 pl.endGame(false, 1);
             }
         } else {
-            pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", getName()));
+            if (denied) {
+                pl.broadcast(pl.getLang("lang.towerDenied").replaceAll("%tower", name));
+            } else {
+                pl.broadcast(pl.getLang("lang.towerDestroyed").replaceAll("%tower", name)); // raw name, not colourful
+            }
             pl.checkForMegacreeps();
             if (afterDestroy != null) {
                 pl.addCreepLocSpawn(getLane(), afterDestroy);
@@ -118,7 +122,7 @@ public class Structure {
             }
         }
     }
-    
+
     private int getFromStringTeam(String team) {
         if (team.startsWith("b")) {
             return 1;
@@ -126,7 +130,7 @@ public class Structure {
             return 2;
         }
     }
-    
+
     private String getFromStringLane(String lane) {
         if (lane.startsWith("bo")) {
             return "bot";
@@ -138,7 +142,7 @@ public class Structure {
             return "base";
         }
     }
-    
+
     private void addTowerMoney(int team) {
         for (Jogador j : pl.ingameList.values()) {
             if (j.getTeam() == team) {
@@ -146,7 +150,7 @@ public class Structure {
             }
         }
     }
-    
+
     private void getNearbyBlocks(int radius) {
         for (int x = -(radius); x <= radius; x++) {
             for (int y = -(radius); y <= radius; y++) {
@@ -159,13 +163,13 @@ public class Structure {
             }
         }
     }
-    
+
     public Location getTpLoc() {
         return tpLoc;
     }
-    
+
     private class AnnounceCDRunnable implements Runnable {
-        
+
         @Override
         public void run() {
             announced = false;

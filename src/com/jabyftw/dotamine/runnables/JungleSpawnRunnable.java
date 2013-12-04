@@ -29,27 +29,31 @@ public class JungleSpawnRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Location loc : pl.jungleSpawn) {
-            loc.getChunk().load();
-            boolean playernear = false;
-            boolean spawn = true;
-            for (Player p : pl.ingameList.keySet()) {
-                if (p.getLocation().distance(loc) < 32) {
-                    playernear = true;
-                }
-            }
-            if (pl.jungleCreeps.size() > 0 && playernear) {
-                for (Entity en : pl.jungleCreeps.keySet()) {
-                    if (en.getLocation().distance(loc) < 12 && !en.isDead()) {
-                        spawn = false;
+        for (Location loc : pl.jungleSpawn.keySet()) {
+            if (!pl.jungleSpawn.get(loc)) {
+                loc.getChunk().load();
+                boolean playernear = false;
+                boolean spawn = true;
+                for (Player p : pl.ingameList.keySet()) {
+                    if (p.getLocation().distance(loc) < 32) {
+                        playernear = true;
                     }
                 }
+                if (pl.jungleCreeps.size() > 0 && playernear) {
+                    for (Entity en : pl.jungleCreeps.keySet()) {
+                        if (en.getLocation().distance(loc) < 12 && !en.isDead()) {
+                            spawn = false;
+                        }
+                    }
+                }
+                if (spawn && playernear) {
+                    spawnJungle(loc);
+                    pl.jungleSpawn.put(loc, true);
+                    pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new RecentlyRunnable(pl, loc, 3), 20 * 90);
+                }
             }
-            if (spawn && playernear) {
-                spawnJungle(loc);
-            }
+            pl.debug("creepspawn jungle");
         }
-        pl.debug("creepspawn jungle");
     }
 
     private void spawnJungle(Location loc) {
@@ -61,7 +65,7 @@ public class JungleSpawnRunnable extends BukkitRunnable {
             cz.getAttributes().setMaximumNavigationDistance(8);
             cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.65, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getAttributes().getAttackDamageAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "attack dmg", 5.0, ModifyOperation.ADD_TO_BASIS_VALUE));
-            cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 10.0, ModifyOperation.ADD_TO_BASIS_VALUE));
+            cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 8.0, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
             cz.getAI().addBehavior(new AIAttackMelee(1, 1.2));
             cz.getAI().addBehavior(new AITargetNearest(2, 5, true));

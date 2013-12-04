@@ -24,8 +24,10 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Location spawnloc : pl.jungleSpawn) {
-            spawn(spawnloc);
+        for (Location spawnloc : pl.jungleSpawn.keySet()) {
+            if (!pl.jungleSpawn.get(spawnloc)) {
+                spawn(spawnloc);
+            }
         }
     }
 
@@ -47,6 +49,8 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
         }
         if (spawn && playernear) {
             spawnCreeps(spawnloc);
+            pl.jungleSpawn.put(spawnloc, true);
+            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new RecentlyRunnable(pl, spawnloc, 3), 20 * 90);
         }
     }
 

@@ -26,11 +26,15 @@ public class EntitySpecialJungleSpawnRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Location spawnloc : pl.jungleRedSpawn) {
-            spawn(spawnloc, 1);
+        for (Location loc : pl.jungleRedSpawn.keySet()) {
+            if (!pl.jungleRedSpawn.get(loc)) {
+                spawn(loc, 1);
+            }
         }
-        for (Location spawnloc : pl.jungleBlueSpawn) {
-            spawn(spawnloc, 2);
+        for (Location loc : pl.jungleBlueSpawn.keySet()) {
+            if (!pl.jungleBlueSpawn.get(loc)) {
+                spawn(loc, 2);
+            }
         }
     }
 
@@ -66,9 +70,12 @@ public class EntitySpecialJungleSpawnRunnable extends BukkitRunnable {
             LeatherArmorMeta lam = (LeatherArmorMeta) chest.getItemMeta();
             if (type == 1) {
                 lam.setColor(Color.RED);
+                pl.jungleRedSpawn.put(spawnloc, true);
             } else {
                 lam.setColor(Color.BLUE);
+                pl.jungleRedSpawn.put(spawnloc, true);
             }
+            pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new RecentlyRunnable(pl, spawnloc, type), 20 * 180);
             chest.setItemMeta(lam);
             z.getEquipment().setChestplate(chest);
             z.getEquipment().setChestplateDropChance(0);
@@ -79,6 +86,5 @@ public class EntitySpecialJungleSpawnRunnable extends BukkitRunnable {
         z.setHealth(z.getMaxHealth());
         pl.jungleEntityCreeps.put(z, type);
         pl.spawnedMobs.add(z);
-
     }
 }

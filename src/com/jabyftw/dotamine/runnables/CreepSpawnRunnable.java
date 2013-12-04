@@ -119,8 +119,8 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", LhealthM, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
             cz.getAI().addBehavior(new AIAttackMelee(1, 1.1));
-            cz.getAI().addBehavior(new AITargetHurtBy(2, true));
-            cz.getAI().addBehavior(new AITargetNearest(3, 10, false, 20 * 3));
+            cz.getAI().addBehavior(new AITargetNearest(2, 14, false, 20 * 3));
+            cz.getAI().addBehavior(new AITargetHurtBy(3, false));
             cz.getAI().addBehavior(new AIFloat(4));
             cz.getAI().addBehavior(new AILookAtEntity(5, (float) 8));
             cz.getAI().addBehavior(new AIRandomLookaround(5));
@@ -149,8 +149,8 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cs.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", LhealthR, ModifyOperation.ADD_TO_BASIS_VALUE));
             cs.getEntity().setHealth(cs.getEntity().getMaxHealth());
             cs.getAI().addBehavior(new AIAttackRanged(1, 1.2, 14, 40));
-            cs.getAI().addBehavior(new AITargetHurtBy(2, false));
-            cs.getAI().addBehavior(new AITargetNearest(3, 16, false));
+            cs.getAI().addBehavior(new AITargetNearest(2, 16, false));
+            cs.getAI().addBehavior(new AITargetHurtBy(3, false));
             cs.getAI().addBehavior(new AIFloat(4));
             cs.getAI().addBehavior(new AILookAtEntity(5, (float) 20));
             pl.laneCreeps.put(s, cs);

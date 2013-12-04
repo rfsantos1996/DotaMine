@@ -2,6 +2,8 @@
  * GAMEPLAY:
  - Better map (Duurax's Summoners Rift)
  - Changed a little (Jungle)
+ - Punch [Dota] Signs will also work
+ - Ranged Punch and other arrow stuff will work again
  - Zombies WILL target you in crowd if you shoot them
  - Spectators won't affect gameplay when blocking arrows
  - Higher EXP drop on Jungle creeps (after: 7-9 / before: 6-8)
@@ -10,14 +12,17 @@
  - Removed fire bow from Meele, not needed anymore
  * PLUGIN:
  - Added fixed debug mode
+ - Added aliase /j to /join
  - Separated config.yml into config.yml, structures.yml and lang.yml
  - You don't need to restart your server anymore. This will unload and load the "config.world.name" @ config.yml
+ - Changed Listeners to support multiworld
  - Plugin will ignore most events that have been cancelled
  - Changed A LOT OF THINGS, also, a lot TODO, to start using Duurax's map and custom maps
  - Changed how Jungle and Lanes creeps work on code
  - Ranking now show Kill/Death ratio and Win/Lost ratio
  - Added a column on dotamine's table on MySQL: "lhs" - this will save last hits
  - Don't allow random players drop items
+ - Fixed player quit didn't triggering game end
  - Fixed game don't starting without forcing it to start
  - Fixed NullPointerException when someone that aren't ingame dies.
 

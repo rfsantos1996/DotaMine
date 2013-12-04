@@ -33,11 +33,15 @@ public class JungleSpecialSpawnRunnable extends BukkitRunnable {
 
     @Override
     public void run() {
-        for (Location loc : pl.jungleRedSpawn) {
-            spawn(loc, 1);
+        for (Location loc : pl.jungleRedSpawn.keySet()) {
+            if (!pl.jungleRedSpawn.get(loc)) {
+                spawn(loc, 1);
+            }
         }
-        for (Location loc : pl.jungleBlueSpawn) {
-            spawn(loc, 2);
+        for (Location loc : pl.jungleBlueSpawn.keySet()) {
+            if (!pl.jungleBlueSpawn.get(loc)) {
+                spawn(loc, 2);
+            }
         }
     }
 
@@ -69,9 +73,12 @@ public class JungleSpecialSpawnRunnable extends BukkitRunnable {
         LeatherArmorMeta lam = (LeatherArmorMeta) chest.getItemMeta();
         if (type == 1) {
             lam.setColor(Color.RED);
+            pl.jungleRedSpawn.put(loc, true);
         } else {
             lam.setColor(Color.BLUE);
+            pl.jungleBlueSpawn.put(loc, true);
         }
+        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new RecentlyRunnable(pl, loc, type), 20 * 180);
         chest.setItemMeta(lam);
         z.getEquipment().setChestplate(chest);
         z.getEquipment().setChestplateDropChance(0);
@@ -79,11 +86,11 @@ public class JungleSpecialSpawnRunnable extends BukkitRunnable {
         z.setCanPickupItems(false);
         ControllableMob<Zombie> cz = ControllableMobs.putUnderControl(z, true);
         cz.getAttributes().setMaximumNavigationDistance(16);
-        cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.9, ModifyOperation.ADD_TO_BASIS_VALUE));
-        cz.getAttributes().getAttackDamageAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "attack dmg", 8.0, ModifyOperation.ADD_TO_BASIS_VALUE));
+        cz.getAttributes().getKnockbackResistanceAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "knockback res", 0.8, ModifyOperation.ADD_TO_BASIS_VALUE));
+        cz.getAttributes().getAttackDamageAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "attack dmg", 7.0, ModifyOperation.ADD_TO_BASIS_VALUE));
         cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 43.0, ModifyOperation.ADD_TO_BASIS_VALUE));
         cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
-        cz.getAI().addBehavior(new AIAttackMelee(1, 1.3));
+        cz.getAI().addBehavior(new AIAttackMelee(1, 1.25));
         cz.getAI().addBehavior(new AITargetNearest(3, 5, true));
         cz.getAI().addBehavior(new AILookAtEntity(4, (float) 12));
         pl.jungleSpecialCreeps.put(z, type);

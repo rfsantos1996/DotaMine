@@ -86,6 +86,8 @@ public class Config {
             createTable();
             if (defConfig.getInt("DoNotChangeThis.ConfigVersion") < 4) {
                 alterTable();
+                defConfig.set("DoNotChangeThis.ConfigVersion", pl.version); // it'll always update anyways. Just update to the right version
+                configYML.saveCustomConfig();
             }
         }
         if (!pl.restartAfter) {
@@ -145,16 +147,16 @@ public class Config {
             }
         }
         pl.debug("setted structures HP");
-        pl.jungleRedSpawn.add(new Location(w, -904, 11, 164));
-        pl.jungleRedSpawn.add(new Location(w, -913, 11, 34));
-        pl.jungleBlueSpawn.add(new Location(w, -850, 11, 111));
-        pl.jungleBlueSpawn.add(new Location(w, -967, 11, 87));
-        pl.jungleSpawn.add(new Location(w, -845, 11, 81));
-        pl.jungleSpawn.add(new Location(w, -901, 11, 68));
-        pl.jungleSpawn.add(new Location(w, -933, 11, 18));
-        pl.jungleSpawn.add(new Location(w, -884, 11, 181));
-        pl.jungleSpawn.add(new Location(w, -916, 11, 130));
-        pl.jungleSpawn.add(new Location(w, -963, 11, 116));
+        pl.jungleRedSpawn.put(new Location(w, -904, 11, 164), false);
+        pl.jungleRedSpawn.put(new Location(w, -913, 11, 34), false);
+        pl.jungleBlueSpawn.put(new Location(w, -850, 11, 111), false);
+        pl.jungleBlueSpawn.put(new Location(w, -967, 11, 87), false);
+        pl.jungleSpawn.put(new Location(w, -845, 11, 81), false);
+        pl.jungleSpawn.put(new Location(w, -901, 11, 68), false);
+        pl.jungleSpawn.put(new Location(w, -933, 11, 18), false);
+        pl.jungleSpawn.put(new Location(w, -884, 11, 181), false);
+        pl.jungleSpawn.put(new Location(w, -916, 11, 130), false);
+        pl.jungleSpawn.put(new Location(w, -963, 11, 116), false);
 
         for (String keys : config.getConfigurationSection("structures.creepspawn.top").getKeys(false)) {
             pl.addCreepLocSpawn("top", new Location(w, config.getInt("structures.creepspawn.top." + keys + ".locX"), config.getInt("structures.creepspawn.top." + keys + ".locY"), config.getInt("structures.creepspawn.top." + keys + ".locZ")));
@@ -285,6 +287,7 @@ public class Config {
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
         config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
         config.addDefault("lang.towerUnderAttack", "%tower &4is under attack. &6Tower HP: &e%hp");
+        config.addDefault("lang.towerDenied", "&4%tower &cwas denied");
         config.addDefault("lang.youMustDestroyFirstTowers", "&cYou must destroy towers behind you first.");
         config.addDefault("lang.youDamagedTower", "&6You caused &e15 damage&6 on %tower &6(%hp&6)");
         config.addDefault("lang.rankingTitle", "&e=== &6Ranking &e===");

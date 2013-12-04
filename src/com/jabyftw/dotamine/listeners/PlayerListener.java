@@ -59,9 +59,7 @@ public class PlayerListener implements Listener {
             return;
         }
         pl.cleanPlayer(p, false, false);
-        p.setDisplayName(ChatColor.GREEN + p.getName());
         e.setJoinMessage(pl.getLang("lang.joinMessage").replaceAll("%name", p.getName()));
-        p.teleport(pl.normalSpawn);
         if (pl.useVault) {
             if (p.hasPermission("dotamine.meele")) {
                 pl.permission.playerRemove(p, "dotamine.meele");
@@ -71,6 +69,8 @@ public class PlayerListener implements Listener {
             }
         }
         if (p.hasPermission("dotamine.play")) {
+            p.teleport(pl.normalSpawn);
+            p.setDisplayName(ChatColor.GREEN + p.getName());
             if (pl.state == pl.WAITING) {
                 p.sendMessage(pl.getLang("lang.youCanPlay"));
             } else if (pl.state == pl.WAITING_QUEUE) {
@@ -88,30 +88,31 @@ public class PlayerListener implements Listener {
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         e.setQuitMessage(pl.getLang("lang.quitMessage").replaceAll("%name", p.getName()));
-        checkIngameThings(p);
         if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING) && pl.ingameList.containsKey(p)) { // 1 player left
             pl.broadcast(pl.getLang("lang.onePlayerLeft"));
             pl.endGame(true, 0);
         }
-
+        checkIngameThings(p);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onKick(PlayerKickEvent e) {
         Player p = e.getPlayer();
         e.setLeaveMessage(pl.getLang("lang.quitMessage").replaceAll("%name", p.getName()));
-        checkIngameThings(p);
         if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING) && pl.ingameList.containsKey(p)) { // 1 player left
             pl.broadcast(pl.getLang("lang.onePlayerLeft"));
             pl.endGame(true, 0);
         }
+        checkIngameThings(p);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPickUp(PlayerPickupItemEvent e) {
         Player p = e.getPlayer();
-        if (!pl.ingameList.containsKey(p)) {
-            e.setCancelled(true);
+        if (p.getLocation().getWorld().getName().equalsIgnoreCase(pl.worldName)) {
+            if (!pl.ingameList.containsKey(p)) {
+                e.setCancelled(true);
+            }
         }
     }
 
@@ -157,7 +158,7 @@ public class PlayerListener implements Listener {
         if (pl.ingameList.containsKey(p)) {
             BukkitScheduler bs = pl.getServer().getScheduler();
             if (e.getItem() != null && e.getItem().getType().equals(Material.BLAZE_ROD)) { // Shadow Blade
-                if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+                if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR)) {
                     if (!pl.invisible.containsKey(p)) {
                         if (pl.shadowCD.contains(p)) {
                             p.sendMessage(pl.getLang("lang.itemCDMessage").replaceAll("%item", "Shadow Blade"));
@@ -262,7 +263,7 @@ public class PlayerListener implements Listener {
                 }
             }
         } else {
-            if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 if (!pl.interactCD.contains(p)) {
                     Block block = e.getClickedBlock();
                     if (block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST) || block.getType().equals(Material.WALL_SIGN)) {
@@ -356,8 +357,10 @@ public class PlayerListener implements Listener {
     public void onChat(AsyncPlayerChatEvent e) {
         Player sender = e.getPlayer();
         String msg = e.getMessage();
-        e.setCancelled(true);
-        executeChat(sender, msg);
+        if (sender.getLocation().getWorld().getName().equalsIgnoreCase(pl.worldName)) {
+            e.setCancelled(true);
+            executeChat(sender, msg);
+        }
     }
 
     private void checkIngameThings(Player p) {
