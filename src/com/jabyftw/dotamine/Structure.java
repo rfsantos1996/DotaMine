@@ -38,7 +38,7 @@ public class Structure {
         hp = pl.AncientHP;
         getNearbyBlocks(5);
         if (type == 1) {
-            runnable = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new TowerAttackRunnable((pl.TowerRange * pl.TowerRange)), 20 * 60, 30);
+            runnable = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new TowerAttackRunnable(this, (pl.TowerRange * pl.TowerRange)), 20 * 60, 30);
         }
         pl.debug("name: lane: number: team: type: " + getName() + "." + pl.structures.get(this));
     }
@@ -186,9 +186,11 @@ public class Structure {
     private class TowerAttackRunnable implements Runnable {
 
         private final int radius;
+        private final Structure t;
         private int damage = 2;
 
-        public TowerAttackRunnable(int radius) {
+        public TowerAttackRunnable(Structure t, int radius) {
+            this.t = t;
             this.radius = radius;
         }
 
@@ -198,29 +200,31 @@ public class Structure {
                 nearby = null;
                 pl.debug("!= null and distanced -> null");
             }
-            if (!pl.useControllableMobs) {
-                for (Entity e : pl.spawnedMobs) {
-                    if (e.getLocation().distanceSquared(loc) < radius && !e.isDead()) {
-                        nearby = e;
-                        damage = 13;
-                        pl.debug("!controllable mobs - entity found");
-                        break;
+            if (pl.structures.get(t) == pl.minN) { // Just first tower will attack creeps
+                if (!pl.useControllableMobs) {
+                    for (Entity e : pl.spawnedMobs) {
+                        if (e.getLocation().distanceSquared(loc) < radius && !e.isDead()) {
+                            nearby = e;
+                            damage = 13;
+                            pl.debug("!controllable mobs - entity found");
+                            break;
+                        }
                     }
-                }
-            } else {
-                for (Entity e : pl.controlMobs.keySet()) {
-                    if (e.getLocation().distanceSquared(loc) < radius && !e.isDead()) {
-                        nearby = e;
-                        damage = 13;
-                        pl.debug("controllable mobs - entity found");
-                        break;
+                } else {
+                    for (Entity e : pl.controlMobs.keySet()) {
+                        if (e.getLocation().distanceSquared(loc) < radius && !e.isDead()) {
+                            nearby = e;
+                            damage = 13;
+                            pl.debug("controllable mobs - entity found");
+                            break;
+                        }
                     }
                 }
             }
             if (nearby == null) { // Still no mobs found
                 for (Jogador j : pl.ingameList.values()) {
                     if (j.getTeam() != getTeam()) {
-                        if (j.getPlayer().getLocation().distanceSquared(loc) < radius  && !j.getPlayer().isDead()) {
+                        if (j.getPlayer().getLocation().distanceSquared(loc) < radius && !j.getPlayer().isDead()) {
                             nearby = (Entity) j.getPlayer();
                             damage = 2;
                             pl.debug("player found");

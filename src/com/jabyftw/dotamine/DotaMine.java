@@ -73,7 +73,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     /*
      PLUGIN
      */
-    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue, AncientHP, TowerRange;
+    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue, AncientHP, TowerRange, firstTowerSize;
     public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug, restartAfter;
     public boolean restarted = false;
     public Economy econ = null;
@@ -104,6 +104,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Player, Integer> invisible, invisibleSB, invisibleW, invisibleEffectW, forcingStaff, teleporting, respawning;
 
     private void startVariables() { // or restart
+        firstTowerSize = 0;
         structures = new HashMap();
         botCreepSpawn = new ArrayList();
         midCreepSpawn = new ArrayList();
@@ -544,11 +545,11 @@ public class DotaMine extends JavaPlugin implements Listener {
     public void checkForMegacreeps() {
         int i = 0;
         for (Structure s : structures.keySet()) {
-            if (structures.get(s) == minN && s.isDestroyed()) { // All first 6 towers must be destroyed on both teams
+            if (structures.get(s) == minN && s.isDestroyed()) {
                 i++;
             }
         }
-        if (i > 5) {
+        if (i >= firstTowerSize) {
             megaCreeps = true;
         }
     }
@@ -573,17 +574,19 @@ public class DotaMine extends JavaPlugin implements Listener {
                     getServer().getWorld(worldName).unloadChunk(a, b, false, false);
                 }
             }
-            for (Player p : ingameList.keySet()) {
-                p.teleport(otherWorldSpawn);
+            if (!restartAfter) {
+                for (Player p : ingameList.keySet()) {
+                    p.teleport(otherWorldSpawn);
+                }
+                for (Player p : spectators.keySet()) {
+                    p.teleport(otherWorldSpawn);
+                }
+                for (Player p : getServer().getWorld(worldName).getPlayers()) {
+                    p.teleport(otherWorldSpawn);
+                }
+                getServer().unloadWorld(worldName, false);
+                getLogger().log(Level.INFO, "Unloaded game world.");
             }
-            for (Player p : spectators.keySet()) {
-                p.teleport(otherWorldSpawn);
-            }
-            for (Player p : getServer().getWorld(worldName).getPlayers()) {
-                p.teleport(otherWorldSpawn);
-            }
-            getServer().unloadWorld(worldName, false);
-            getLogger().log(Level.INFO, "Unloaded game world.");
             getServer().getScheduler().cancelTasks(this);
         }
     }

@@ -150,6 +150,11 @@ public class Config {
                 s.setHP(deltaN);
             }
         }
+        for (Structure s : pl.structures.keySet()) {
+            if (pl.structures.get(s) == pl.minN) {
+                pl.firstTowerSize++;
+            }
+        }
         pl.debug("setted structures HP");
         pl.jungleRedSpawn.put(new Location(w, -904, 11, 164), false);
         pl.jungleRedSpawn.put(new Location(w, -913, 11, 34), false);
@@ -262,8 +267,8 @@ public class Config {
         config.addDefault("lang.youCanPlay", "&6You can play Dota using &c/join");
         config.addDefault("lang.youCanJoin", "&6You can join Dota using &c/join&6 before it starts");
         config.addDefault("lang.youCanSpectate", "&6You can spectate using &c/spectate&6!");
-        config.addDefault("lang.redTeamWon", "&cRed Team &6won! &eCongratulations! &cRestarting in 30 sec!");
-        config.addDefault("lang.blueTeamWon", "&bBlue Team &6won! &eCongratulations! &cRestarting in 30 sec!");
+        config.addDefault("lang.redTeamWon", "&cRed Team &6won! &eCongratulations! &cRestarting in 5 sec!");
+        config.addDefault("lang.blueTeamWon", "&bBlue Team &6won! &eCongratulations! &cRestarting in 5 sec!");
         config.addDefault("lang.towerDestroyed", "&4%tower &cwas destroyed by %destroyer");
         config.addDefault("lang.kickMessage", "&4The game is over!&c Restarting...");
         config.addDefault("lang.usePlayCommand", "&cUsage: &6/play (ranged/meele/leave)");
