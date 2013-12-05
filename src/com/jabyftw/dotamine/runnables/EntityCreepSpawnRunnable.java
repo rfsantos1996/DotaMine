@@ -43,13 +43,13 @@ public class EntityCreepSpawnRunnable extends BukkitRunnable {
         boolean playernear = false;
         int spawn = 0;
         for (Player p : pl.ingameList.keySet()) {
-            if (p.getLocation().distance(spawnloc) < 32) {
+            if (p.getLocation().distanceSquared(spawnloc) < (32*32)) {
                 playernear = true;
             }
         }
         if (pl.laneEntityCreeps.size() > 0 && playernear) {
             for (Entity e : pl.laneEntityCreeps) {
-                if (e.getLocation().distance(spawnloc) < 22) {
+                if (e.getLocation().distanceSquared(spawnloc) < (22*22)) {
                     spawn++;
                 }
             }

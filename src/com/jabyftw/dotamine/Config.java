@@ -53,6 +53,8 @@ public class Config {
         defConfig.addDefault("config.scoreRunnableDelayInTicks", 60); // 3 sec
         defConfig.addDefault("config.MAX_PLAYERS", 12);
         defConfig.addDefault("config.MIN_PLAYERS", 6);
+        defConfig.addDefault("config.ancientHP", 1200);
+        defConfig.addDefault("config.towerRange", 12);
         defConfig.addDefault("config.world.name", "world");
         defConfig.addDefault("config.world.fromChunkX", -66);
         defConfig.addDefault("config.world.toChunkX", -48);
@@ -79,6 +81,8 @@ public class Config {
         pl.scoreRunnable = defConfig.getInt("config.scoreRunnableDelayInTicks");
         pl.MIN_PLAYERS = defConfig.getInt("config.MIN_PLAYERS");
         pl.MAX_PLAYERS = defConfig.getInt("config.MAX_PLAYERS");
+        pl.AncientHP = defConfig.getInt("config.ancientHP");
+        pl.TowerRange = defConfig.getInt("config.towerRange");
         pl.nerfRanged = defConfig.getBoolean("config.nerfRangedAtNight");
         pl.mysqlEnabled = defConfig.getBoolean("mysql.enabled");
         if (pl.mysqlEnabled) {
@@ -260,7 +264,7 @@ public class Config {
         config.addDefault("lang.youCanSpectate", "&6You can spectate using &c/spectate&6!");
         config.addDefault("lang.redTeamWon", "&cRed Team &6won! &eCongratulations! &cRestarting in 30 sec!");
         config.addDefault("lang.blueTeamWon", "&bBlue Team &6won! &eCongratulations! &cRestarting in 30 sec!");
-        config.addDefault("lang.towerDestroyed", "&4%tower &cwas destroyed");
+        config.addDefault("lang.towerDestroyed", "&4%tower &cwas destroyed by %destroyer");
         config.addDefault("lang.kickMessage", "&4The game is over!&c Restarting...");
         config.addDefault("lang.usePlayCommand", "&cUsage: &6/play (ranged/meele/leave)");
         config.addDefault("lang.settedMeele", "&6You will play as a Meele hero.");
@@ -269,7 +273,7 @@ public class Config {
         config.addDefault("lang.nobodyOnQueue", "&cQueue is empty! Cant force start...");
         config.addDefault("lang.diedForNeutral", "%name &cdied for a &4creep or neutral&c.");
         config.addDefault("lang.queueSizeIs", "&e%size players &6in queue! &cWe need %needed player(s).");
-        config.addDefault("lang.onePlayerLeft", "&cThere's only 1 player left. &4Restarting server...");
+        config.addDefault("lang.onePlayerLeft", "&cThere's only 1 player left. &4Restarting game...");
         config.addDefault("lang.lowRangedNightVision", "&cRanged players have low night vision. &4ATENTION AT NIGHT!");
         config.addDefault("lang.alreadyInQueueUpdatedAttack", "&cAlready on queue. &6New attack type: %attack");
         config.addDefault("lang.noRankingFound", "&cNo ranking entry.");
@@ -287,9 +291,9 @@ public class Config {
         config.addDefault("lang.tpCommand", "&cUsage: &4/dota tp (bot/mid/top/base)");
         config.addDefault("lang.startingNow", "&eQueue is full. &6Starting now.");
         config.addDefault("lang.towerUnderAttack", "%tower &4is under attack. &6Tower HP: &e%hp");
-        config.addDefault("lang.towerDenied", "&4%tower &cwas denied");
+        config.addDefault("lang.towerDenied", "&4%tower &cwas denied by %destroyer");
         config.addDefault("lang.youMustDestroyFirstTowers", "&cYou must destroy towers behind you first.");
-        config.addDefault("lang.youDamagedTower", "&6You caused &e15 damage&6 on %tower &6(%hp&6)");
+        config.addDefault("lang.youDamagedTower", "&6You caused &e%dmg damage&6 on %tower &6(%hp&6)");
         config.addDefault("lang.rankingTitle", "&e=== &6Ranking &e===");
         config.addDefault("lang.rankingEntry", "&e%name &6| W/L:&e %wlr &6| W:&e %wins &6| L:&e %loses &6| K/D:&e %kdr &6| K:&e %kills &6| D:&e %deaths &6| Avg. LH:&e %avgLH");
         config.addDefault("lang.killstreak.one", "%name &6killed %dead &6for &e%money");

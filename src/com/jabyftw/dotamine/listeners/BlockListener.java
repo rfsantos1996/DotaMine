@@ -28,7 +28,7 @@ public class BlockListener implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         Player p = e.getPlayer();
-        if (e.getBlock().getLocation().distance(pl.normalSpawn) < 15) {
+        if (e.getBlock().getLocation().distanceSquared(pl.normalSpawn) < (15*15)) {
             e.setCancelled(true);
             return;
         }
@@ -41,24 +41,20 @@ public class BlockListener implements Listener {
                 if (pl.state == pl.PLAYING) {
                     for (Structure s : pl.structures.keySet()) {
                         Block b = e.getBlock();
-                        if (b.getLocation().distance(s.getLoc()) < 5) {
+                        if (b.getLocation().distanceSquared(s.getLoc()) < (5*5)) {
                             pl.debug("block break 1");
                             if (b.getType() == Material.WOOL) {
                                 pl.debug("block break 2");
                                 if (s.getTeam() != pl.ingameList.get(p).getTeam()) {
                                     if (towerBreakable(s)) {
-                                        s.punchTower(false);
-                                        if (s.getHP() > 0) {
-                                            p.sendMessage(pl.getLang("lang.youDamagedTower").replaceAll("%tower", s.getName()).replaceAll("%hp", Integer.toString(s.getHP())));
-                                        }
+                                        s.punchTower(p, false);
                                         pl.debug("punched tower : " + s.getName());
                                     } else {
                                         p.sendMessage(pl.getLang("lang.youMustDestroyFirstTowers"));
                                     }
                                 } else {
                                     if (s.getHP() < 50) {
-                                        s.punchTower(true);
-                                        p.sendMessage(pl.getLang("lang.youDamagedTower").replaceAll("%tower", s.getName()).replaceAll("%hp", Integer.toString(s.getHP())));
+                                        s.punchTower(p, true);
                                         pl.debug("denied tower");
                                     }
                                 }

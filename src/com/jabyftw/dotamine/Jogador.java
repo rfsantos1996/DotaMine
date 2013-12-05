@@ -69,7 +69,7 @@ public class Jogador {
         }
         return mysqlkills;
     }
-    
+
     public int getMySQLLHs() {
         int mysqlLHs = 0;
         try {
@@ -130,7 +130,7 @@ public class Jogador {
         if (pl.mysqlEnabled) {
             try {
                 Statement s = pl.sql.getConn().createStatement();
-                s.executeUpdate("UPDATE `dotamine` SET `wins`=" + (getWins() + 1) + ", `lhs`=" + (getMySQLLHs() + lh) + " WHERE `name`='" + p.getName() + "';");
+                s.executeUpdate("UPDATE `dotamine` SET `wins`=" + (getWins() + 1) + ", `lhs`=" + (getMySQLLHs() + lh) + ", `kills`=" + (getMySQLKills() + kills) + ", `deaths`=" + (getMySQLDeaths() + deaths) + " WHERE `name`='" + p.getName() + "';");
             } catch (SQLException ex) {
                 pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
             }
@@ -141,7 +141,7 @@ public class Jogador {
         if (pl.mysqlEnabled) {
             try {
                 Statement s = pl.sql.getConn().createStatement();
-                s.executeUpdate("UPDATE `dotamine` SET `loses`=" + (getLoses() + 1) + ", `lhs`=" + (getMySQLLHs() + lh) + " WHERE `name`='" + p.getName() + "';");
+                s.executeUpdate("UPDATE `dotamine` SET `loses`=" + (getLoses() + 1) + ", `lhs`=" + (getMySQLLHs() + lh) + ", `kills`=" + (getMySQLKills() + kills) + ", `deaths`=" + (getMySQLDeaths() + deaths) + " WHERE `name`='" + p.getName() + "';");
             } catch (SQLException ex) {
                 pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
             }
@@ -182,14 +182,6 @@ public class Jogador {
             pl.econ.depositPlayer(p.getName(), money);
             announceKillstreak(p.getDisplayName(), dead.getPlayer().getDisplayName(), killstreak, money);
         }
-        if (pl.mysqlEnabled) {
-            try {
-                Statement s = pl.sql.getConn().createStatement();
-                s.executeUpdate("UPDATE `dotamine` SET `kills`=" + (getMySQLKills() + 1) + " WHERE `name`='" + p.getName() + "';");
-            } catch (SQLException ex) {
-                pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
-            }
-        }
     }
 
     public void addDeath() {
@@ -208,14 +200,6 @@ public class Jogador {
             }
         }
         killstreak = 0;
-        if (pl.mysqlEnabled) {
-            try {
-                Statement s = pl.sql.getConn().createStatement();
-                s.executeUpdate("UPDATE `dotamine` SET `deaths`=" + (getMySQLDeaths() + 1) + " WHERE `name`='" + p.getName() + "';");
-            } catch (SQLException ex) {
-                pl.getLogger().log(Level.SEVERE, "Couldn't use MySQL: {0}", ex.getMessage());
-            }
-        }
     }
 
     public void addNeutralDeath() {
@@ -225,45 +209,45 @@ public class Jogador {
 
     private double getKillMoney(int deadsKillstreak) {
         if (deadsKillstreak < 3) {
-            return 100;
+            return pl.getRandom(90, 110);
         } else if (deadsKillstreak > 3) {
-            return 125;
+            return pl.getRandom(115, 140);
         } else if (deadsKillstreak > 4) {
-            return 250;
+            return pl.getRandom(225, 275);
         } else if (deadsKillstreak > 5) {
-            return 375;
+            return pl.getRandom(360, 385);
         } else if (deadsKillstreak > 6) {
-            return 500;
+            return pl.getRandom(480, 520);
         } else if (deadsKillstreak > 7) {
-            return 625;
+            return pl.getRandom(610, 630);
         } else if (deadsKillstreak > 8) {
-            return 750;
+            return pl.getRandom(740, 760);
         } else if (deadsKillstreak > 9) {
-            return 875;
+            return pl.getRandom(830, 870);
         } else {
-            return 1000 + (deadsKillstreak * 10);
+            return pl.getRandom(900, 1100) + (deadsKillstreak * 10);
         }
     }
 
     private double getDeathMoney() {
         if (killstreak < 3) {
-            return 100 / 1.2;
+            return pl.getRandom(90, 110) / 1.2;
         } else if (killstreak >= 3) {
-            return 125 / 1.5;
+            return pl.getRandom(115, 140) / 1.5;
         } else if (killstreak >= 4) {
-            return 250 / 1.6;
+            return pl.getRandom(225, 275) / 1.6;
         } else if (killstreak >= 5) {
-            return 375 / 1.8;
+            return pl.getRandom(360, 385) / 1.8;
         } else if (killstreak >= 6) {
-            return 500 / 2;
+            return pl.getRandom(480, 520) / 2;
         } else if (killstreak >= 7) {
-            return 625 / 2;
+            return pl.getRandom(610, 630) / 2;
         } else if (killstreak >= 8) {
-            return 750 / 2;
+            return pl.getRandom(740, 760) / 2;
         } else if (killstreak >= 9) {
-            return 875 / 2;
+            return pl.getRandom(830, 870) / 2;
         } else {
-            return 1000 + (killstreak * 10) / 2.2;
+            return pl.getRandom(900, 1100) + (killstreak * 10) / 2.2;
         }
     }
 

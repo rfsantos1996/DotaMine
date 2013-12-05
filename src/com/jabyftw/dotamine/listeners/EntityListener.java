@@ -18,7 +18,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionEffectType; // TODO: Playerinteract only work when click on ground
 import org.bukkit.util.Vector;
 
 /**
@@ -309,7 +309,7 @@ public class EntityListener implements Listener {
 
     private boolean cancelBothIngame(Player damaged, Player damager) {
         if (!checkIngame(damager) && !checkIngame(damaged)) { // if both arent ingame, execute
-            if (damager.getLocation().distance(pl.normalSpawn) < 15 || damaged.getLocation().distance(pl.normalSpawn) < 15) { // Anti PVP on lobby
+            if (damager.getLocation().distanceSquared(pl.normalSpawn) < (15*15) || damaged.getLocation().distanceSquared(pl.normalSpawn) < (15*15)) { // Anti PVP on lobby
                 return true;
             }
         } else if (!checkIngame(damager) || !checkIngame(damaged)) {

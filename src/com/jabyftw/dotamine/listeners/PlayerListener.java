@@ -85,7 +85,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent e) {
+    public void onQuit(PlayerQuitEvent e) {//TODO: rage quit reconnectable? Seems difficult because NPE...
         Player p = e.getPlayer();
         e.setQuitMessage(pl.getLang("lang.quitMessage").replaceAll("%name", p.getName()));
         if (pl.ingameList.size() < 2 && (pl.state == pl.SPAWNING || pl.state == pl.PLAYING) && pl.ingameList.containsKey(p)) { // 1 player left
@@ -120,17 +120,17 @@ public class PlayerListener implements Listener {
     public void onMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p)) {
-            if (p.getLocation().distance(pl.blueDeploy) < 8) {
+            if (p.getLocation().distanceSquared(pl.blueDeploy) < (8 * 8)) {
                 if (pl.ingameList.get(p).getTeam() == 1) {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 5, 2), false);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 5, 2), false);
                 } else {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 10, 2), false);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 20 * 10, 4), true);
                 }
-            } else if (p.getLocation().distance(pl.redDeploy) < 8) {
+            } else if (p.getLocation().distanceSquared(pl.redDeploy) < (8 * 8)) {
                 if (pl.ingameList.get(p).getTeam() == 2) {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 5, 2), false);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 5, 2), false);
                 } else {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 10, 2), false);
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 20 * 10, 4), true);
                 }
             }
         }
@@ -152,13 +152,17 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = false) // I FU**ING HATE YOU! Y YOU DONT DETECT CLICK_AIR
     public void onInteract(PlayerInteractEvent e) {
+        pl.debug("executed one action: " + e.getAction().name());
         Player p = e.getPlayer();
         if (pl.ingameList.containsKey(p)) {
+            pl.debug("is ingame");
             BukkitScheduler bs = pl.getServer().getScheduler();
             if (e.getItem() != null && e.getItem().getType().equals(Material.BLAZE_ROD)) { // Shadow Blade
+                pl.debug("used shadow");
                 if ((e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR)) {
+                    pl.debug("executed one action: " + e.getAction().name());
                     if (!pl.invisible.containsKey(p)) {
                         if (pl.shadowCD.contains(p)) {
                             p.sendMessage(pl.getLang("lang.itemCDMessage").replaceAll("%item", "Shadow Blade"));
@@ -166,6 +170,7 @@ public class PlayerListener implements Listener {
                             p.sendMessage(pl.getLang("lang.itemUseMessage").replaceAll("%item", "Shadow Blade").replaceAll("%cd", "45"));
                             bs.scheduleSyncDelayedTask(pl, new ItemCDRunnable(pl, p, pl.SHADOW_BLADE), 20 * 45);
                             pl.shadowCD.add(p);
+                            p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 15, 0));
                             int show = bs.scheduleSyncDelayedTask(pl, new ShowRunnable(pl, p), 20 * 15);
                             pl.invisible.put(p, 1);
                             pl.invisibleSB.put(p, show);
@@ -177,7 +182,7 @@ public class PlayerListener implements Listener {
                     }
                 }
             } else if (e.getItem() != null && e.getItem().getType().equals(Material.DIAMOND_HOE)) { // Force Staff
-                if ((e.getAction() == Action.LEFT_CLICK_AIR) || (e.getAction() == Action.LEFT_CLICK_BLOCK)) {
+                if ((e.getAction() == Action.LEFT_CLICK_AIR) || (e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.RIGHT_CLICK_AIR) || (e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
                     if (pl.forceCD.contains(p)) {
                         p.sendMessage(pl.getLang("lang.itemCDMessage").replaceAll("%item", "Force Staff"));
                     } else {
@@ -262,29 +267,27 @@ public class PlayerListener implements Listener {
                     }
                 }
             }
-        } else {
-            if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK) {
-                if (!pl.interactCD.contains(p)) {
-                    Block block = e.getClickedBlock();
-                    if (block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST) || block.getType().equals(Material.WALL_SIGN)) {
-                        Sign s = (Sign) block.getState();
-                        if (s.getLine(0).equalsIgnoreCase("[Dota]")) {
-                            if (s.getLine(1).equalsIgnoreCase("Join")) {
-                                if (s.getLine(2).startsWith("Meele")) {
-                                    p.performCommand("join m");
-                                } else if (s.getLine(2).startsWith("Ranged")) {
-                                    p.performCommand("join r");
-                                } else { // Spectator
-                                    p.performCommand("spectate");
-                                }
+        } else if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_BLOCK) {
+            if (!pl.interactCD.contains(p)) {
+                Block block = e.getClickedBlock();
+                if (block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST) || block.getType().equals(Material.WALL_SIGN)) {
+                    Sign s = (Sign) block.getState();
+                    if (s.getLine(0).equalsIgnoreCase("[Dota]")) {
+                        if (s.getLine(1).equalsIgnoreCase("Join")) {
+                            if (s.getLine(2).startsWith("Meele")) {
+                                p.performCommand("join m");
+                            } else if (s.getLine(2).startsWith("Ranged")) {
+                                p.performCommand("join r");
+                            } else { // Spectator
+                                p.performCommand("spectate");
                             }
                         }
-                        pl.interactCD.add(p);
-                        pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new InteractCDRunnable(p), 20 * 3);
                     }
-                } else {
-                    p.sendMessage(pl.getLang("lang.dontSpamClicks"));
+                    pl.interactCD.add(p);
+                    pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new InteractCDRunnable(p), 20 * 3);
                 }
+            } else {
+                p.sendMessage(pl.getLang("lang.dontSpamClicks"));
             }
         }
     }

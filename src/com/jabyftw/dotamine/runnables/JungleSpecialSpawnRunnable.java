@@ -50,13 +50,13 @@ public class JungleSpecialSpawnRunnable extends BukkitRunnable {
         boolean playernear = false;
         boolean spawn = true;
         for (Player p : pl.ingameList.keySet()) {
-            if (p.getLocation().distance(loc) < 32) {
+            if (p.getLocation().distanceSquared(loc) < (32 * 32)) {
                 playernear = true;
             }
         }
         if (pl.jungleCreeps.size() > 0 && playernear) {
             for (Entity en : pl.jungleCreeps.keySet()) {
-                if (en.getLocation().distance(loc) < 12 && !en.isDead()) {
+                if (en.getLocation().distanceSquared(loc) < (12 * 12) && !en.isDead()) {
                     spawn = false;
                 }
             }
@@ -91,7 +91,7 @@ public class JungleSpecialSpawnRunnable extends BukkitRunnable {
         cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "health max", 43.0, ModifyOperation.ADD_TO_BASIS_VALUE));
         cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
         cz.getAI().addBehavior(new AIAttackMelee(1, 1.25));
-        cz.getAI().addBehavior(new AITargetNearest(3, 5, true));
+        cz.getAI().addBehavior(new AITargetNearest(3, 5, true, 20 * 5));
         cz.getAI().addBehavior(new AILookAtEntity(4, (float) 12));
         pl.jungleSpecialCreeps.put(z, type);
         pl.controlMobs.put(z, cz);

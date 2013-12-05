@@ -1,18 +1,26 @@
 0.4:
  * GAMEPLAY:
  - Better map (Duurax's Summoners Rift)
- - Changed a little (Jungle)
+ - Changed a little (Jungle spawns)
  - Punch [Dota] Signs will also work
+ - When shadow blading, player will gain 15 sec Speed I potion effect - not removed when turns visible
+ - Tower punch will deal 8-18 damage, every "tower level" will give 15% more HP to tower
+ - Towers can be denied if less than 50 HP
+ - Towers will deal damage on the nearest enemy entity
  - Ranged Punch and other arrow stuff will work again
  - Zombies WILL target you in crowd if you shoot them
  - Spectators won't affect gameplay when blocking arrows
  - Higher EXP drop on Jungle creeps (after: 7-9 / before: 6-8)
  - Fixed Spawn camping poison/regeneration didn't applying, and increased radius.
  - Fixed arrows killing players counting as neutral kill
+ - Fixed walking on base didn't applying full regeneration or poison (its measured in ticks and not seconds, i'm stupid)
  - Removed fire bow from Meele, not needed anymore
  * PLUGIN:
  - Added fixed debug mode
  - Added aliase /j to /join
+ - Changed from distance to distanceSquared - more efficient
+ - Randomize a little money for kills/deaths. Fixed values sucks
+ - Now kills and deaths will save ONLY when you win/lose, quit won't save progress
  - Separated config.yml into config.yml, structures.yml and lang.yml
  - You don't need to restart your server anymore. This will unload and load the "config.world.name" @ config.yml
  - Changed Listeners to support multiworld

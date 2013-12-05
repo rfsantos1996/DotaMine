@@ -73,7 +73,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     /*
      PLUGIN
      */
-    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue;
+    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue, AncientHP, TowerRange;
     public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug, restartAfter;
     public boolean restarted = false;
     public Economy econ = null;

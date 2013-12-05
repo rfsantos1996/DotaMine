@@ -8,7 +8,6 @@ import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackRanged;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIFloat;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIRandomLookaround;
-import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetHurtBy;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.AttributeModifierFactory;
 import de.ntcomputer.minecraft.controllablemobs.api.attributes.ModifyOperation;
@@ -60,7 +59,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
         int spawn = 0;
         pl.debug("spawn method");
         for (Player p : pl.ingameList.keySet()) {
-            if (p.getLocation().distance(spawnloc) < 32) {
+            if (p.getLocation().distanceSquared(spawnloc) < (32 * 32)) {
                 playernear = true;
                 pl.debug("player is near");
             } else {
@@ -69,7 +68,7 @@ public class CreepSpawnRunnable extends BukkitRunnable {
         }
         if (pl.laneCreeps.size() > 0 && playernear) {
             for (Entity en : pl.laneCreeps.keySet()) {
-                if (en.getLocation().distance(spawnloc) < 22) {
+                if (en.getLocation().distanceSquared(spawnloc) < (22 * 22)) {
                     spawn++;
                     pl.debug("spawn++");
                 }
@@ -119,11 +118,10 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cz.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", LhealthM, ModifyOperation.ADD_TO_BASIS_VALUE));
             cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
             cz.getAI().addBehavior(new AIAttackMelee(1, 1.1));
-            cz.getAI().addBehavior(new AITargetNearest(2, 14, false, 20 * 3));
-            cz.getAI().addBehavior(new AITargetHurtBy(3, false));
+            cz.getAI().addBehavior(new AITargetNearest(2, 14, false, 20 * 4));
             cz.getAI().addBehavior(new AIFloat(4));
             cz.getAI().addBehavior(new AILookAtEntity(5, (float) 8));
-            cz.getAI().addBehavior(new AIRandomLookaround(5));
+            cz.getAI().addBehavior(new AIRandomLookaround(6));
             pl.laneCreeps.put(z, cz);
             pl.controlMobs.put(z, cz);
         }
@@ -149,10 +147,10 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cs.getAttributes().getMaxHealthAttribute().attachModifier(AttributeModifierFactory.create(UUID.randomUUID(), "max health", LhealthR, ModifyOperation.ADD_TO_BASIS_VALUE));
             cs.getEntity().setHealth(cs.getEntity().getMaxHealth());
             cs.getAI().addBehavior(new AIAttackRanged(1, 1.2, 14, 40));
-            cs.getAI().addBehavior(new AITargetNearest(2, 16, false));
-            cs.getAI().addBehavior(new AITargetHurtBy(3, false));
+            cs.getAI().addBehavior(new AITargetNearest(2, 16, false, 20 * 3));
             cs.getAI().addBehavior(new AIFloat(4));
             cs.getAI().addBehavior(new AILookAtEntity(5, (float) 20));
+            cs.getAI().addBehavior(new AIRandomLookaround(6));
             pl.laneCreeps.put(s, cs);
             pl.controlMobs.put(s, cs);
         }
