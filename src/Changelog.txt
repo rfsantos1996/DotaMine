@@ -6,7 +6,7 @@
  - When shadow blading, player will gain 15 sec Speed I potion effect - not removed when turns visible
  - Tower punch will deal 8-18 damage, every "tower level" will give 15% more HP to tower
  - Towers can be denied if less than 50 HP
- - Towers will deal damage on the nearest enemy entity
+ - Towers will deal damage on the nearest enemy entity (first tower, others will damage players only)
  - Ranged Punch and other arrow stuff will work again
  - Zombies WILL target you in crowd if you shoot them
  - Spectators won't affect gameplay when blocking arrows

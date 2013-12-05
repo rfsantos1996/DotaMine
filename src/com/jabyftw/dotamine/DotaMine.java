@@ -105,6 +105,9 @@ public class DotaMine extends JavaPlugin implements Listener {
 
     private void startVariables() { // or restart
         firstTowerSize = 0;
+        state = WAITING;
+        megaCreeps = false;
+
         structures = new HashMap();
         botCreepSpawn = new ArrayList();
         midCreepSpawn = new ArrayList();
@@ -147,9 +150,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         startVariables();
-        state = WAITING;
-        megaCreeps = false;
-        version = 4; // config version
+        version = 5; // config version
         config = new Config(this);
         config.generateConfig();
         if (useVault) {

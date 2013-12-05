@@ -114,7 +114,7 @@ public class Config {
             e.remove();
         }
 
-        pl.otherWorldSpawn = new Location(w, config.getInt("structures.locations.otherworldspawn.locX"), config.getInt("structures.locations.otherworldspawn.locY"), config.getInt("structures.locations.otherworldspawn.locZ"));
+        pl.otherWorldSpawn = new Location(pl.getServer().getWorld(config.getString("structures.locations.otherworldspawn.worldName")), config.getInt("structures.locations.otherworldspawn.locX"), config.getInt("structures.locations.otherworldspawn.locY"), config.getInt("structures.locations.otherworldspawn.locZ"));
         pl.normalSpawn = new Location(w, config.getInt("structures.locations.normalspawn.locX"), config.getInt("structures.locations.normalspawn.locY"), config.getInt("structures.locations.normalspawn.locZ"));
         pl.redDeploy = new Location(w, config.getInt("structures.locations.redspawn.locX"), config.getInt("structures.locations.redspawn.locY"), config.getInt("structures.locations.redspawn.locZ"));
         pl.blueDeploy = new Location(w, config.getInt("structures.locations.bluespawn.locX"), config.getInt("structures.locations.bluespawn.locY"), config.getInt("structures.locations.bluespawn.locZ"));
@@ -317,6 +317,7 @@ public class Config {
 
     private void setupStructures(FileConfiguration config) {
         if (!enabled) {
+            config.addDefault("structures.locations.otherworldspawn.worldName", "otherWorld");
             config.addDefault("structures.locations.otherworldspawn.locX", 5);
             config.addDefault("structures.locations.otherworldspawn.locY", 5);
             config.addDefault("structures.locations.otherworldspawn.locZ", 5);
