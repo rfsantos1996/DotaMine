@@ -20,6 +20,9 @@ public class StartGameRunnable extends BukkitRunnable {
     @Override
     public void run() {
         if (pl.queue.size() >= pl.MIN_PLAYERS || forced) {
+            if(pl.getServer().getScheduler().isQueued(pl.startGame)) {
+                pl.getServer().getScheduler().cancelTask(pl.startGame);
+            }
             pl.getServer().getScheduler().cancelTask(pl.announceQueue);
             pl.debug("asked for start");
             pl.startGame(forced);

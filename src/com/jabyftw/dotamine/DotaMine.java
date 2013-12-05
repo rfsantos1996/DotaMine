@@ -73,7 +73,7 @@ public class DotaMine extends JavaPlugin implements Listener {
     /*
      PLUGIN
      */
-    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue, AncientHP, TowerRange, firstTowerSize;
+    public int redCount, blueCount, state, scoreRunnable, version, MIN_PLAYERS, MAX_PLAYERS, announceQueue, AncientHP, TowerRange, firstTowerSize, startGame;
     public boolean useVault, nerfRanged, mysqlEnabled, useEffects, megaCreeps, useControllableMobs, debug, restartAfter;
     public boolean restarted = false;
     public Economy econ = null;
@@ -332,20 +332,24 @@ public class DotaMine extends JavaPlugin implements Listener {
                 ItemStack sword = new ItemStack(Material.WOOD_SWORD, 1);
                 sword.addUnsafeEnchantment(Enchantment.DURABILITY, 1000); // 0.1% chance for losing durability when using
                 p.getInventory().addItem(sword);
-                if (p.hasPermission("dotamine.ranged")) {
-                    permission.playerRemove(p, "dotamine.ranged");
+                if (useVault) {
+                    if (p.hasPermission("dotamine.ranged")) {
+                        permission.playerRemove(p, "dotamine.ranged");
+                    }
+                    permission.playerAdd(p, "dotamine.meele");
                 }
-                permission.playerAdd(p, "dotamine.meele");
             } else { // Ranged
                 ItemStack bow = new ItemStack(Material.BOW, 1);
                 bow.addEnchantment(Enchantment.ARROW_INFINITE, 1);
                 bow.addUnsafeEnchantment(Enchantment.DURABILITY, 1000);
                 p.getInventory().addItem(bow);
                 p.getInventory().addItem(new ItemStack(Material.ARROW, 1));
-                if (p.hasPermission("dotamine.meele")) {
-                    permission.playerRemove(p, "dotamine.meele");
+                if (useVault) {
+                    if (p.hasPermission("dotamine.meele")) {
+                        permission.playerRemove(p, "dotamine.meele");
+                    }
+                    permission.playerAdd(p, "dotamine.ranged");
                 }
-                permission.playerAdd(p, "dotamine.ranged");
             }
             ingameList.put(p, new Jogador(this, p, 0, 0, 0, 0, team, attackType));
         } else {

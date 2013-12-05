@@ -18,7 +18,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType; // TODO: Playerinteract only work when click on ground
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 /**

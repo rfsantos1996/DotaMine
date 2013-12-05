@@ -1,3 +1,16 @@
+0.5:
+ * GAMEPLAY:
+ - Nothing
+ * PLUGIN:
+ - Nothing
+
+0.4.1:
+ * GAMEPLAY:
+ - Nothing
+ * PLUGIN:
+ - /dota forcestart will now cancel the announcer (no more "Failed to start" after starting)
+ - Fixed NullPointerException when /join without Vault enabled and ready
+
 0.4:
  * GAMEPLAY:
  - Better map (Duurax's Summoners Rift)
