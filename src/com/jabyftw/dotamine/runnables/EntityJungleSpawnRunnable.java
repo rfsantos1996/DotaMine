@@ -41,7 +41,7 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
             }
         }
         if (pl.jungleEntityCreeps.size() > 0 && playernear) {
-            for (Entity e : pl.jungleEntityCreeps.keySet()) {
+            for (Entity e : pl.jungleEntityCreeps) {
                 if (e.getLocation().distanceSquared(spawnloc) < (22*22)) {
                     spawn = true;
                 }
@@ -65,7 +65,7 @@ public class EntityJungleSpawnRunnable extends BukkitRunnable {
             z.setCanPickupItems(false);
             z.setMaxHealth(32);
             z.setHealth(z.getMaxHealth());
-            pl.jungleEntityCreeps.put(z, 0);
+            pl.jungleEntityCreeps.add(z);
             pl.spawnedMobs.add(z);
         }
     }

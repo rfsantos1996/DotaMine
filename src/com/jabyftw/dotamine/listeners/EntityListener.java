@@ -247,16 +247,23 @@ public class EntityListener implements Listener {
                         if (e.getEntity().getKiller() != null) {
                             pl.ingameList.get(en.getKiller()).addLH();
                         }
-                    } else if (pl.jungleEntityCreeps.containsKey(en)) {
+                    } else if (pl.jungleEntitySpecialCreeps.containsKey(en)) {
                         if (e.getEntity().getKiller() != null) {
                             Player killer = e.getEntity().getKiller();
                             pl.ingameList.get(killer).addJungleLH();
-                            int n = pl.jungleEntityCreeps.get(en);
+                            int n = pl.jungleEntitySpecialCreeps.get(en);
                             if (n == 1) { // red
                                 killer.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 90, 0), true);
                             } else if (n == 2) { // blue
                                 killer.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 20 * 90, 1), true);
                             }
+                        }
+                        e.setDroppedExp(pl.getRandom(7, 9));
+                        pl.jungleEntitySpecialCreeps.remove(en);
+                    } else if (pl.jungleEntityCreeps.contains(en)) {
+                        if (e.getEntity().getKiller() != null) {
+                            Player killer = e.getEntity().getKiller();
+                            pl.ingameList.get(killer).addJungleLH();
                         }
                         e.setDroppedExp(pl.getRandom(7, 9));
                         pl.jungleEntityCreeps.remove(en);

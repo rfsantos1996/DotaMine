@@ -90,8 +90,8 @@ public class DotaMine extends JavaPlugin implements Listener {
     public Map<Player, ItemStack[]> playerDeathItems, playerDeathArmor;
     // Mobs
     public Map<Entity, ControllableMob> controlMobs, jungleCreeps, laneCreeps;
-    public Map<Entity, Integer> jungleSpecialCreeps, jungleEntityCreeps;
-    public List<Entity> spawnedMobs, laneEntityCreeps;
+    public Map<Entity, Integer> jungleSpecialCreeps, jungleEntitySpecialCreeps;
+    public List<Entity> spawnedMobs, laneEntityCreeps, jungleEntityCreeps;
     public Random random = new Random();
     /*
      ITEM
@@ -125,7 +125,8 @@ public class DotaMine extends JavaPlugin implements Listener {
         laneCreeps = new HashMap();
         spawnedMobs = new ArrayList();
         laneEntityCreeps = new ArrayList();
-        jungleEntityCreeps = new HashMap();
+        jungleEntityCreeps = new ArrayList();
+        jungleEntitySpecialCreeps = new HashMap();
 
         shadowCD = new ArrayList();
         invisible = new HashMap();
