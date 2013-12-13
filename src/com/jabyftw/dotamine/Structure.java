@@ -23,7 +23,7 @@ public class Structure {
     private boolean announced = false;
     private List<Block> blocks = new ArrayList();
     private int hp, runnable; // every wool break = 1.5 seconds, 4.5 minutes of breaking = 180 punchs, punch = 10 hp remove
-    private Entity nearby = null;
+    private Damageable nearby = null;
 
     // loc, name, lane, number, team, type
     public Structure(DotaMine pl, Location loc, Location tpLoc, String name, String lane, String team, int type, Location afterDestroy) {
@@ -130,7 +130,7 @@ public class Structure {
             }
             for (Block b : blocks) {
                 b.setType(Material.AIR);
-                pl.smokeEffect(b.getLocation(), 2);
+                pl.smokeEffect(b.getLocation(), 3);
             }
             if (type == 1) {
                 pl.getServer().getScheduler().cancelTask(runnable);
@@ -187,7 +187,7 @@ public class Structure {
 
         private final int radius;
         private final Structure t;
-        private int damage = 2;
+        private double damage;
 
         public TowerAttackRunnable(Structure t, int radius) {
             this.t = t;
@@ -204,19 +204,23 @@ public class Structure {
                 if (!pl.useControllableMobs) {
                     for (Entity e : pl.spawnedMobs) {
                         if (e.getLocation().distanceSquared(loc) < radius && !e.isDead()) {
-                            nearby = e;
-                            damage = 13;
-                            pl.debug("!controllable mobs - entity found");
-                            break;
+                            if (e instanceof Damageable) {
+                                nearby = (Damageable) e;
+                                damage = (nearby.getMaxHealth() - 1);
+                                pl.debug("!controllable mobs - entity found");
+                                break;
+                            }
                         }
                     }
                 } else {
                     for (Entity e : pl.controlMobs.keySet()) {
                         if (e.getLocation().distanceSquared(loc) < radius && !e.isDead()) {
-                            nearby = e;
-                            damage = 13;
-                            pl.debug("controllable mobs - entity found");
-                            break;
+                            if (e instanceof Damageable) {
+                                nearby = (Damageable) e;
+                                damage = (nearby.getHealth() - 1);
+                                pl.debug("controllable mobs - entity found");
+                                break;
+                            }
                         }
                     }
                 }
@@ -225,7 +229,7 @@ public class Structure {
                 for (Jogador j : pl.ingameList.values()) {
                     if (j.getTeam() != getTeam()) {
                         if (j.getPlayer().getLocation().distanceSquared(loc) < radius && !j.getPlayer().isDead()) {
-                            nearby = (Entity) j.getPlayer();
+                            nearby = (Damageable) j.getPlayer();
                             damage = 2;
                             pl.debug("player found");
                             break;
@@ -234,14 +238,17 @@ public class Structure {
                 }
             }
             if (nearby != null && !nearby.isDead()) {
-                if (nearby instanceof Damageable) {
-                    Damageable dmgable = (Damageable) nearby;
-                    dmgable.damage(damage);
+                nearby.damage(damage);
+                if (team == 1) {
+                    for (Block b : blocks) {
+                        pl.breakEffect(b.getLocation(), 2, 22);
+                    }
+                } else {
                     for (Block b : blocks) {
                         pl.breakEffect(b.getLocation(), 2, 152);
                     }
-                    pl.debug("damaged");
                 }
+                pl.debug("damaged");
             } else {
                 pl.debug("no entities found or they are dead.");
             }

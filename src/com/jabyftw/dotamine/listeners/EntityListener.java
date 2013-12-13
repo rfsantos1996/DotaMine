@@ -225,7 +225,7 @@ public class EntityListener implements Listener {
                         int n = pl.jungleSpecialCreeps.get(en);
                         if (n == 1) { // red
                             killer.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 90, 0), true);
-                        } else { // blue
+                        } else if (n == 2) { // blue
                             killer.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 20 * 90, 1), true);
                         }
                     }
@@ -254,7 +254,7 @@ public class EntityListener implements Listener {
                             int n = pl.jungleEntityCreeps.get(en);
                             if (n == 1) { // red
                                 killer.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 20 * 90, 0), true);
-                            } else { // blue
+                            } else if (n == 2) { // blue
                                 killer.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 20 * 90, 1), true);
                             }
                         }
@@ -309,7 +309,7 @@ public class EntityListener implements Listener {
 
     private boolean cancelBothIngame(Player damaged, Player damager) {
         if (!checkIngame(damager) && !checkIngame(damaged)) { // if both arent ingame, execute
-            if (damager.getLocation().distanceSquared(pl.normalSpawn) < (15*15) || damaged.getLocation().distanceSquared(pl.normalSpawn) < (15*15)) { // Anti PVP on lobby
+            if (damager.getLocation().distanceSquared(pl.normalSpawn) < (15 * 15) || damaged.getLocation().distanceSquared(pl.normalSpawn) < (15 * 15)) { // Anti PVP on lobby
                 return true;
             }
         } else if (!checkIngame(damager) || !checkIngame(damaged)) {

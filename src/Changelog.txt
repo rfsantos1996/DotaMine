@@ -1,8 +1,11 @@
 0.5:
  * GAMEPLAY:
- - Nothing
+ - Now if tower hits a enemy, just punch it to farm!
+ - Fixed all jungle being "blue jungle" if they aren't red
  * PLUGIN:
- - Nothing
+ - Made all commands on /dota
+ - Changed Blue Towers effect color (to blue...)
+ - 1.7 is ready, just don't use ControllableMobs
 
 0.4.1:
  * GAMEPLAY:

@@ -35,13 +35,13 @@ public class JungleSpawnRunnable extends BukkitRunnable {
                 boolean playernear = false;
                 boolean spawn = true;
                 for (Player p : pl.ingameList.keySet()) {
-                    if (p.getLocation().distanceSquared(loc) < (32*32)) {
+                    if (p.getLocation().distanceSquared(loc) < (32 * 32)) {
                         playernear = true;
                     }
                 }
                 if (pl.jungleCreeps.size() > 0 && playernear) {
                     for (Entity en : pl.jungleCreeps.keySet()) {
-                        if (en.getLocation().distanceSquared(loc) < (12*12) && !en.isDead()) {
+                        if (en.getLocation().distanceSquared(loc) < (12 * 12) && !en.isDead()) {
                             spawn = false;
                         }
                     }

@@ -1,8 +1,5 @@
-package com.jabyftw.dotamine.commands;
+package com.jabyftw.dotamine;
 
-import com.jabyftw.dotamine.DotaMine;
-import com.jabyftw.dotamine.Ranking;
-import com.jabyftw.dotamine.Structure;
 import com.jabyftw.dotamine.runnables.StartGameRunnable;
 import com.jabyftw.dotamine.runnables.item.ItemCDRunnable;
 import org.bukkit.Location;
@@ -116,6 +113,77 @@ public class DotaCommand implements CommandExecutor {
                 sender.sendMessage(pl.getLang("lang.tpCommand"));
                 return true;
             }
+        } else if (args[0].equalsIgnoreCase("join")) {
+            if (sender.hasPermission("dotamine.play")) {
+                if (sender instanceof Player) {
+                    Player p = (Player) sender;
+                    if (args.length > 0) {
+                        if (!pl.queue.containsKey(p)) {
+                            int attackType;
+                            if (args[0].startsWith("r")) { // Ranged = 2
+                                attackType = 2;
+                                p.sendMessage(pl.getLang("lang.settedRanged"));
+                            } else {
+                                attackType = 1; // Meele = 1
+                                p.sendMessage(pl.getLang("lang.settedMeele"));
+                            }
+                            pl.addPlayerToGame(p, attackType);
+                            return true;
+                        } else {
+                            if (args[0].startsWith("r")) {
+                                sender.sendMessage(pl.getLang("lang.alreadyInQueueUpdatedAttack").replaceAll("%attack", getAttackType(2)));
+                                pl.queue.put(p, 2);
+                            } else if (args[0].startsWith("m")) {
+                                sender.sendMessage(pl.getLang("lang.alreadyInQueueUpdatedAttack").replaceAll("%attack", getAttackType(1)));
+                                pl.queue.put(p, 1);
+                            } else {
+                                sender.sendMessage(pl.getLang("lang.leftQueue"));
+                                pl.removePlayerFromQueue(p);
+                            }
+                            return true;
+                        }
+                    } else {
+                        p.sendMessage(pl.getLang("lang.usePlayCommand"));
+                        return true;
+                    }
+                } else {
+                    sender.sendMessage(pl.getLang("lang.onlyIngame"));
+                    return true;
+                }
+            } else {
+                sender.sendMessage(pl.getLang("lang.noPermission"));
+                return true;
+            }
+        } else if (args[0].equalsIgnoreCase("spectate")) {
+            if (sender instanceof Player) {
+                Player p = (Player) sender;
+                if (p.hasPermission("dotamine.spectate")) {
+                    if (pl.state == pl.PLAYING || pl.state == pl.SPAWNING) {
+                        if (pl.spectators.containsKey(p)) {
+                            if (args.length > 0) {
+                                sender.sendMessage(pl.getLang("lang.leftSpectator"));
+                                pl.removeSpectator(p);
+                                return true;
+                            } else {
+                                sender.sendMessage(pl.getLang("lang.alreadySpectating"));
+                                return true;
+                            }
+                        } else {
+                            pl.addSpectator(p);
+                            return true;
+                        }
+                    } else {
+                        p.sendMessage(pl.getLang("lang.gameNotStarted"));
+                        return true;
+                    }
+                } else {
+                    p.sendMessage(pl.getLang("lang.noPermission"));
+                    return true;
+                }
+            } else {
+                sender.sendMessage(pl.getLang("lang.onlyIngame"));
+                return true;
+            }
         } else {
             /*Location l = ((Player) sender).getLocation();
              sender.sendMessage(l.getBlockX() + " " + l.getBlockY() + " " + l.getBlockZ() + " " + l.getYaw() + " " + l.getPitch());
@@ -172,6 +240,14 @@ public class DotaCommand implements CommandExecutor {
         int TPTask = pl.getServer().getScheduler().scheduleSyncRepeatingTask(pl, new TeleportEffectRunnable(p, destination), 2, 2);
         pl.getServer().getScheduler().scheduleSyncDelayedTask(pl, new TeleportRunnable(p, destination), 20 * 3);
         pl.teleporting.put(p, TPTask);
+    }
+
+    private String getAttackType(int i) {
+        if (i == 1) {
+            return "meele";
+        } else {
+            return "ranged";
+        }
     }
 
     private class TeleportRunnable implements Runnable {

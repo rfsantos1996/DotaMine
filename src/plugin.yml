@@ -7,25 +7,16 @@ softdepend: [Vault,ControllableMobsAPI]
 commands:
    dota:
      description: Main command
-     usage: Use /dota (forcestart/ranking/tp)
-   join:
-     description: Join command
-     aliases: j
-     permission: dotamine.play
-     usage: Use /join (meele/ranged/leave)
-   spectate:
-     description: Spectate command
-     permission: dotamine.spectate
-     usage: Use /spectate [leave]
+     usage: Use /dota (forcestart/ranking/tp/spectate/join [ranged/meele/leave])
 permissions:
    dotamine.play:
-     description: Gives access to join command
+     description: Gives access to join the game
      default: true
    dotamine.spectate:
-     description: Gives access to spectate the game on join
+     description: Gives access to spectate the game
      default: true
    dotamine.ranking:
-     description: Gives access to /dota ranking command
+     description: Gives access to ranking command
      default: true
    dotamine.forcestart:
      description: Allows you force start the game

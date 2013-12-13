@@ -1,9 +1,6 @@
 package com.jabyftw.dotamine;
 
 import com.jabyftw.dotamine.listeners.PlayerListener;
-import com.jabyftw.dotamine.commands.DotaCommand;
-import com.jabyftw.dotamine.commands.JoinCommand;
-import com.jabyftw.dotamine.commands.SpectateCommand;
 import com.jabyftw.dotamine.listeners.BlockListener;
 import com.jabyftw.dotamine.listeners.EntityListener;
 import com.jabyftw.dotamine.runnables.AnnounceQueueRunnable;
@@ -78,7 +75,6 @@ public class DotaMine extends JavaPlugin implements Listener {
     public boolean restarted = false;
     public Economy econ = null;
     public Permission permission = null;
-    private List<String> list = new ArrayList();
     // Location
     public Map<Structure, Integer> structures;
     public int maxN = 0;
@@ -161,10 +157,6 @@ public class DotaMine extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new EntityListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getLogger().log(Level.INFO, "Registered listeners.");
-        getServer().getPluginCommand("join").setExecutor(new JoinCommand(this));
-        list.add("j");
-        getServer().getPluginCommand("join").setAliases(list);
-        getServer().getPluginCommand("spectate").setExecutor(new SpectateCommand(this));
         getServer().getPluginCommand("dota").setExecutor(new DotaCommand(this));
         getLogger().log(Level.INFO, "Registered commands.");
         announceQueue = getServer().getScheduler().scheduleSyncRepeatingTask(this, new AnnounceQueueRunnable(this), 20 * 15, 20 * 20);
@@ -481,14 +473,6 @@ public class DotaMine extends JavaPlugin implements Listener {
         if (useEffects) {
             for (int i = 0; i < quantity; i++) {
                 location.getWorld().playEffect(location, Effect.STEP_SOUND, BlockID);
-            }
-        }
-    }
-
-    public void flamesEffect(Location location, int quantity) {
-        if (useEffects) {
-            for (int i = 0; i < quantity; i++) {
-                location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 0, 1);
             }
         }
     }
