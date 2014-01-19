@@ -5,7 +5,6 @@ import de.ntcomputer.minecraft.controllablemobs.api.ControllableMob;
 import de.ntcomputer.minecraft.controllablemobs.api.ControllableMobs;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackMelee;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIAttackRanged;
-import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIFloat;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AILookAtEntity;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AIRandomLookaround;
 import de.ntcomputer.minecraft.controllablemobs.api.ai.behaviors.AITargetNearest;
@@ -119,9 +118,8 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cz.getEntity().setHealth(cz.getEntity().getMaxHealth());
             cz.getAI().addBehavior(new AIAttackMelee(1, 1.1));
             cz.getAI().addBehavior(new AITargetNearest(2, 14, false, 20 * 4));
-            cz.getAI().addBehavior(new AIFloat(4));
-            cz.getAI().addBehavior(new AILookAtEntity(5, (float) 8));
-            cz.getAI().addBehavior(new AIRandomLookaround(6));
+            cz.getAI().addBehavior(new AILookAtEntity(4, (float) 8));
+            cz.getAI().addBehavior(new AIRandomLookaround(5));
             pl.laneCreeps.put(z, cz);
             pl.controlMobs.put(z, cz);
         }
@@ -148,9 +146,8 @@ public class CreepSpawnRunnable extends BukkitRunnable {
             cs.getEntity().setHealth(cs.getEntity().getMaxHealth());
             cs.getAI().addBehavior(new AIAttackRanged(1, 1.2, 14, 40));
             cs.getAI().addBehavior(new AITargetNearest(2, 16, false, 20 * 3));
-            cs.getAI().addBehavior(new AIFloat(4));
-            cs.getAI().addBehavior(new AILookAtEntity(5, (float) 20));
-            cs.getAI().addBehavior(new AIRandomLookaround(6));
+            cs.getAI().addBehavior(new AILookAtEntity(4, (float) 20));
+            cs.getAI().addBehavior(new AIRandomLookaround(5));
             pl.laneCreeps.put(s, cs);
             pl.controlMobs.put(s, cs);
         }

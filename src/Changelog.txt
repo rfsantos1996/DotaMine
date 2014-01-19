@@ -1,3 +1,7 @@
+0.5.1:
+ * PLUGIN:
+ - Compatible with new ControllableMobs 1.7.x version
+
 0.5:
  * GAMEPLAY:
  - Now if tower hits a enemy, just punch it to farm!

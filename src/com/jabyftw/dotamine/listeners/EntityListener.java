@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -271,6 +273,13 @@ public class EntityListener implements Listener {
                     pl.spawnedMobs.remove(en);
                 }
             }
+        }
+    }
+    
+    @EventHandler(ignoreCancelled = true)
+    public void onCreatureSpawn(CreatureSpawnEvent e) { // TODO: all listeners: make it for matches and not for a single server
+        if(e.getSpawnReason().equals(SpawnReason.REINFORCEMENTS)) {
+            e.setCancelled(true);
         }
     }
 
